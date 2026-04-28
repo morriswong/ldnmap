@@ -69,6 +69,14 @@
   .sbtn:hover { opacity: 0.88; transform: translateY(-1px); }
   .sbtn:active { transform: translateY(0); }
   .sbtn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+  .search-wrap { position: relative; }
+  .suggestions { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.18); backdrop-filter: blur(20px); max-height: 280px; overflow-y: auto; z-index: 1100; display: none; }
+  .suggestions.open { display: block; }
+  .sugg-item { padding: 9px 12px; cursor: pointer; border-bottom: 1px solid var(--panel-border); }
+  .sugg-item:last-child { border-bottom: none; }
+  .sugg-item:hover, .sugg-item.active { background: var(--input-focus-bg); }
+  .sugg-name { font-size: 13px; color: var(--text); }
+  .sugg-addr { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
   .status { margin-top: 14px; font-size: 11px; color: var(--text-dim); text-align: center; line-height: 1.4; }
   .status.error { color: #e74c3c; }
   .leaflet-control-zoom { border: none !important; box-shadow: 0 4px 16px rgba(0,0,0,0.3) !important; }
@@ -132,8 +140,10 @@
   </div>
   <div class="divider"></div>
   <div class="section-label">Search location</div>
-  <input class="sinput" id="q" placeholder="e.g. SE7 7PJ, Covent Garden, Big Ben…" onkeydown="if(event.key==='Enter')go()">
-  <button class="sbtn" id="gobtn" onclick="go()">Search</button>
+  <div class="search-wrap">
+    <input class="sinput" id="q" autocomplete="off" placeholder="e.g. SE7 7PJ, Covent Garden, Big Ben…">
+    <div class="suggestions" id="sugg"></div>
+  </div>
   <div class="status" id="st">Click anywhere on the map to start</div>
 </div>
 <div class="coord-display" id="coords">51.4871°N, 0.0371°E</div>
@@ -190,23 +200,100 @@ function pick(m) {
   if (center) run(center[0], center[1]);
 }
 
-async function go() {
-  var q = document.getElementById('q').value.trim();
-  if (!q) return;
-  document.getElementById('gobtn').disabled = true;
-  setStatus('Searching\u2026');
+var sessionToken = (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(36).slice(2);
+var suggestTimer = null;
+var currentSuggestions = [];
+var activeIdx = -1;
+var qInput = document.getElementById('q');
+var suggBox = document.getElementById('sugg');
+
+function closeSugg() { suggBox.classList.remove('open'); activeIdx = -1; }
+function openSugg() { if (currentSuggestions.length) suggBox.classList.add('open'); }
+
+function renderSuggestions() {
+  suggBox.innerHTML = '';
+  currentSuggestions.forEach(function(s, i) {
+    var item = document.createElement('div');
+    item.className = 'sugg-item' + (i === activeIdx ? ' active' : '');
+    item.innerHTML = '<div class="sugg-name"></div><div class="sugg-addr"></div>';
+    item.querySelector('.sugg-name').textContent = s.name;
+    item.querySelector('.sugg-addr').textContent = s.place_formatted || s.full_address || '';
+    item.addEventListener('mousedown', function(e) { e.preventDefault(); selectSuggestion(i); });
+    suggBox.appendChild(item);
+  });
+}
+
+async function fetchSuggest(q) {
   try {
-    var r = await fetch('https://api.mapbox.com/search/geocode/v6/forward?q=' + encodeURIComponent(q) + '&limit=1&access_token=' + MAPBOX_TOKEN);
+    var url = 'https://api.mapbox.com/search/searchbox/v1/suggest?q=' + encodeURIComponent(q)
+      + '&language=en&country=gb&proximity=-0.0371,51.4871&limit=6'
+      + '&session_token=' + sessionToken
+      + '&access_token=' + MAPBOX_TOKEN;
+    var r = await fetch(url);
+    var d = await r.json();
+    currentSuggestions = (d.suggestions || []).map(function(s) {
+      return { mapbox_id: s.mapbox_id, name: s.name, place_formatted: s.place_formatted, full_address: s.full_address };
+    });
+    activeIdx = -1;
+    renderSuggestions();
+    if (currentSuggestions.length) openSugg(); else closeSugg();
+  } catch (e) {
+    currentSuggestions = [];
+    closeSugg();
+  }
+}
+
+async function selectSuggestion(i) {
+  var s = currentSuggestions[i];
+  if (!s) return;
+  qInput.value = s.name;
+  closeSugg();
+  setStatus('Loading\u2026');
+  try {
+    var url = 'https://api.mapbox.com/search/searchbox/v1/retrieve/' + encodeURIComponent(s.mapbox_id)
+      + '?session_token=' + sessionToken + '&access_token=' + MAPBOX_TOKEN;
+    var r = await fetch(url);
     var d = await r.json();
     if (d.features && d.features.length) {
       var c = d.features[0].geometry.coordinates;
-      var name = d.features[0].properties.full_address || d.features[0].properties.name || q;
+      var label = d.features[0].properties.full_address || s.name;
       map.flyTo([c[1], c[0]], 13, { duration: 1.5 });
-      run(c[0], c[1], name);
-    } else { setStatus('Not found \u2014 try a different search', true); }
-  } catch(e) { setStatus('Search failed', true); }
-  document.getElementById('gobtn').disabled = false;
+      run(c[0], c[1], label);
+      sessionToken = (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(36).slice(2);
+    } else { setStatus('Could not load that location', true); }
+  } catch (e) { setStatus('Search failed', true); }
 }
+
+qInput.addEventListener('input', function() {
+  var q = qInput.value.trim();
+  clearTimeout(suggestTimer);
+  if (!q) { currentSuggestions = []; closeSugg(); return; }
+  suggestTimer = setTimeout(function() { fetchSuggest(q); }, 180);
+});
+
+qInput.addEventListener('keydown', function(e) {
+  if (!suggBox.classList.contains('open')) return;
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    activeIdx = Math.min(activeIdx + 1, currentSuggestions.length - 1);
+    renderSuggestions();
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    activeIdx = Math.max(activeIdx - 1, 0);
+    renderSuggestions();
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    selectSuggestion(activeIdx >= 0 ? activeIdx : 0);
+  } else if (e.key === 'Escape') {
+    closeSugg();
+  }
+});
+
+qInput.addEventListener('focus', function() { if (currentSuggestions.length) openSugg(); });
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.search-wrap')) closeSugg();
+});
 
 async function run(lng, lat, label) {
   center = [lng, lat];
