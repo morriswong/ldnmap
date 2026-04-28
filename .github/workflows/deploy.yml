@@ -1,0 +1,24 @@
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Inject Mapbox token
+        run: sed -i 's/__MAPBOX_TOKEN__/${{ secrets.MAPBOX_TOKEN }}/g' index.html
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: a30a1eec7f8eb1e19439a3bc00d47beb
+          command: pages deploy . --project-name=ldnmap --branch=main
