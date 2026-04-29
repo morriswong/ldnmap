@@ -2,7 +2,7 @@ name: Deploy to Cloudflare Pages
 
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
 
 jobs:
   deploy:
@@ -21,4 +21,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: a30a1eec7f8eb1e19439a3bc00d47beb
-          command: pages deploy . --project-name=ldnmap --branch=main
+          command: pages deploy . --project-name=ldnmap --branch=${{ github.ref_name }}
