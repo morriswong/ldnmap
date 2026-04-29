@@ -104,6 +104,7 @@
   .leaflet-control-attribution a { color: var(--attrib-link) !important; }
   .coord-display { position: absolute; bottom: 28px; left: 16px; z-index: 1000; font-size: 11px; color: var(--text-dim); background: var(--coord-bg); padding: 4px 10px; border-radius: 8px; backdrop-filter: blur(8px); font-variant-numeric: tabular-nums; }
   .mode-grid { display: none; }
+  .back-btn { display: none; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
   @media (max-width: 768px) {
     .panel {
@@ -188,6 +189,19 @@
       background: var(--soon-badge-bg); color: var(--soon-badge-text);
       text-transform: uppercase;
     }
+    .panel.view-menu .travel-view { display: none; }
+    .panel.view-travel .mode-grid { display: none; }
+    .panel.view-travel .back-btn {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: none; border: none; padding: 4px 6px 4px 0;
+      color: var(--text); font-family: 'DM Sans', sans-serif;
+      font-size: 14px; font-weight: 500; cursor: pointer;
+      letter-spacing: -0.1px;
+    }
+    .panel.view-travel .back-btn svg { width: 16px; height: 16px; }
+    .panel.view-travel .back-btn:active { opacity: 0.6; }
+    .panel.view-travel .panel-title { display: none; }
+    .panel.view-menu .panel-title { font-size: 17px; font-weight: 600; }
   }
   @media (max-width: 768px) and (prefers-reduced-transparency: reduce) {
     .panel, .show-btn, .theme-fab {
@@ -216,8 +230,14 @@
     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
   </svg>
 </button>
-<div class="panel">
+<div class="panel view-menu">
   <div class="panel-header">
+    <button class="back-btn" onclick="showMenuView()" aria-label="Back to modes">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      Modes
+    </button>
     <div class="panel-title">How far can you go?</div>
     <button class="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark" aria-label="Toggle theme">
       <svg id="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -231,7 +251,7 @@
     </button>
   </div>
   <div class="mode-grid" aria-label="Map modes">
-    <button class="mode-tile active" data-mode="travel" aria-label="Travel time" aria-pressed="true">
+    <button class="mode-tile active" data-mode="travel" aria-label="Travel time" onclick="showTravelView()">
       <svg class="tile-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="4.5" r="1.8"/>
         <path d="M10 22l2-7 3 3v6"/>
@@ -266,6 +286,7 @@
       <span class="soon-badge">Soon</span>
     </button>
   </div>
+  <div class="travel-view">
   <div class="panel-sub">Click the map or search a location to see how far you can travel</div>
   <div class="section-label">Travel mode</div>
   <div class="modes">
@@ -296,6 +317,7 @@
     <div class="suggestions" id="sugg"></div>
   </div>
   <div class="status" id="st">Click anywhere on the map to start</div>
+  </div>
 </div>
 <div class="coord-display" id="coords">51.4871°N, 0.0371°E</div>
 
@@ -326,6 +348,19 @@ function toggleSidebar() {
   var showBtn = document.getElementById('show-btn');
   var collapsed = panel.classList.toggle('collapsed');
   showBtn.classList.toggle('hidden', !collapsed);
+  if (!collapsed && window.matchMedia('(max-width: 768px)').matches) {
+    showMenuView();
+  }
+}
+function showMenuView() {
+  var panel = document.querySelector('.panel');
+  panel.classList.add('view-menu');
+  panel.classList.remove('view-travel');
+}
+function showTravelView() {
+  var panel = document.querySelector('.panel');
+  panel.classList.add('view-travel');
+  panel.classList.remove('view-menu');
 }
 if (window.matchMedia('(max-width: 768px)').matches) {
   document.querySelector('.panel').classList.add('collapsed');
