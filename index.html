@@ -88,9 +88,11 @@
   .leaflet-control-attribution a { color: var(--attrib-link) !important; }
   .coord-display { position: absolute; bottom: 28px; left: 16px; z-index: 1000; font-size: 11px; color: var(--text-dim); background: var(--coord-bg); padding: 4px 10px; border-radius: 8px; backdrop-filter: blur(8px); font-variant-numeric: tabular-nums; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-  @media (max-width: 600px) {
+  @media (max-width: 768px) {
     .panel { width: calc(100% - 24px); left: 12px; right: 12px; top: auto; bottom: 12px; padding: 16px; border-radius: 14px; max-height: 70vh; overflow-y: auto; }
     .panel.collapsed { transform: translateY(calc(100% + 24px)); }
+    .show-btn { top: auto; bottom: 16px; left: 50%; transform: translateX(-50%); }
+    .show-btn.hidden { transform: translate(-50%, 20px); }
   }
 </style>
 </head>
