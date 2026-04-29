@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>How far can you go? — Travel time map</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a0a0a'/%3E%3Cpath d='M16 8a6 6 0 0 0-6 6c0 4.5 6 10 6 10s6-5.5 6-10a6 6 0 0 0-6-6zm0 8.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z' fill='%232ecc71'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
@@ -47,6 +47,7 @@
   .show-btn:hover { color: var(--text); }
   .show-btn.hidden { opacity: 0; pointer-events: none; transform: translateX(-20px); }
   .show-btn svg { width: 18px; height: 18px; }
+  .show-btn .chev-up { display: none; }
   .panel-sub { font-size: 12px; color: var(--text-dim); margin-bottom: 20px; line-height: 1.4; }
   .section-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--text-faint); margin-bottom: 8px; }
   .modes { display: flex; gap: 6px; margin-bottom: 18px; }
@@ -93,6 +94,10 @@
     .panel.collapsed { transform: translateY(calc(100% + 24px)); }
     .show-btn { top: auto; bottom: 16px; left: 50%; transform: translateX(-50%); }
     .show-btn.hidden { transform: translate(-50%, 20px); }
+    .show-btn .chev-right { display: none; }
+    .show-btn .chev-up { display: inline; }
+    .coord-display { display: none; }
+    .leaflet-top { padding-top: env(safe-area-inset-top, 12px); }
   }
 </style>
 </head>
@@ -100,7 +105,8 @@
 <div id="map"></div>
 <button id="show-btn" class="show-btn hidden" onclick="toggleSidebar()" title="Show sidebar" aria-label="Show sidebar">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <polyline points="9 18 15 12 9 6"/>
+    <polyline class="chev-right" points="9 18 15 12 9 6"/>
+    <polyline class="chev-up" points="6 15 12 9 18 15"/>
   </svg>
 </button>
 <div class="panel">
