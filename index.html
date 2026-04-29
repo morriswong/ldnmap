@@ -127,15 +127,15 @@
       -webkit-backdrop-filter: blur(40px) saturate(180%);
       border: 1px solid var(--glass-border);
       box-shadow: inset 0 1px 0 0 var(--glass-highlight), 0 8px 24px rgba(0,0,0,0.18);
-      justify-content: space-between; gap: 12px;
+      justify-content: center; gap: 0;
       transition: opacity 0.3s, transform 0.3s, background 0.3s;
     }
     .show-btn.hidden { transform: translate(-50%, 24px); }
     .show-btn:active { transform: translate(-50%, 1px) scale(0.97); }
     .show-btn .chev-right { display: none; }
-    .show-btn .chev-up { display: inline; }
+    .show-btn .chev-up { display: none; }
+    .show-btn svg { display: none; }
     .show-btn .explore-label { display: inline; font-size: 14px; font-weight: 500; color: var(--text); letter-spacing: -0.1px; }
-    .show-btn svg { width: 14px; height: 14px; flex-shrink: 0; opacity: 0.7; margin-left: 8px; }
     .theme-fab {
       display: flex; position: absolute; top: 12px; left: 12px; z-index: 1000;
       width: 40px; height: 40px; border-radius: 20px;
