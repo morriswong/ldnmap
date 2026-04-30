@@ -16,6 +16,9 @@ jobs:
       - name: Inject Mapbox token
         run: sed -i 's/__MAPBOX_TOKEN__/${{ secrets.MAPBOX_TOKEN }}/g' index.html
 
+      - name: Inject OS token
+        run: sed -i 's/__OS_TOKEN__/${{ secrets.OS_TOKEN }}/g' index.html
+
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
