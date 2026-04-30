@@ -393,6 +393,20 @@ if (window.visualViewport) {
   window.visualViewport.addEventListener('scroll', syncAppHeight);
 }
 
+// Proactively cap panel height on input focus so the panel is already
+// constrained when iOS opens the keyboard (fires before visualViewport.resize)
+document.querySelectorAll('.panel .sinput').forEach(function(el) {
+  el.addEventListener('focus', function() {
+    if (window.matchMedia('(max-width: 768px)').matches) {
+      document.documentElement.style.setProperty('--panel-max-h', Math.floor(window.innerHeight * 0.45) + 'px');
+    }
+  });
+  el.addEventListener('blur', function() {
+    document.documentElement.style.removeProperty('--panel-max-h');
+    syncAppHeight();
+  });
+});
+
 var map = L.map('map', { zoomControl: false }).setView([51.4871, 0.0371], 13);
 L.control.zoom({ position: 'topright' }).addTo(map);
 
