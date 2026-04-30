@@ -201,6 +201,7 @@
       background: var(--soon-badge-bg); color: var(--soon-badge-text);
       text-transform: uppercase;
     }
+    .sinput { font-size: 16px; }
     .panel.view-menu .travel-view { display: none; }
     .panel.view-menu .postcode-view { display: none; }
     .panel.view-travel .mode-grid { display: none; }
@@ -435,7 +436,10 @@ function searchPostcode() {
     })
     .catch(function(e) {
       statusEl.className = 'status error';
-      statusEl.textContent = 'Error: ' + e.message;
+      var msg = e.message || '';
+      statusEl.textContent = (msg.toLowerCase().includes('load') || msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('network'))
+        ? 'Network error — OS API key may not be configured yet.'
+        : 'Error: ' + msg;
     });
 }
 function renderPostcode(geo, pc, statusEl) {
