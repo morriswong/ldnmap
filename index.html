@@ -107,6 +107,18 @@
   .mode-grid { display: none; }
   .back-btn { display: none; }
   .postcode-view { display: none; }
+  .mode-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+  .mode-tab {
+    flex: 1; padding: 9px 0; border: 1px solid var(--btn-border); border-radius: 10px;
+    background: transparent; color: var(--mbtn-text); font-family: 'DM Sans', sans-serif;
+    font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s ease;
+  }
+  .mode-tab.on {
+    background: var(--btn-on-bg); color: var(--btn-on-text);
+    border-color: var(--btn-on-border); font-weight: 600;
+  }
+  .panel.view-postcode .postcode-view { display: block; }
+  .panel.view-postcode .travel-view { display: none; }
   .pc-search-wrap { display: flex; gap: 8px; align-items: center; }
   .pc-search-btn {
     flex-shrink: 0; font: inherit; font-size: 13px; font-weight: 500;
@@ -202,12 +214,11 @@
       text-transform: uppercase;
     }
     .sinput { font-size: 16px; }
+    .mode-tabs { display: none; }
     .panel.view-menu .travel-view { display: none; }
     .panel.view-menu .postcode-view { display: none; }
     .panel.view-travel .mode-grid { display: none; }
     .panel.view-postcode .mode-grid { display: none; }
-    .panel.view-postcode .travel-view { display: none; }
-    .panel.view-postcode .postcode-view { display: block; }
     .panel.view-travel .back-btn,
     .panel.view-postcode .back-btn {
       display: inline-flex; align-items: center; gap: 4px;
@@ -307,6 +318,10 @@
       <span class="soon-badge">Soon</span>
     </button>
   </div>
+  <div class="mode-tabs">
+    <button class="mode-tab on" data-tab="travel" onclick="showTravelView()">Travel time</button>
+    <button class="mode-tab" data-tab="postcode" onclick="showPostcodeView()">Postcode</button>
+  </div>
   <div class="travel-view">
   <div class="panel-sub">Click the map or search a location to see how far you can travel</div>
   <div class="section-label">Travel mode</div>
@@ -394,13 +409,18 @@ function showMenuView() {
 function showTravelView() {
   var panel = document.querySelector('.panel');
   panel.classList.add('view-travel');
-  panel.classList.remove('view-menu');
+  panel.classList.remove('view-menu', 'view-postcode');
+  document.querySelectorAll('.mode-tab').forEach(function(b) {
+    b.classList.toggle('on', b.dataset.tab === 'travel');
+  });
 }
 function showPostcodeView() {
   var panel = document.querySelector('.panel');
   panel.classList.add('view-postcode');
-  panel.classList.remove('view-menu');
-  panel.classList.remove('view-travel');
+  panel.classList.remove('view-menu', 'view-travel');
+  document.querySelectorAll('.mode-tab').forEach(function(b) {
+    b.classList.toggle('on', b.dataset.tab === 'postcode');
+  });
 }
 function searchPostcode() {
   var pc = document.getElementById('pc-input').value.trim().toUpperCase();
@@ -457,6 +477,8 @@ function renderPostcode(geo, pc, statusEl) {
 if (window.matchMedia('(max-width: 768px)').matches) {
   document.querySelector('.panel').classList.add('collapsed');
   document.getElementById('show-btn').classList.remove('hidden');
+} else {
+  showTravelView();
 }
 function initTile() {
   var style = isDark ? 'dark-v11' : 'streets-v12';
