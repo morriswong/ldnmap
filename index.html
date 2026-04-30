@@ -132,7 +132,7 @@
   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
   @media (max-width: 768px) {
     .panel {
-      width: calc(100% - 16px); left: 8px; right: 8px; top: auto; bottom: 8px;
+      width: calc(100% - 16px); left: 8px; right: 8px; top: auto; bottom: var(--panel-bottom, 8px);
       padding: 18px 18px 22px; border-radius: 24px;
       max-height: calc(var(--app-h, 100dvh) - 16px);
       overflow-y: auto; overscroll-behavior: contain;
@@ -375,8 +375,13 @@ var COLORS = ['#2ecc71','#3498db','#f39c12','#e74c3c'];
 var MINS = [5,10,15,20];
 
 function syncAppHeight() {
-  var h = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+  var vv = window.visualViewport;
+  var h = (vv && vv.height) || window.innerHeight;
   document.documentElement.style.setProperty('--app-h', h + 'px');
+  if (vv && window.matchMedia('(max-width: 768px)').matches) {
+    var panelBottom = window.innerHeight - vv.offsetTop - vv.height + 8;
+    document.documentElement.style.setProperty('--panel-bottom', Math.max(8, panelBottom) + 'px');
+  }
 }
 syncAppHeight();
 window.addEventListener('resize', syncAppHeight);
