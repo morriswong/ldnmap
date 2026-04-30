@@ -134,7 +134,7 @@
     .panel {
       width: calc(100% - 16px); left: 8px; right: 8px; top: auto; bottom: var(--panel-bottom, 8px);
       padding: 18px 18px 22px; border-radius: 24px;
-      max-height: calc(var(--app-h, 100dvh) - 16px);
+      max-height: var(--panel-max-h, calc(var(--app-h, 100dvh) - 16px));
       overflow-y: auto; overscroll-behavior: contain;
       background: var(--glass-sheet-bg);
       backdrop-filter: blur(40px) saturate(180%);
@@ -381,6 +381,9 @@ function syncAppHeight() {
   if (vv && window.matchMedia('(max-width: 768px)').matches) {
     var panelBottom = window.innerHeight - vv.offsetTop - vv.height + 8;
     document.documentElement.style.setProperty('--panel-bottom', Math.max(8, panelBottom) + 'px');
+    var keyboardOpen = vv.height < window.innerHeight * 0.75;
+    var maxH = keyboardOpen ? Math.floor(vv.height * 0.52) : (h - 16);
+    document.documentElement.style.setProperty('--panel-max-h', maxH + 'px');
   }
 }
 syncAppHeight();
