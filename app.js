@@ -2,6 +2,7 @@ var MAPBOX_TOKEN = '__MAPBOX_TOKEN__';
 var OS_TOKEN = '__OS_TOKEN__';
 var COLORS = ['#2ecc71','#3498db','#f39c12','#e74c3c'];
 var MINS = [5,10,15,20];
+var PC_RE = /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i;
 
 function syncAppHeight() {
   var vv = window.visualViewport;
@@ -33,21 +34,16 @@ function setState(newState) {
   }
 }
 
-function searchPostcode() {
-  var pcEl = document.getElementById('pc-input');
-  if (!pcEl) return;
-  var pc = pcEl.value.trim().toUpperCase();
+function searchPostcode(pc) {
+  pc = pc.trim().toUpperCase();
   if (!pc) return;
-  var statusEl = document.getElementById('pc-status');
-  if (!statusEl) return;
-  statusEl.className = 'status';
-  statusEl.textContent = 'Fetching ' + pc + '…';
+  setStatus('Fetching ' + pc + '…');
 
   var cached = localStorage.getItem('pc:' + pc);
   if (cached) {
     var entry = JSON.parse(cached);
     if (Date.now() - entry.ts < 30 * 24 * 60 * 60 * 1000) {
-      renderPostcode(entry.geojson, pc, statusEl); return;
+      renderPostcode(entry.geojson, pc); return;
     }
   }
 
@@ -61,32 +57,29 @@ function searchPostcode() {
     })
     .then(function(geo) {
       if (!geo.features || geo.features.length === 0) {
-        statusEl.className = 'status error';
-        statusEl.textContent = pc + ' has no polygon — likely a Large User postcode (e.g. a venue or hospital).';
+        setStatus(pc + ' has no polygon — likely a Large User postcode.', true);
         return;
       }
       try { localStorage.setItem('pc:' + pc, JSON.stringify({ geojson: geo, ts: Date.now() })); } catch(e) {}
-      renderPostcode(geo, pc, statusEl);
+      renderPostcode(geo, pc);
     })
     .catch(function(e) {
-      statusEl.className = 'status error';
       var msg = e.message || '';
-      statusEl.textContent = (msg.toLowerCase().includes('load') || msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('network'))
+      setStatus((msg.toLowerCase().includes('load') || msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('network'))
         ? 'Network error — OS API key may not be configured yet.'
-        : 'Error: ' + msg;
+        : 'Error: ' + msg, true);
     });
 }
-function renderPostcode(geo, pc, statusEl) {
+function renderPostcode(geo, pc) {
   if (postcodeLayer) { map.removeLayer(postcodeLayer); }
   postcodeLayer = L.geoJSON(geo, {
     style: { color: '#8b5cf6', weight: 2.5, fillColor: '#8b5cf6', fillOpacity: 0.18 }
   }).addTo(map);
   map.fitBounds(postcodeLayer.getBounds(), { padding: [24, 24], maxZoom: 16 });
   var props = geo.features[0].properties;
-  statusEl.className = 'status ok';
-  statusEl.textContent = pc + ' · ' + props.postcodetype + ' · '
+  setStatus(pc + ' · ' + props.postcodetype + ' · '
     + props.postcodedeliverypointcount_total + ' delivery points · '
-    + geo.features.length + ' polygon part' + (geo.features.length > 1 ? 's' : '');
+    + geo.features.length + ' polygon part' + (geo.features.length > 1 ? 's' : ''));
 }
 
 setState('idle');
@@ -141,6 +134,7 @@ var sessionToken = (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(
 var suggestTimer = null;
 var currentSuggestions = [];
 var activeIdx = -1;
+var pendingPostcode = null;
 
 var overlayInput = document.getElementById('overlay-input');
 var overlaySugg = document.getElementById('overlay-sugg');
@@ -148,12 +142,13 @@ var overlayEl = document.getElementById('search-overlay');
 var suggBox = overlaySugg;
 
 function closeSugg() { activeIdx = -1; }
-function openSugg() { if (currentSuggestions.length) renderSuggestions(); }
+function openSugg() { if (currentSuggestions.length || pendingPostcode) renderSuggestions(); }
 
 function openSearchOverlay() {
   setState('search');
   overlayInput.value = '';
-  overlayInput.placeholder = 'Search a place…';
+  overlayInput.placeholder = 'Search a place or postcode…';
+  pendingPostcode = null;
   currentSuggestions = [];
   overlaySugg.innerHTML = '';
   requestAnimationFrame(function() {
@@ -165,20 +160,35 @@ function openSearchOverlay() {
 function closeSearchOverlay() {
   overlayInput.blur();
   overlayEl.classList.remove('open');
+  pendingPostcode = null;
   currentSuggestions = [];
   overlaySugg.innerHTML = '';
   setState('idle');
 }
 
+function formatPostcode(raw) {
+  var s = raw.replace(/\s+/g, '').toUpperCase();
+  return s.slice(0, -3) + ' ' + s.slice(-3);
+}
+
 function renderSuggestions() {
   suggBox.innerHTML = '';
-  currentSuggestions.forEach(function(s, i) {
+  var items = getMergedItems();
+
+  items.forEach(function(s, i) {
     var item = document.createElement('div');
     item.className = 'sugg-item' + (i === activeIdx ? ' active' : '');
-    item.innerHTML = '<div class="sugg-name"></div><div class="sugg-addr"></div>';
-    item.querySelector('.sugg-name').textContent = s.name;
-    item.querySelector('.sugg-addr').textContent = s.place_formatted || s.full_address || '';
-    item.addEventListener('mousedown', function(e) { e.preventDefault(); selectSuggestion(i); });
+    if (s.type === 'postcode') {
+      item.className += ' sugg-postcode';
+      item.innerHTML = '<div class="sugg-name"><span class="sugg-pc-icon">▣</span> </div><div class="sugg-addr"></div>';
+      item.querySelector('.sugg-name').appendChild(document.createTextNode(s.name));
+      item.querySelector('.sugg-addr').textContent = 'UK postcode boundary';
+    } else {
+      item.innerHTML = '<div class="sugg-name"></div><div class="sugg-addr"></div>';
+      item.querySelector('.sugg-name').textContent = s.name;
+      item.querySelector('.sugg-addr').textContent = s.place_formatted || s.full_address || '';
+    }
+    item.addEventListener('mousedown', function(e) { e.preventDefault(); selectSuggestionFromList(i, items); });
     suggBox.appendChild(item);
   });
 }
@@ -203,9 +213,19 @@ async function fetchSuggest(q) {
   }
 }
 
-async function selectSuggestion(i) {
-  var s = currentSuggestions[i];
+function selectSuggestionFromList(i, items) {
+  var s = items[i];
   if (!s) return;
+  if (s.type === 'postcode') {
+    closeSearchOverlay();
+    searchPostcode(s.postcode);
+    return;
+  }
+  selectSuggestion(s);
+}
+
+async function selectSuggestion(s) {
+  if (!s || !s.mapbox_id) return;
   closeSearchOverlay();
   setStatus('Loading…');
   try {
@@ -228,16 +248,32 @@ document.getElementById('search-back-btn').addEventListener('click', closeSearch
 overlayInput.addEventListener('input', function() {
   var q = overlayInput.value.trim();
   clearTimeout(suggestTimer);
-  if (!q) { currentSuggestions = []; overlaySugg.innerHTML = ''; return; }
+  if (!q) { pendingPostcode = null; currentSuggestions = []; overlaySugg.innerHTML = ''; return; }
+  pendingPostcode = PC_RE.test(q) ? formatPostcode(q) : null;
+  if (pendingPostcode) renderSuggestions();
   suggestTimer = setTimeout(function() { fetchSuggest(q); }, 180);
 });
 
+function getMergedItems() {
+  var items = [];
+  if (pendingPostcode) {
+    items.push({ type: 'postcode', postcode: pendingPostcode, name: pendingPostcode + ' · Show boundary' });
+  }
+  var pcNorm = pendingPostcode ? pendingPostcode.replace(/\s+/g, '').toUpperCase() : null;
+  currentSuggestions.forEach(function(s) {
+    if (pcNorm && s.name && s.name.replace(/\s+/g, '').toUpperCase() === pcNorm) return;
+    items.push(s);
+  });
+  return items;
+}
+
 overlayInput.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') { closeSearchOverlay(); return; }
-  if (!currentSuggestions.length) return;
+  var items = getMergedItems();
+  if (!items.length) return;
   if (e.key === 'ArrowDown') {
     e.preventDefault();
-    activeIdx = Math.min(activeIdx + 1, currentSuggestions.length - 1);
+    activeIdx = Math.min(activeIdx + 1, items.length - 1);
     renderSuggestions();
   } else if (e.key === 'ArrowUp') {
     e.preventDefault();
@@ -245,7 +281,7 @@ overlayInput.addEventListener('keydown', function(e) {
     renderSuggestions();
   } else if (e.key === 'Enter') {
     e.preventDefault();
-    selectSuggestion(activeIdx >= 0 ? activeIdx : 0);
+    selectSuggestionFromList(activeIdx >= 0 ? activeIdx : 0, items);
   }
 });
 

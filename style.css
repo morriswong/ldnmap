@@ -76,6 +76,8 @@
   .sugg-item:hover, .sugg-item.active { background: var(--input-focus-bg); }
   .sugg-name { font-size: 13px; color: var(--text); }
   .sugg-addr { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .sugg-postcode { border-left: 3px solid #8b5cf6; }
+  .sugg-pc-icon { color: #8b5cf6; font-size: 14px; margin-right: 4px; }
   .status { margin-top: 14px; font-size: 11px; color: var(--text-dim); text-align: center; line-height: 1.4; }
   .status.error { color: #e74c3c; }
   .status.ok { color: #059669; }
