@@ -109,11 +109,13 @@ var isoLayers = [];
 var mode = 'walking';
 var center = null;
 var postcodeLayer = null;
+var pendingPlace = null;
+var lastSearchQuery = '';
 
-function placeDefaultMarker() {
-  var lat = 51.5007, lng = -0.1246;
+function placeMarker(lat, lng) {
+  if (marker) map.removeLayer(marker);
   var markerFill = isDark ? '#fff' : '#1a1a1a';
-  var markerRing = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.9)';
+  var markerRing = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.3)';
   marker = L.circleMarker([lat, lng], {
     radius: 6, fillColor: markerFill, fillOpacity: 1,
     color: markerRing, weight: 8
@@ -124,10 +126,52 @@ map.on('mousemove', function(e) {
   document.getElementById('coords').textContent = e.latlng.lat.toFixed(4) + '°N, ' + e.latlng.lng.toFixed(4) + '°E';
 });
 
-function pick(m) {
-  mode = m;
-  document.querySelectorAll('.mbtn').forEach(function(b) { b.classList.toggle('on', b.dataset.m === m); });
-  if (center) run(center[0], center[1]);
+function showModePicker() {
+  if (!pendingPlace) return;
+  document.getElementById('mp-name').textContent = pendingPlace.name;
+  document.getElementById('mp-addr').textContent = pendingPlace.address;
+  var pcTile = document.getElementById('tile-postcode');
+  if (pcTile) {
+    pcTile.disabled = !pendingPlace.postcode;
+    pcTile.classList.toggle('mode-tile-soon', !pendingPlace.postcode);
+  }
+  setState('modepicker');
+}
+
+function activateMode(modeKey) {
+  if (!pendingPlace) return;
+  if (modeKey === 'walking' || modeKey === 'cycling' || modeKey === 'driving') {
+    mode = modeKey;
+    run(pendingPlace.lng, pendingPlace.lat, pendingPlace.name);
+  } else if (modeKey === 'postcode' && pendingPlace.postcode) {
+    searchPostcode(pendingPlace.postcode);
+  }
+  closeModePicker();
+}
+
+function closeModePicker() {
+  pendingPlace = null;
+  setState('idle');
+}
+
+function modePickerBack() {
+  if (marker) { map.removeLayer(marker); marker = null; }
+  openSearchOverlay();
+  var q = lastSearchQuery.trim();
+  overlayInput.value = lastSearchQuery;
+  if (q) {
+    pendingPostcode = PC_RE.test(q) ? formatPostcode(q) : null;
+    fetchSuggest(q);
+  }
+  pendingPlace = null;
+}
+
+function modePickerClose() {
+  if (marker) { map.removeLayer(marker); marker = null; }
+  isoLayers.forEach(function(l) { map.removeLayer(l); });
+  isoLayers = [];
+  pendingPlace = null;
+  setState('idle');
 }
 
 var sessionToken = (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(36).slice(2);
@@ -226,6 +270,7 @@ function selectSuggestionFromList(i, items) {
 
 async function selectSuggestion(s) {
   if (!s || !s.mapbox_id) return;
+  lastSearchQuery = overlayInput.value;
   closeSearchOverlay();
   setStatus('Loading…');
   try {
@@ -235,9 +280,14 @@ async function selectSuggestion(s) {
     var d = await r.json();
     if (d.features && d.features.length) {
       var c = d.features[0].geometry.coordinates;
-      var label = d.features[0].properties.full_address || s.name;
-      map.flyTo([c[1], c[0]], 13, { duration: 1.5 });
-      run(c[0], c[1], label);
+      var props = d.features[0].properties;
+      var name = s.name || props.name || '';
+      var address = props.full_address || s.place_formatted || '';
+      pendingPlace = { lng: c[0], lat: c[1], name: name, address: address, postcode: null };
+      map.flyTo([c[1], c[0]], 14, { duration: 1.5 });
+      placeMarker(c[1], c[0]);
+      setStatus(name);
+      showModePicker();
       sessionToken = (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(36).slice(2);
     } else { setStatus('Could not load that location', true); }
   } catch (e) { setStatus('Search failed', true); }
@@ -288,11 +338,7 @@ overlayInput.addEventListener('keydown', function(e) {
 async function run(lng, lat, label) {
   center = [lng, lat];
   setStatus('Loading isochrones…');
-
-  if (marker) map.removeLayer(marker);
-  var markerFill = isDark ? '#fff' : '#1a1a1a';
-  var markerRing = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.3)';
-  marker = L.circleMarker([lat, lng], { radius: 6, fillColor: markerFill, fillOpacity: 1, color: markerRing, weight: 8 }).addTo(map);
+  placeMarker(lat, lng);
 
   isoLayers.forEach(function(l) { map.removeLayer(l); });
   isoLayers = [];
