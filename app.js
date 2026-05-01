@@ -77,9 +77,17 @@ function renderPostcode(geo, pc) {
   }).addTo(map);
   map.fitBounds(postcodeLayer.getBounds(), { padding: [24, 24], maxZoom: 16 });
   var props = geo.features[0].properties;
-  setStatus(pc + ' · ' + props.postcodetype + ' · '
+  var info = props.postcodetype + ' · '
     + props.postcodedeliverypointcount_total + ' delivery points · '
-    + geo.features.length + ' polygon part' + (geo.features.length > 1 ? 's' : ''));
+    + geo.features.length + ' polygon part' + (geo.features.length > 1 ? 's' : '');
+  setStatus(info);
+  var pcStEl = document.getElementById('pc-st');
+  if (pcStEl) pcStEl.textContent = info;
+  var boundsCenter = postcodeLayer.getBounds().getCenter();
+  if (pendingPlace && pendingPlace.postcode) {
+    pendingPlace.lat = boundsCenter.lat;
+    pendingPlace.lng = boundsCenter.lng;
+  }
 }
 
 setState('idle');
@@ -142,14 +150,63 @@ function activateMode(modeKey) {
   if (!pendingPlace) return;
   if (modeKey === 'walking' || modeKey === 'cycling' || modeKey === 'driving') {
     mode = modeKey;
+    updateModeButtons();
+    setState('travel');
     run(pendingPlace.lng, pendingPlace.lat, pendingPlace.name);
   } else if (modeKey === 'postcode' && pendingPlace.postcode) {
+    document.getElementById('pc-label').textContent = pendingPlace.postcode;
+    setState('postcode');
     searchPostcode(pendingPlace.postcode);
   }
-  closeModePicker();
 }
 
 function closeModePicker() {
+  pendingPlace = null;
+  setState('idle');
+}
+
+function pickMode(m) {
+  if (!pendingPlace) return;
+  mode = m;
+  updateModeButtons();
+  isoLayers.forEach(function(l) { map.removeLayer(l); });
+  isoLayers = [];
+  run(pendingPlace.lng, pendingPlace.lat, pendingPlace.name);
+}
+
+function updateModeButtons() {
+  ['walking', 'cycling', 'driving'].forEach(function(m) {
+    var btn = document.getElementById('btn-' + m);
+    if (btn) btn.classList.toggle('active', m === mode);
+  });
+}
+
+function changeMode() {
+  isoLayers.forEach(function(l) { map.removeLayer(l); });
+  isoLayers = [];
+  if (postcodeLayer) { map.removeLayer(postcodeLayer); postcodeLayer = null; }
+  MINS.forEach(function(m) {
+    var el = document.getElementById('a' + m);
+    if (el) { el.textContent = '—'; el.classList.add('empty'); }
+  });
+  showModePicker();
+}
+
+function closeTravelCard() {
+  if (marker) { map.removeLayer(marker); marker = null; }
+  isoLayers.forEach(function(l) { map.removeLayer(l); });
+  isoLayers = [];
+  MINS.forEach(function(m) {
+    var el = document.getElementById('a' + m);
+    if (el) { el.textContent = '—'; el.classList.add('empty'); }
+  });
+  pendingPlace = null;
+  setState('idle');
+}
+
+function closePostcodeChip() {
+  if (marker) { map.removeLayer(marker); marker = null; }
+  if (postcodeLayer) { map.removeLayer(postcodeLayer); postcodeLayer = null; }
   pendingPlace = null;
   setState('idle');
 }
@@ -262,6 +319,9 @@ function selectSuggestionFromList(i, items) {
   if (!s) return;
   if (s.type === 'postcode') {
     closeSearchOverlay();
+    document.getElementById('pc-label').textContent = s.postcode;
+    pendingPlace = { lng: 0, lat: 0, name: s.postcode, address: 'UK postcode boundary', postcode: s.postcode };
+    setState('postcode');
     searchPostcode(s.postcode);
     return;
   }
@@ -396,7 +456,12 @@ function ringArea(rings) {
 function rad(d) { return d * Math.PI / 180; }
 function setStatus(msg, isError) {
   var el = document.getElementById('st');
-  if (!el) return;
-  el.textContent = msg;
-  el.className = 'status' + (isError ? ' error' : '');
+  if (el) {
+    el.textContent = msg;
+    el.className = 'travel-card-title' + (isError ? ' error' : '');
+  }
+  var pcEl = document.getElementById('pc-st');
+  if (pcEl && appState === 'postcode') {
+    pcEl.textContent = msg;
+  }
 }

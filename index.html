@@ -34,6 +34,53 @@
   <div class="search-overlay-list" id="overlay-sugg"></div>
 </div>
 <div class="coord-display" id="coords">51.5007°N, 0.1246°W</div>
+
+<div id="travel-card" class="travel-card">
+  <div class="travel-card-header">
+    <button class="travel-card-btn" onclick="changeMode()" aria-label="Change mode">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+    </button>
+    <div class="travel-card-title" id="st">Loading…</div>
+    <button class="travel-card-btn" onclick="closeTravelCard()" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 6L6 18M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+  <div class="travel-modes">
+    <button class="travel-mode-btn active" id="btn-walking" onclick="pickMode('walking')">Walk</button>
+    <button class="travel-mode-btn" id="btn-cycling" onclick="pickMode('cycling')">Cycle</button>
+    <button class="travel-mode-btn" id="btn-driving" onclick="pickMode('driving')">Drive</button>
+  </div>
+  <div class="travel-slots">
+    <div class="travel-slot"><div class="travel-slot-min">5 min</div><div class="travel-slot-area" id="a5">—</div></div>
+    <div class="travel-slot"><div class="travel-slot-min">10 min</div><div class="travel-slot-area" id="a10">—</div></div>
+    <div class="travel-slot"><div class="travel-slot-min">15 min</div><div class="travel-slot-area" id="a15">—</div></div>
+    <div class="travel-slot"><div class="travel-slot-min">20 min</div><div class="travel-slot-area" id="a20">—</div></div>
+  </div>
+</div>
+
+<div id="postcode-chip" class="postcode-chip">
+  <div class="postcode-chip-header">
+    <button class="travel-card-btn" onclick="changeMode()" aria-label="Change mode">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+    </button>
+    <div class="postcode-chip-info">
+      <div class="postcode-chip-label" id="pc-label"></div>
+      <div class="postcode-chip-status" id="pc-st"></div>
+    </div>
+    <button class="travel-card-btn" onclick="closePostcodeChip()" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 6L6 18M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+  <div class="postcode-chip-attrib">© OS data © Crown copyright 2025</div>
+</div>
 <div id="mode-picker" class="mode-picker">
   <div class="mode-picker-header">
     <button class="mode-picker-back" onclick="modePickerBack()" aria-label="Back to search">
