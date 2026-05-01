@@ -68,6 +68,7 @@
   .dot { width: 8px; height: 8px; border-radius: 50%; margin: 0 auto 7px; box-shadow: 0 0 8px currentColor; }
   .slot-label { font-size: 10px; color: var(--text-dim); margin-bottom: 3px; }
   .slot-val { font-size: 14px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+  .slot-val.empty { opacity: 0.4; }
   .divider { height: 1px; background: var(--divider); margin: 2px 0 14px; }
   .sinput { width: 100%; padding: 10px 12px; border: 1px solid var(--btn-border); border-radius: 10px; background: var(--input-bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; margin-bottom: 8px; transition: all 0.2s; }
   .sinput::placeholder { color: var(--input-placeholder); }
