@@ -83,6 +83,11 @@ function renderPostcode(geo, pc) {
   setStatus(info);
   var pcStEl = document.getElementById('pc-st');
   if (pcStEl) pcStEl.textContent = info;
+  var boundsCenter = postcodeLayer.getBounds().getCenter();
+  if (pendingPlace && pendingPlace.postcode) {
+    pendingPlace.lat = boundsCenter.lat;
+    pendingPlace.lng = boundsCenter.lng;
+  }
 }
 
 setState('idle');
