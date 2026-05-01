@@ -236,6 +236,7 @@ var suggestTimer = null;
 var currentSuggestions = [];
 var activeIdx = -1;
 var pendingPostcode = null;
+var preSearchState = null;
 
 var overlayInput = document.getElementById('overlay-input');
 var overlaySugg = document.getElementById('overlay-sugg');
@@ -246,6 +247,7 @@ function closeSugg() { activeIdx = -1; }
 function openSugg() { if (currentSuggestions.length || pendingPostcode) renderSuggestions(); }
 
 function openSearchOverlay() {
+  preSearchState = appState;
   setState('search');
   overlayInput.value = '';
   overlayInput.placeholder = 'Search a place or postcode…';
@@ -264,7 +266,12 @@ function closeSearchOverlay() {
   pendingPostcode = null;
   currentSuggestions = [];
   overlaySugg.innerHTML = '';
-  setState('idle');
+  if (preSearchState === 'modepicker' && pendingPlace) {
+    setState('modepicker');
+  } else {
+    setState('idle');
+  }
+  preSearchState = null;
 }
 
 function formatPostcode(raw) {
@@ -296,8 +303,9 @@ function renderSuggestions() {
 
 async function fetchSuggest(q) {
   try {
+    var mc = map.getCenter();
     var url = 'https://api.mapbox.com/search/searchbox/v1/suggest?q=' + encodeURIComponent(q)
-      + '&language=en&country=gb&proximity=-0.0371,51.4871&limit=6'
+      + '&language=en&country=gb&proximity=' + mc.lng.toFixed(4) + ',' + mc.lat.toFixed(4) + '&limit=6'
       + '&session_token=' + sessionToken
       + '&access_token=' + MAPBOX_TOKEN;
     var r = await fetch(url);
