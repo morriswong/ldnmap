@@ -4,28 +4,34 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-`ldnmap` is a single-file static web app that visualises travel-time isochrones ("how far can you go?") on a Leaflet map. The entire app lives in `index.html` — HTML, CSS, and JS in one file. There is no build step, no package.json, no bundler.
+`ldnmap` is a static web app that visualises travel-time isochrones ("how far can you go?") on a Leaflet map. There is no build step, no package.json, no bundler.
 
 ## Architecture
 
-Single file: `index.html` (~370 lines).
+Three files, all served statically:
+
+- **`index.html`** — HTML structure, CDN links, `<link>` to `style.css`, `<script src="app.js">` at bottom of `<body>`
+- **`style.css`** — all CSS: `:root` variables, layout, responsive rules, theme, glass effects
+- **`app.js`** — all JavaScript: map init, isochrone logic, search, UI state, event handlers
+
+Key subsystems in `app.js`:
 
 - **Map layer**: Leaflet 1.9.4 (CDN) with Mapbox raster tiles (`streets-v12` for light, `dark-v11` for dark). Tile layer is rebuilt via `initTile()` whenever theme toggles.
 - **Isochrones**: Mapbox Isochrone API (`/isochrone/v1/mapbox/<profile>/...`). Profiles: `walking`, `cycling`, `driving-traffic` (mapped from `driving`). Always requests four contours at `[5, 10, 15, 20]` minutes, colours hard-coded in `COLORS`.
 - **Search**: Mapbox Search Box API — two-step `suggest` → `retrieve` flow, gated by a `sessionToken` (rotated after each successful retrieve, per Mapbox billing model). UK-biased (`country=gb`, `proximity` set to default centre).
 - **Area calculation**: `calcArea` / `ringArea` compute spherical polygon area in km² locally from the returned GeoJSON — does not use a library.
-- **Theme**: `body.light` class toggles a CSS-variable palette defined in `:root` and `body.light`. Default is light mode.
-- **Responsive**: A single `@media (max-width: 768px)` rule repositions the panel from left side to bottom on mobile. Collapse animation direction (`translateX` vs `translateY`) is handled in the same rule.
+- **Theme**: `body.light` class toggles a CSS-variable palette defined in `:root` and `body.light` in `style.css`. Default is light mode.
+- **Responsive**: `@media (max-width: 768px)` rules in `style.css` reposition the panel from left side to bottom on mobile. Collapse animation direction (`translateX` vs `translateY`) is handled in the same rules.
 
-State is held in plain script-level variables (`mode`, `center`, `marker`, `isoLayers`, `isDark`, `tileLayer`). No framework, no module system.
+State is held in plain script-level variables (`mode`, `center`, `marker`, `isoLayers`, `isDark`, `tileLayer`). No framework, no module system. `app.js` must load synchronously at the bottom of `<body>` (no `defer`/`async`/`type="module"`) because it queries the DOM immediately and inline `onclick` handlers reference its global functions.
 
 ## Token injection (important)
 
-`index.html` contains the literal placeholder `__MAPBOX_TOKEN__` (see `var MAPBOX_TOKEN = '__MAPBOX_TOKEN__';`). The GitHub Actions workflow replaces it via `sed` at deploy time using the `MAPBOX_TOKEN` secret. **Never commit a real token.** For local testing, edit the placeholder temporarily and revert before committing.
+`app.js` contains the literal placeholders `__MAPBOX_TOKEN__` and `__OS_TOKEN__`. The GitHub Actions workflow replaces them via `sed` at deploy time using repository secrets. **Never commit a real token.** For local testing, edit the placeholders in `app.js` temporarily and revert before committing.
 
 ## Deploy
 
-Pushing to `main` or `dev` triggers `.github/workflows/deploy.yml`, which injects the Mapbox token and deploys to Cloudflare Pages (project: `ldnmap`, account `a30a1eec7f8eb1e19439a3bc00d47beb`).
+Pushing to `main` or `dev` triggers `.github/workflows/deploy.yml`, which injects tokens into `app.js` and deploys to Cloudflare Pages (project: `ldnmap`, account `a30a1eec7f8eb1e19439a3bc00d47beb`).
 
 - `main` → production at `ldnmap.pages.dev`
 - `dev` → preview at `dev.ldnmap.pages.dev`
@@ -34,7 +40,7 @@ Pushing to `main` or `dev` triggers `.github/workflows/deploy.yml`, which inject
 
 ## Local development
 
-No tooling. Open `index.html` directly in a browser, or serve it (e.g. `python3 -m http.server`) after substituting a real token for `__MAPBOX_TOKEN__`. There are no tests, lints, or type checks.
+No tooling. Serve with `python3 -m http.server` (needed for cross-file loading) after substituting real tokens in `app.js` for `__MAPBOX_TOKEN__` and `__OS_TOKEN__`. There are no tests, lints, or type checks.
 
 ---
 
@@ -60,4 +66,4 @@ Past failures: a one-line "zoom button blocked" complaint cascaded into 4 broken
 - iOS Safari **default `viewport-fit=auto` already keeps content inside the safe area**. `viewport-fit=cover` is a deliberate request to paint *under* the notch (immersive design only) — it is NOT a "turn on safe-area support" switch. Adding it makes content render under the status bar.
 - `env(safe-area-inset-*)` only resolves to non-zero when `viewport-fit=cover` is set. Otherwise it falls back to whatever default you supply (or 0).
 - Leaflet `.leaflet-top` is `position: absolute; top: 0`. Its zoom/control children are also positioned, so `padding-top` on `.leaflet-top` does NOT push them down — change `top` directly instead.
-- Leaflet's zoom control default is `topright`. This app explicitly sets `position: 'topright'` at `index.html:160`. The mobile bottom-sheet panel does NOT overlap the zoom control — they are at opposite corners.
+- Leaflet's zoom control default is `topright`. This app explicitly sets `position: 'topright'` in `app.js`. The mobile bottom-sheet panel does NOT overlap the zoom control — they are at opposite corners.

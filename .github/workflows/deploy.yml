@@ -14,10 +14,10 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Inject Mapbox token
-        run: sed -i 's/__MAPBOX_TOKEN__/${{ secrets.MAPBOX_TOKEN }}/g' index.html
+        run: sed -i 's/__MAPBOX_TOKEN__/${{ secrets.MAPBOX_TOKEN }}/g' app.js
 
       - name: Inject OS token
-        run: sed -i 's/__OS_TOKEN__/${{ secrets.OS_TOKEN }}/g' index.html
+        run: sed -i 's/__OS_TOKEN__/${{ secrets.OS_TOKEN }}/g' app.js
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
