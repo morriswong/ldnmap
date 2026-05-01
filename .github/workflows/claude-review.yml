@@ -1,0 +1,29 @@
+name: Claude Code Review
+
+on:
+  pull_request:
+    branches: [dev]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Run code review
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          claude --print "Review PR #${{ github.event.pull_request.number }} at ${{ github.repository }}. Check for bugs, logic errors, and security issues. Post your review as a PR comment using gh." \
+            --allowedTools "Bash(gh *)" \
+            --allowedTools "Read" \
+            --allowedTools "Grep"
