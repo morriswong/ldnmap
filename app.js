@@ -147,7 +147,6 @@ map.on('mousemove', function(e) {
   document.getElementById('coords').textContent = e.latlng.lat.toFixed(4) + '\u00B0N, ' + e.latlng.lng.toFixed(4) + '\u00B0E';
 });
 
-map.on('click', function(e) { run(e.latlng.lng, e.latlng.lat); });
 
 function pick(m) {
   mode = m;
