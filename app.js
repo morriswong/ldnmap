@@ -2,15 +2,12 @@ var MAPBOX_TOKEN = '__MAPBOX_TOKEN__';
 var OS_TOKEN = '__OS_TOKEN__';
 var COLORS = ['#2ecc71','#3498db','#f39c12','#e74c3c'];
 var MINS = [5,10,15,20];
+var PC_RE = /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i;
 
 function syncAppHeight() {
   var vv = window.visualViewport;
   var h = (vv && vv.height) || window.innerHeight;
   document.documentElement.style.setProperty('--app-h', h + 'px');
-  if (vv && window.matchMedia('(max-width: 768px)').matches) {
-    var panelBottom = window.innerHeight - vv.offsetTop - vv.height + 8;
-    document.documentElement.style.setProperty('--panel-bottom', Math.max(8, panelBottom) + 'px');
-  }
 }
 syncAppHeight();
 window.addEventListener('resize', syncAppHeight);
@@ -24,52 +21,29 @@ L.control.zoom({ position: 'topright' }).addTo(map);
 
 var isDark = false;
 var tileLayer = null;
-function toggleSidebar() {
-  var panel = document.querySelector('.panel');
-  var showBtn = document.getElementById('show-btn');
-  var collapsed = panel.classList.toggle('collapsed');
-  showBtn.classList.toggle('hidden', !collapsed);
-  if (!collapsed && window.matchMedia('(max-width: 768px)').matches) {
-    showMenuView();
+
+var prevState = null;
+var appState = 'idle';
+function setState(newState) {
+  if (newState === appState) return;
+  prevState = appState;
+  appState = newState;
+  document.body.dataset.state = newState;
+  if (location.hostname === 'localhost' || location.port) {
+    console.log('[state] ' + prevState + ' → ' + newState);
   }
 }
-function showMenuView() {
-  var panel = document.querySelector('.panel');
-  panel.classList.add('view-menu');
-  panel.classList.remove('view-travel');
-  panel.classList.remove('view-postcode');
-  if (postcodeLayer) { map.removeLayer(postcodeLayer); postcodeLayer = null; }
-}
-function showTravelView() {
-  var panel = document.querySelector('.panel');
-  panel.classList.add('view-travel');
-  panel.classList.remove('view-menu', 'view-postcode');
-  document.querySelectorAll('.mode-tab').forEach(function(b) {
-    b.classList.toggle('on', b.dataset.tab === 'travel');
-  });
-}
-function showPostcodeView() {
-  var panel = document.querySelector('.panel');
-  panel.classList.add('view-postcode');
-  panel.classList.remove('view-menu', 'view-travel');
-  document.querySelectorAll('.mode-tab').forEach(function(b) {
-    b.classList.toggle('on', b.dataset.tab === 'postcode');
-  });
-}
-function searchPostcode() {
-  var pcEl = document.getElementById('pc-input');
-  var pc = (overlaySourceInput === pcEl ? overlayInput.value : pcEl.value).trim().toUpperCase();
-  if (overlaySourceInput) { pcEl.value = pc; closeSearchOverlay(); }
+
+function searchPostcode(pc) {
+  pc = pc.trim().toUpperCase();
   if (!pc) return;
-  var statusEl = document.getElementById('pc-status');
-  statusEl.className = 'status';
-  statusEl.textContent = 'Fetching ' + pc + '…';
+  setStatus('Fetching ' + pc + '…');
 
   var cached = localStorage.getItem('pc:' + pc);
   if (cached) {
     var entry = JSON.parse(cached);
     if (Date.now() - entry.ts < 30 * 24 * 60 * 60 * 1000) {
-      renderPostcode(entry.geojson, pc, statusEl); return;
+      renderPostcode(entry.geojson, pc); return;
     }
   }
 
@@ -83,39 +57,33 @@ function searchPostcode() {
     })
     .then(function(geo) {
       if (!geo.features || geo.features.length === 0) {
-        statusEl.className = 'status error';
-        statusEl.textContent = pc + ' has no polygon — likely a Large User postcode (e.g. a venue or hospital).';
+        setStatus(pc + ' has no polygon — likely a Large User postcode.', true);
         return;
       }
       try { localStorage.setItem('pc:' + pc, JSON.stringify({ geojson: geo, ts: Date.now() })); } catch(e) {}
-      renderPostcode(geo, pc, statusEl);
+      renderPostcode(geo, pc);
     })
     .catch(function(e) {
-      statusEl.className = 'status error';
       var msg = e.message || '';
-      statusEl.textContent = (msg.toLowerCase().includes('load') || msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('network'))
+      setStatus((msg.toLowerCase().includes('load') || msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('network'))
         ? 'Network error — OS API key may not be configured yet.'
-        : 'Error: ' + msg;
+        : 'Error: ' + msg, true);
     });
 }
-function renderPostcode(geo, pc, statusEl) {
+function renderPostcode(geo, pc) {
   if (postcodeLayer) { map.removeLayer(postcodeLayer); }
   postcodeLayer = L.geoJSON(geo, {
     style: { color: '#8b5cf6', weight: 2.5, fillColor: '#8b5cf6', fillOpacity: 0.18 }
   }).addTo(map);
   map.fitBounds(postcodeLayer.getBounds(), { padding: [24, 24], maxZoom: 16 });
   var props = geo.features[0].properties;
-  statusEl.className = 'status ok';
-  statusEl.textContent = pc + ' · ' + props.postcodetype + ' · '
+  setStatus(pc + ' · ' + props.postcodetype + ' · '
     + props.postcodedeliverypointcount_total + ' delivery points · '
-    + geo.features.length + ' polygon part' + (geo.features.length > 1 ? 's' : '');
+    + geo.features.length + ' polygon part' + (geo.features.length > 1 ? 's' : ''));
 }
-if (window.matchMedia('(max-width: 768px)').matches) {
-  document.querySelector('.panel').classList.add('collapsed');
-  document.getElementById('show-btn').classList.remove('hidden');
-} else {
-  showTravelView();
-}
+
+setState('idle');
+
 function initTile() {
   var style = isDark ? 'dark-v11' : 'streets-v12';
   if (tileLayer) map.removeLayer(tileLayer);
@@ -130,7 +98,6 @@ function toggleTheme() {
   var iconHtml = isDark
     ? '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>'
     : '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>';
-  document.getElementById('theme-icon').innerHTML = iconHtml;
   var fab = document.getElementById('theme-icon-fab');
   if (fab) fab.innerHTML = iconHtml;
   initTile();
@@ -151,13 +118,11 @@ function placeDefaultMarker() {
     radius: 6, fillColor: markerFill, fillOpacity: 1,
     color: markerRing, weight: 8
   }).addTo(map);
-  document.querySelectorAll('.slot-val').forEach(function(el) { el.classList.add('empty'); });
 }
 
 map.on('mousemove', function(e) {
-  document.getElementById('coords').textContent = e.latlng.lat.toFixed(4) + '\u00B0N, ' + e.latlng.lng.toFixed(4) + '\u00B0E';
+  document.getElementById('coords').textContent = e.latlng.lat.toFixed(4) + '°N, ' + e.latlng.lng.toFixed(4) + '°E';
 });
-
 
 function pick(m) {
   mode = m;
@@ -169,27 +134,23 @@ var sessionToken = (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(
 var suggestTimer = null;
 var currentSuggestions = [];
 var activeIdx = -1;
-var qInput = document.getElementById('q');
-var suggBox = document.getElementById('sugg');
-var origSuggBox = suggBox;
+var pendingPostcode = null;
 
-var overlaySourceInput = null;
 var overlayInput = document.getElementById('overlay-input');
 var overlaySugg = document.getElementById('overlay-sugg');
 var overlayEl = document.getElementById('search-overlay');
-var panelEl = document.querySelector('.panel');
+var suggBox = overlaySugg;
 
-function closeSugg() { if (overlaySourceInput) { activeIdx = -1; return; } suggBox.classList.remove('open'); activeIdx = -1; }
-function openSugg() { if (overlaySourceInput) return; if (currentSuggestions.length) suggBox.classList.add('open'); }
+function closeSugg() { activeIdx = -1; }
+function openSugg() { if (currentSuggestions.length || pendingPostcode) renderSuggestions(); }
 
-function openSearchOverlay(sourceInput) {
-  if (!window.matchMedia('(max-width: 768px)').matches) return;
-  overlaySourceInput = sourceInput;
-  overlayInput.value = sourceInput.value;
-  overlayInput.placeholder = sourceInput.placeholder;
-  suggBox = overlaySugg;
-  panelEl.classList.add('search-active');
-  if (currentSuggestions.length) renderSuggestions();
+function openSearchOverlay() {
+  setState('search');
+  overlayInput.value = '';
+  overlayInput.placeholder = 'Search a place or postcode…';
+  pendingPostcode = null;
+  currentSuggestions = [];
+  overlaySugg.innerHTML = '';
   requestAnimationFrame(function() {
     overlayEl.classList.add('open');
     overlayInput.focus();
@@ -197,29 +158,37 @@ function openSearchOverlay(sourceInput) {
 }
 
 function closeSearchOverlay() {
-  if (!overlaySourceInput) return;
   overlayInput.blur();
   overlayEl.classList.remove('open');
-  overlaySourceInput.value = overlayInput.value;
-  var src = overlaySourceInput;
-  overlaySourceInput = null;
-  suggBox = origSuggBox;
+  pendingPostcode = null;
   currentSuggestions = [];
   overlaySugg.innerHTML = '';
-  requestAnimationFrame(function() {
-    panelEl.classList.remove('search-active');
-  });
+  setState('idle');
+}
+
+function formatPostcode(raw) {
+  var s = raw.replace(/\s+/g, '').toUpperCase();
+  return s.slice(0, -3) + ' ' + s.slice(-3);
 }
 
 function renderSuggestions() {
   suggBox.innerHTML = '';
-  currentSuggestions.forEach(function(s, i) {
+  var items = getMergedItems();
+
+  items.forEach(function(s, i) {
     var item = document.createElement('div');
     item.className = 'sugg-item' + (i === activeIdx ? ' active' : '');
-    item.innerHTML = '<div class="sugg-name"></div><div class="sugg-addr"></div>';
-    item.querySelector('.sugg-name').textContent = s.name;
-    item.querySelector('.sugg-addr').textContent = s.place_formatted || s.full_address || '';
-    item.addEventListener('mousedown', function(e) { e.preventDefault(); selectSuggestion(i); });
+    if (s.type === 'postcode') {
+      item.className += ' sugg-postcode';
+      item.innerHTML = '<div class="sugg-name"><span class="sugg-pc-icon">▣</span> </div><div class="sugg-addr"></div>';
+      item.querySelector('.sugg-name').appendChild(document.createTextNode(s.name));
+      item.querySelector('.sugg-addr').textContent = 'UK postcode boundary';
+    } else {
+      item.innerHTML = '<div class="sugg-name"></div><div class="sugg-addr"></div>';
+      item.querySelector('.sugg-name').textContent = s.name;
+      item.querySelector('.sugg-addr').textContent = s.place_formatted || s.full_address || '';
+    }
+    item.addEventListener('mousedown', function(e) { e.preventDefault(); selectSuggestionFromList(i, items); });
     suggBox.appendChild(item);
   });
 }
@@ -244,13 +213,21 @@ async function fetchSuggest(q) {
   }
 }
 
-async function selectSuggestion(i) {
-  var s = currentSuggestions[i];
+function selectSuggestionFromList(i, items) {
+  var s = items[i];
   if (!s) return;
-  qInput.value = s.name;
-  if (overlaySourceInput) closeSearchOverlay();
-  closeSugg();
-  setStatus('Loading\u2026');
+  if (s.type === 'postcode') {
+    closeSearchOverlay();
+    searchPostcode(s.postcode);
+    return;
+  }
+  selectSuggestion(s);
+}
+
+async function selectSuggestion(s) {
+  if (!s || !s.mapbox_id) return;
+  closeSearchOverlay();
+  setStatus('Loading…');
   try {
     var url = 'https://api.mapbox.com/search/searchbox/v1/retrieve/' + encodeURIComponent(s.mapbox_id)
       + '?session_token=' + sessionToken + '&access_token=' + MAPBOX_TOKEN;
@@ -266,68 +243,37 @@ async function selectSuggestion(i) {
   } catch (e) { setStatus('Search failed', true); }
 }
 
-qInput.addEventListener('input', function() {
-  var q = qInput.value.trim();
-  clearTimeout(suggestTimer);
-  if (!q) { currentSuggestions = []; closeSugg(); return; }
-  suggestTimer = setTimeout(function() { fetchSuggest(q); }, 180);
-});
-
-qInput.addEventListener('keydown', function(e) {
-  if (!suggBox.classList.contains('open')) return;
-  if (e.key === 'ArrowDown') {
-    e.preventDefault();
-    activeIdx = Math.min(activeIdx + 1, currentSuggestions.length - 1);
-    renderSuggestions();
-  } else if (e.key === 'ArrowUp') {
-    e.preventDefault();
-    activeIdx = Math.max(activeIdx - 1, 0);
-    renderSuggestions();
-  } else if (e.key === 'Enter') {
-    e.preventDefault();
-    selectSuggestion(activeIdx >= 0 ? activeIdx : 0);
-  } else if (e.key === 'Escape') {
-    closeSugg();
-  }
-});
-
-qInput.addEventListener('focus', function() {
-  if (window.matchMedia('(max-width: 768px)').matches) { openSearchOverlay(qInput); return; }
-  if (currentSuggestions.length) openSugg();
-});
-
-document.addEventListener('click', function(e) {
-  if (overlaySourceInput) return;
-  if (!e.target.closest('.search-wrap')) closeSugg();
-});
-
-var pcInput = document.getElementById('pc-input');
-pcInput.addEventListener('focus', function() { openSearchOverlay(pcInput); });
-pcInput.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') searchPostcode();
-});
-
 document.getElementById('search-back-btn').addEventListener('click', closeSearchOverlay);
 
 overlayInput.addEventListener('input', function() {
-  if (overlaySourceInput === pcInput) return;
   var q = overlayInput.value.trim();
   clearTimeout(suggestTimer);
-  if (!q) { currentSuggestions = []; overlaySugg.innerHTML = ''; return; }
+  if (!q) { pendingPostcode = null; currentSuggestions = []; overlaySugg.innerHTML = ''; return; }
+  pendingPostcode = PC_RE.test(q) ? formatPostcode(q) : null;
+  if (pendingPostcode) renderSuggestions();
   suggestTimer = setTimeout(function() { fetchSuggest(q); }, 180);
 });
 
-overlayInput.addEventListener('keydown', function(e) {
-  if (overlaySourceInput === pcInput) {
-    if (e.key === 'Enter') searchPostcode();
-    if (e.key === 'Escape') closeSearchOverlay();
-    return;
+function getMergedItems() {
+  var items = [];
+  if (pendingPostcode) {
+    items.push({ type: 'postcode', postcode: pendingPostcode, name: pendingPostcode + ' · Show boundary' });
   }
+  var pcNorm = pendingPostcode ? pendingPostcode.replace(/\s+/g, '').toUpperCase() : null;
+  currentSuggestions.forEach(function(s) {
+    if (pcNorm && s.name && s.name.replace(/\s+/g, '').toUpperCase() === pcNorm) return;
+    items.push(s);
+  });
+  return items;
+}
+
+overlayInput.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') { closeSearchOverlay(); return; }
-  if (!currentSuggestions.length) return;
+  var items = getMergedItems();
+  if (!items.length) return;
   if (e.key === 'ArrowDown') {
     e.preventDefault();
-    activeIdx = Math.min(activeIdx + 1, currentSuggestions.length - 1);
+    activeIdx = Math.min(activeIdx + 1, items.length - 1);
     renderSuggestions();
   } else if (e.key === 'ArrowUp') {
     e.preventDefault();
@@ -335,14 +281,13 @@ overlayInput.addEventListener('keydown', function(e) {
     renderSuggestions();
   } else if (e.key === 'Enter') {
     e.preventDefault();
-    selectSuggestion(activeIdx >= 0 ? activeIdx : 0);
+    selectSuggestionFromList(activeIdx >= 0 ? activeIdx : 0, items);
   }
 });
-document.getElementById('pc-year').textContent = new Date().getFullYear();
 
 async function run(lng, lat, label) {
   center = [lng, lat];
-  setStatus('Loading isochrones\u2026');
+  setStatus('Loading isochrones…');
 
   if (marker) map.removeLayer(marker);
   var markerFill = isDark ? '#fff' : '#1a1a1a';
@@ -375,12 +320,13 @@ async function run(lng, lat, label) {
     data.features.forEach(function(f) { areas[f.properties.contour] = calcArea(f.geometry); });
     MINS.forEach(function(m) {
       var el = document.getElementById('a' + m);
+      if (!el) return;
       var a = areas[m];
-      if (a !== undefined && a > 0) { el.textContent = a >= 1 ? Math.round(a) + ' km\u00B2' : (a * 1000).toFixed(0) + ' m\u00B2'; el.classList.remove('empty'); }
-      else { el.textContent = '\u2014'; el.classList.add('empty'); }
+      if (a !== undefined && a > 0) { el.textContent = a >= 1 ? Math.round(a) + ' km²' : (a * 1000).toFixed(0) + ' m²'; el.classList.remove('empty'); }
+      else { el.textContent = '—'; el.classList.add('empty'); }
     });
 
-    setStatus(label || lat.toFixed(4) + '\u00B0N, ' + lng.toFixed(4) + '\u00B0E');
+    setStatus(label || lat.toFixed(4) + '°N, ' + lng.toFixed(4) + '°E');
   } catch(e) { setStatus('Failed to load isochrones', true); }
 }
 
@@ -404,8 +350,7 @@ function ringArea(rings) {
 function rad(d) { return d * Math.PI / 180; }
 function setStatus(msg, isError) {
   var el = document.getElementById('st');
+  if (!el) return;
   el.textContent = msg;
   el.className = 'status' + (isError ? ' error' : '');
 }
-
-placeDefaultMarker();
