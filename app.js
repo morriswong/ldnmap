@@ -19,7 +19,7 @@ if (window.visualViewport) {
   window.visualViewport.addEventListener('scroll', syncAppHeight);
 }
 
-var map = L.map('map', { zoomControl: false }).setView([51.4871, 0.0371], 13);
+var map = L.map('map', { zoomControl: false }).setView([51.5007, -0.1246], 13);
 L.control.zoom({ position: 'topright' }).addTo(map);
 
 var isDark = false;
@@ -142,6 +142,17 @@ var isoLayers = [];
 var mode = 'walking';
 var center = null;
 var postcodeLayer = null;
+
+function placeDefaultMarker() {
+  var lat = 51.5007, lng = -0.1246;
+  var markerFill = isDark ? '#fff' : '#1a1a1a';
+  var markerRing = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.9)';
+  marker = L.circleMarker([lat, lng], {
+    radius: 6, fillColor: markerFill, fillOpacity: 1,
+    color: markerRing, weight: 8
+  }).addTo(map);
+  document.querySelectorAll('.slot-val').forEach(function(el) { el.classList.add('empty'); });
+}
 
 map.on('mousemove', function(e) {
   document.getElementById('coords').textContent = e.latlng.lat.toFixed(4) + '\u00B0N, ' + e.latlng.lng.toFixed(4) + '\u00B0E';
@@ -366,8 +377,8 @@ async function run(lng, lat, label) {
     MINS.forEach(function(m) {
       var el = document.getElementById('a' + m);
       var a = areas[m];
-      if (a !== undefined && a > 0) { el.textContent = a >= 1 ? Math.round(a) + ' km\u00B2' : (a * 1000).toFixed(0) + ' m\u00B2'; }
-      else { el.textContent = '\u2014'; }
+      if (a !== undefined && a > 0) { el.textContent = a >= 1 ? Math.round(a) + ' km\u00B2' : (a * 1000).toFixed(0) + ' m\u00B2'; el.classList.remove('empty'); }
+      else { el.textContent = '\u2014'; el.classList.add('empty'); }
     });
 
     setStatus(label || lat.toFixed(4) + '\u00B0N, ' + lng.toFixed(4) + '\u00B0E');
@@ -398,4 +409,4 @@ function setStatus(msg, isError) {
   el.className = 'status' + (isError ? ' error' : '');
 }
 
-run(0.0371, 51.4871, 'The Valley, Charlton');
+placeDefaultMarker();
