@@ -129,10 +129,12 @@
   }
   .pc-search-btn:active { opacity: 0.75; }
   .pc-attribution { font-size: 10px; color: var(--text-dim); margin-top: 10px; }
+  .search-overlay { display: none; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
   @media (max-width: 768px) {
+    .search-overlay { display: flex; }
     .panel {
-      width: calc(100% - 16px); left: 8px; right: 8px; top: auto; bottom: 8px;
+      width: calc(100% - 16px); left: 8px; right: 8px; top: auto; bottom: var(--panel-bottom, 8px);
       padding: 18px 18px 22px; border-radius: 24px;
       max-height: calc(var(--app-h, 100dvh) - 16px);
       overflow-y: auto; overscroll-behavior: contain;
@@ -234,6 +236,40 @@
     .panel.view-travel .panel-title,
     .panel.view-postcode .panel-title { display: none; }
     .panel.view-menu .panel-title { font-size: 17px; font-weight: 600; }
+    .panel.search-active { pointer-events: none; opacity: 0; transition: opacity 0.2s ease; }
+    .search-overlay {
+      position: fixed; inset: 0; z-index: 1200;
+      background: var(--glass-sheet-bg);
+      backdrop-filter: blur(40px) saturate(180%); -webkit-backdrop-filter: blur(40px) saturate(180%);
+      display: flex; flex-direction: column;
+      padding-top: env(safe-area-inset-top, 0px);
+      transform: translateY(100%); opacity: 0;
+      transition: transform 0.36s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.28s ease;
+      pointer-events: none;
+    }
+    .search-overlay.open { transform: translateY(0); opacity: 1; pointer-events: auto; }
+    .search-overlay-header {
+      display: flex; align-items: center; gap: 8px;
+      padding: 14px 14px 10px;
+      border-bottom: 1px solid var(--glass-border); flex-shrink: 0;
+    }
+    .search-overlay-back {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 1px solid var(--glass-border); background: var(--glass-tile-bg);
+      box-shadow: inset 0 1px 0 0 var(--glass-highlight);
+      color: var(--text); display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; cursor: pointer;
+    }
+    .search-overlay-back:active { opacity: 0.6; }
+    .search-overlay-back svg { width: 18px; height: 18px; }
+    .search-overlay-header .sinput { flex: 1; margin-bottom: 0; font-size: 16px; }
+    .search-overlay-list {
+      flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain; padding: 8px 10px;
+      padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
+    }
+    .search-overlay-list .sugg-item { border-radius: 12px; border-bottom: none; margin-bottom: 2px; }
+    .search-overlay-list .sugg-item:hover, .search-overlay-list .sugg-item.active { background: var(--glass-tile-bg); }
   }
   @media (max-width: 768px) and (prefers-reduced-transparency: reduce) {
     .panel, .show-btn, .theme-fab {
@@ -365,6 +401,17 @@
     <div class="pc-attribution">Boundaries &copy; Crown copyright &amp; database right <span id="pc-year"></span> OS Data Hub</div>
   </div>
 </div>
+<div id="search-overlay" class="search-overlay">
+  <div class="search-overlay-header">
+    <button class="search-overlay-back" id="search-back-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+    </button>
+    <input class="sinput" id="overlay-input" autocomplete="off" placeholder="">
+  </div>
+  <div class="search-overlay-list" id="overlay-sugg"></div>
+</div>
 <div class="coord-display" id="coords">51.4871°N, 0.0371°E</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -375,8 +422,13 @@ var COLORS = ['#2ecc71','#3498db','#f39c12','#e74c3c'];
 var MINS = [5,10,15,20];
 
 function syncAppHeight() {
-  var h = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+  var vv = window.visualViewport;
+  var h = (vv && vv.height) || window.innerHeight;
   document.documentElement.style.setProperty('--app-h', h + 'px');
+  if (vv && window.matchMedia('(max-width: 768px)').matches) {
+    var panelBottom = window.innerHeight - vv.offsetTop - vv.height + 8;
+    document.documentElement.style.setProperty('--panel-bottom', Math.max(8, panelBottom) + 'px');
+  }
 }
 syncAppHeight();
 window.addEventListener('resize', syncAppHeight);
@@ -423,7 +475,9 @@ function showPostcodeView() {
   });
 }
 function searchPostcode() {
-  var pc = document.getElementById('pc-input').value.trim().toUpperCase();
+  var pcEl = document.getElementById('pc-input');
+  var pc = (overlaySourceInput === pcEl ? overlayInput.value : pcEl.value).trim().toUpperCase();
+  if (overlaySourceInput) { pcEl.value = pc; closeSearchOverlay(); }
   if (!pc) return;
   var statusEl = document.getElementById('pc-status');
   statusEl.className = 'status';
@@ -525,9 +579,45 @@ var currentSuggestions = [];
 var activeIdx = -1;
 var qInput = document.getElementById('q');
 var suggBox = document.getElementById('sugg');
+var origSuggBox = suggBox;
 
-function closeSugg() { suggBox.classList.remove('open'); activeIdx = -1; }
-function openSugg() { if (currentSuggestions.length) suggBox.classList.add('open'); }
+var overlaySourceInput = null;
+var overlayInput = document.getElementById('overlay-input');
+var overlaySugg = document.getElementById('overlay-sugg');
+var overlayEl = document.getElementById('search-overlay');
+var panelEl = document.querySelector('.panel');
+
+function closeSugg() { if (overlaySourceInput) { activeIdx = -1; return; } suggBox.classList.remove('open'); activeIdx = -1; }
+function openSugg() { if (overlaySourceInput) return; if (currentSuggestions.length) suggBox.classList.add('open'); }
+
+function openSearchOverlay(sourceInput) {
+  if (!window.matchMedia('(max-width: 768px)').matches) return;
+  overlaySourceInput = sourceInput;
+  overlayInput.value = sourceInput.value;
+  overlayInput.placeholder = sourceInput.placeholder;
+  suggBox = overlaySugg;
+  panelEl.classList.add('search-active');
+  if (currentSuggestions.length) renderSuggestions();
+  requestAnimationFrame(function() {
+    overlayEl.classList.add('open');
+    overlayInput.focus();
+  });
+}
+
+function closeSearchOverlay() {
+  if (!overlaySourceInput) return;
+  overlayInput.blur();
+  overlayEl.classList.remove('open');
+  overlaySourceInput.value = overlayInput.value;
+  var src = overlaySourceInput;
+  overlaySourceInput = null;
+  suggBox = origSuggBox;
+  currentSuggestions = [];
+  overlaySugg.innerHTML = '';
+  requestAnimationFrame(function() {
+    panelEl.classList.remove('search-active');
+  });
+}
 
 function renderSuggestions() {
   suggBox.innerHTML = '';
@@ -566,6 +656,7 @@ async function selectSuggestion(i) {
   var s = currentSuggestions[i];
   if (!s) return;
   qInput.value = s.name;
+  if (overlaySourceInput) closeSearchOverlay();
   closeSugg();
   setStatus('Loading\u2026');
   try {
@@ -608,14 +699,52 @@ qInput.addEventListener('keydown', function(e) {
   }
 });
 
-qInput.addEventListener('focus', function() { if (currentSuggestions.length) openSugg(); });
+qInput.addEventListener('focus', function() {
+  if (window.matchMedia('(max-width: 768px)').matches) { openSearchOverlay(qInput); return; }
+  if (currentSuggestions.length) openSugg();
+});
 
 document.addEventListener('click', function(e) {
+  if (overlaySourceInput) return;
   if (!e.target.closest('.search-wrap')) closeSugg();
 });
 
-document.getElementById('pc-input').addEventListener('keydown', function(e) {
+var pcInput = document.getElementById('pc-input');
+pcInput.addEventListener('focus', function() { openSearchOverlay(pcInput); });
+pcInput.addEventListener('keydown', function(e) {
   if (e.key === 'Enter') searchPostcode();
+});
+
+document.getElementById('search-back-btn').addEventListener('click', closeSearchOverlay);
+
+overlayInput.addEventListener('input', function() {
+  if (overlaySourceInput === pcInput) return;
+  var q = overlayInput.value.trim();
+  clearTimeout(suggestTimer);
+  if (!q) { currentSuggestions = []; overlaySugg.innerHTML = ''; return; }
+  suggestTimer = setTimeout(function() { fetchSuggest(q); }, 180);
+});
+
+overlayInput.addEventListener('keydown', function(e) {
+  if (overlaySourceInput === pcInput) {
+    if (e.key === 'Enter') searchPostcode();
+    if (e.key === 'Escape') closeSearchOverlay();
+    return;
+  }
+  if (e.key === 'Escape') { closeSearchOverlay(); return; }
+  if (!currentSuggestions.length) return;
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    activeIdx = Math.min(activeIdx + 1, currentSuggestions.length - 1);
+    renderSuggestions();
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    activeIdx = Math.max(activeIdx - 1, 0);
+    renderSuggestions();
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    selectSuggestion(activeIdx >= 0 ? activeIdx : 0);
+  }
 });
 document.getElementById('pc-year').textContent = new Date().getFullYear();
 
