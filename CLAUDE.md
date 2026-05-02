@@ -61,6 +61,10 @@ Past failures: a one-line "zoom button blocked" complaint cascaded into 4 broken
 - **Reviewer disagreement → flag the structural difference** — if two reviewers propose mechanically different solutions (e.g. `top` vs `padding-top`), state explicitly which is a correctness issue vs a style preference. Don't treat them as equal options.
 - **Layered guesses → stop** — if the same visible bug has been shipped twice without resolution, the third attempt must not be another guess. Stop, request a fresh screenshot or live debug session.
 
+## Linear tickets
+
+Always assign new Linear tickets for this repo to the `ldnmap` project (project ID: `70541a2f-aa3f-45a7-824b-2e5b015bfb6f`, team: `wch`).
+
 ## iOS Safari + Leaflet gotchas (do not relearn the hard way)
 
 - iOS Safari **default `viewport-fit=auto` already keeps content inside the safe area**. `viewport-fit=cover` is a deliberate request to paint *under* the notch (immersive design only) — it is NOT a "turn on safe-area support" switch. Adding it makes content render under the status bar.

@@ -428,7 +428,7 @@ async function run(lng, lat, label) {
       var el = document.getElementById('a' + m);
       if (!el) return;
       var a = areas[m];
-      if (a !== undefined && a > 0) { el.textContent = a >= 1 ? Math.round(a) + ' km²' : (a * 1000).toFixed(0) + ' m²'; el.classList.remove('empty'); }
+      if (a !== undefined && a > 0) { el.textContent = a >= 1 ? Math.round(a) + ' km²' : a.toFixed(2) + ' km²'; el.classList.remove('empty'); }
       else { el.textContent = '—'; el.classList.add('empty'); }
     });
 
