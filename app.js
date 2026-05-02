@@ -162,11 +162,6 @@ function activateMode(modeKey) {
     updateModeButtons();
     setState('travel');
     run(pendingPlace.lng, pendingPlace.lat, pendingPlace.name);
-  } else if (modeKey === 'postcode' && pendingPlace.postcode) {
-    document.getElementById('pc-label').textContent = pendingPlace.postcode;
-    document.querySelectorAll('.postcode-cta-btns .travel-mode-btn').forEach(function(b) { b.disabled = true; });
-    setState('postcode');
-    searchPostcode(pendingPlace.postcode);
   }
 }
 
@@ -363,10 +358,8 @@ function selectSuggestionFromList(i, items) {
   if (!s) return;
   if (s.type === 'postcode') {
     closeSearchOverlay();
-    document.getElementById('pc-label').textContent = s.postcode;
     pendingPlace = { lng: 0, lat: 0, name: s.postcode, address: 'UK postcode boundary', postcode: s.postcode };
-    setState('postcode');
-    searchPostcode(s.postcode);
+    showModePicker();
     return;
   }
   selectSuggestion(s);
@@ -520,7 +513,7 @@ function setStatus(msg, isError) {
     el.className = 'travel-card-title' + (isError ? ' error' : '');
   }
   var pcEl = document.getElementById('pc-st');
-  if (pcEl && (appState === 'postcode' || postcodeChipVisible)) {
+  if (pcEl && postcodeChipVisible) {
     pcEl.textContent = msg;
   }
 }
