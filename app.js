@@ -142,10 +142,6 @@ function showModePicker() {
   if (!pendingPlace) return;
   document.getElementById('mp-name').textContent = pendingPlace.name;
   document.getElementById('mp-addr').textContent = pendingPlace.address;
-  if (pendingPlace.postcode) {
-    showPostcodeChip(pendingPlace.postcode);
-    searchPostcode(pendingPlace.postcode);
-  }
   setState('modepicker');
 }
 
@@ -211,8 +207,13 @@ function closePostcodeChip() {
   setState('idle');
 }
 
-function showPostcodeChip(label) {
-  document.getElementById('pc-label').textContent = label;
+function showPostcodeChip() {
+  var name = pendingPlace.name;
+  var postcode = pendingPlace.postcode;
+  var isBare = (name === postcode);
+  document.getElementById('pc-label').textContent = isBare ? postcode : name;
+  var badge = document.getElementById('pc-badge');
+  if (badge) badge.textContent = isBare ? '' : postcode;
   var pcSt = document.getElementById('pc-st');
   if (pcSt) { pcSt.textContent = 'Loading boundary…'; pcSt.classList.add('is-loading'); }
   document.querySelectorAll('.postcode-cta-btns .travel-mode-btn').forEach(function(b) { b.disabled = true; });
@@ -229,11 +230,7 @@ function hidePostcodeChip() {
 }
 
 function chipBack() {
-  hidePostcodeChip();
-  if (!pendingPlace) { setState('idle'); return; }
-  document.getElementById('mp-name').textContent = pendingPlace.name;
-  document.getElementById('mp-addr').textContent = pendingPlace.address;
-  setState('modepicker');
+  modePickerBack();
 }
 
 function launchFromPostcode(modeKey) {
@@ -364,7 +361,9 @@ function selectSuggestionFromList(i, items) {
   if (s.type === 'postcode') {
     closeSearchOverlay();
     pendingPlace = { lng: 0, lat: 0, name: s.postcode, address: 'UK postcode boundary', postcode: s.postcode };
-    showModePicker();
+    showPostcodeChip();
+    searchPostcode(s.postcode);
+    setState('modepicker');
     return;
   }
   selectSuggestion(s);
@@ -404,7 +403,13 @@ async function selectSuggestion(s) {
       map.flyTo([c[1], c[0]], 14, { duration: 1.5 });
       placeMarker(c[1], c[0]);
       setStatus(name);
-      showModePicker();
+      if (pendingPlace.postcode) {
+        showPostcodeChip();
+        searchPostcode(pendingPlace.postcode);
+        setState('modepicker');
+      } else {
+        showModePicker();
+      }
       sessionToken = (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(36).slice(2);
     } else { setStatus('Could not load that location', true); }
   } catch (e) { setStatus('Search failed', true); }
