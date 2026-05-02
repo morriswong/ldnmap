@@ -142,11 +142,6 @@ function showModePicker() {
   if (!pendingPlace) return;
   document.getElementById('mp-name').textContent = pendingPlace.name;
   document.getElementById('mp-addr').textContent = pendingPlace.address;
-  var pcTile = document.getElementById('tile-postcode');
-  if (pcTile) {
-    pcTile.disabled = !pendingPlace.postcode;
-    pcTile.classList.toggle('mode-tile-soon', !pendingPlace.postcode);
-  }
   if (pendingPlace.postcode) {
     showPostcodeChip(pendingPlace.postcode);
     searchPostcode(pendingPlace.postcode);
