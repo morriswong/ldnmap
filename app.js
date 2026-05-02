@@ -186,6 +186,10 @@ function changeMode() {
     if (el) { el.textContent = '—'; el.classList.add('empty'); }
   });
   showModePicker();
+  if (pendingPlace && pendingPlace.postcode) {
+    showPostcodeChip();
+    searchPostcode(pendingPlace.postcode);
+  }
 }
 
 function closeTravelCard() {
