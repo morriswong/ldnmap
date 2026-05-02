@@ -217,11 +217,13 @@ function showPostcodeChip(label) {
   if (pcSt) { pcSt.textContent = 'Loading boundary…'; pcSt.classList.add('is-loading'); }
   document.querySelectorAll('.postcode-cta-btns .travel-mode-btn').forEach(function(b) { b.disabled = true; });
   document.getElementById('postcode-chip').classList.add('postcode-chip-active');
+  document.body.classList.add('postcode-chip-showing');
   postcodeChipVisible = true;
 }
 
 function hidePostcodeChip() {
   document.getElementById('postcode-chip').classList.remove('postcode-chip-active');
+  document.body.classList.remove('postcode-chip-showing');
   postcodeChipVisible = false;
   if (postcodeLayer) { map.removeLayer(postcodeLayer); postcodeLayer = null; }
 }
