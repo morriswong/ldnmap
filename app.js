@@ -228,6 +228,14 @@ function hidePostcodeChip() {
   if (postcodeLayer) { map.removeLayer(postcodeLayer); postcodeLayer = null; }
 }
 
+function chipBack() {
+  hidePostcodeChip();
+  if (!pendingPlace) { setState('idle'); return; }
+  document.getElementById('mp-name').textContent = pendingPlace.name;
+  document.getElementById('mp-addr').textContent = pendingPlace.address;
+  setState('modepicker');
+}
+
 function launchFromPostcode(modeKey) {
   if (!pendingPlace) return;
   hidePostcodeChip();
