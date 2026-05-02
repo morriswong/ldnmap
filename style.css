@@ -221,6 +221,10 @@
   .postcode-chip-label { font-size: 14px; font-weight: 600; color: #8b5cf6; }
   .postcode-chip-status { font-size: 11px; color: var(--text-dim); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .postcode-chip-attrib { font-size: 9px; color: var(--text-faint); text-align: right; margin-top: 6px; }
+  .postcode-cta-row { margin-top: 10px; margin-bottom: 8px; display: flex; flex-direction: column; gap: 6px; }
+  .postcode-cta-label { font-size: 10px; font-weight: 500; color: var(--text-dim); letter-spacing: 0.02em; }
+  .postcode-cta-btns { display: flex; gap: 6px; }
+  .postcode-cta-btns .travel-mode-btn { flex: 1; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
   @media (max-width: 768px) {
     #search-pill {

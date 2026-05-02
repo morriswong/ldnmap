@@ -211,6 +211,15 @@ function closePostcodeChip() {
   setState('idle');
 }
 
+function launchFromPostcode(modeKey) {
+  if (!pendingPlace) return;
+  if (postcodeLayer) { map.removeLayer(postcodeLayer); postcodeLayer = null; }
+  mode = modeKey;
+  updateModeButtons();
+  setState('travel');
+  run(pendingPlace.lng, pendingPlace.lat, pendingPlace.name);
+}
+
 function modePickerBack() {
   if (marker) { map.removeLayer(marker); marker = null; }
   openSearchOverlay();
