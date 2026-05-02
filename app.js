@@ -138,28 +138,6 @@ map.on('mousemove', function(e) {
   document.getElementById('coords').textContent = e.latlng.lat.toFixed(4) + '°N, ' + e.latlng.lng.toFixed(4) + '°E';
 });
 
-function showModePicker() {
-  if (!pendingPlace) return;
-  document.getElementById('mp-name').textContent = pendingPlace.name;
-  document.getElementById('mp-addr').textContent = pendingPlace.address;
-  setState('modepicker');
-}
-
-function activateMode(modeKey) {
-  if (!pendingPlace) return;
-  if (modeKey === 'walking' || modeKey === 'cycling' || modeKey === 'driving') {
-    hidePostcodeChip();
-    mode = modeKey;
-    updateModeButtons();
-    setState('travel');
-    run(pendingPlace.lng, pendingPlace.lat, pendingPlace.name);
-  }
-}
-
-function closeModePicker() {
-  pendingPlace = null;
-  setState('idle');
-}
 
 function pickMode(m) {
   if (!pendingPlace) return;
@@ -185,10 +163,12 @@ function changeMode() {
     var el = document.getElementById('a' + m);
     if (el) { el.textContent = '—'; el.classList.add('empty'); }
   });
-  showModePicker();
   if (pendingPlace && pendingPlace.postcode) {
     showPostcodeChip();
     searchPostcode(pendingPlace.postcode);
+    setState('modepicker');
+  } else {
+    modePickerBack();
   }
 }
 
@@ -257,15 +237,6 @@ function modePickerBack() {
     fetchSuggest(q);
   }
   pendingPlace = null;
-}
-
-function modePickerClose() {
-  hidePostcodeChip();
-  if (marker) { map.removeLayer(marker); marker = null; }
-  isoLayers.forEach(function(l) { map.removeLayer(l); });
-  isoLayers = [];
-  pendingPlace = null;
-  setState('idle');
 }
 
 var sessionToken = (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(36).slice(2);
@@ -412,7 +383,10 @@ async function selectSuggestion(s) {
         searchPostcode(pendingPlace.postcode);
         setState('modepicker');
       } else {
-        showModePicker();
+        mode = mode || 'walking';
+        updateModeButtons();
+        setState('travel');
+        run(pendingPlace.lng, pendingPlace.lat, pendingPlace.name);
       }
       sessionToken = (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(36).slice(2);
     } else { setStatus('Could not load that location', true); }
