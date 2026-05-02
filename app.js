@@ -87,6 +87,7 @@ function renderPostcode(geo, pc) {
   if (pendingPlace && pendingPlace.postcode) {
     pendingPlace.lat = boundsCenter.lat;
     pendingPlace.lng = boundsCenter.lng;
+    document.querySelectorAll('.postcode-cta-btns .travel-mode-btn').forEach(function(b) { b.disabled = false; });
   }
 }
 
@@ -155,6 +156,7 @@ function activateMode(modeKey) {
     run(pendingPlace.lng, pendingPlace.lat, pendingPlace.name);
   } else if (modeKey === 'postcode' && pendingPlace.postcode) {
     document.getElementById('pc-label').textContent = pendingPlace.postcode;
+    document.querySelectorAll('.postcode-cta-btns .travel-mode-btn').forEach(function(b) { b.disabled = true; });
     setState('postcode');
     searchPostcode(pendingPlace.postcode);
   }
