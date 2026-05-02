@@ -64,6 +64,8 @@ function searchPostcode(pc) {
       renderPostcode(geo, pc);
     })
     .catch(function(e) {
+      var pcSt = document.getElementById('pc-st');
+      if (pcSt) pcSt.classList.remove('is-loading');
       var msg = e.message || '';
       setStatus((msg.toLowerCase().includes('load') || msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('network'))
         ? 'Network error — OS API key may not be configured yet.'
@@ -82,7 +84,7 @@ function renderPostcode(geo, pc) {
     + geo.features.length + ' polygon part' + (geo.features.length > 1 ? 's' : '');
   setStatus(info);
   var pcStEl = document.getElementById('pc-st');
-  if (pcStEl) pcStEl.textContent = info;
+  if (pcStEl) { pcStEl.textContent = info; pcStEl.classList.remove('is-loading'); }
   var boundsCenter = postcodeLayer.getBounds().getCenter();
   if (pendingPlace && pendingPlace.postcode) {
     pendingPlace.lat = boundsCenter.lat;
@@ -119,6 +121,7 @@ var mode = 'walking';
 var center = null;
 var postcodeLayer = null;
 var pendingPlace = null;
+var postcodeChipVisible = false;
 var lastSearchQuery = '';
 
 function placeMarker(lat, lng) {
@@ -135,37 +138,6 @@ map.on('mousemove', function(e) {
   document.getElementById('coords').textContent = e.latlng.lat.toFixed(4) + '°N, ' + e.latlng.lng.toFixed(4) + '°E';
 });
 
-function showModePicker() {
-  if (!pendingPlace) return;
-  document.getElementById('mp-name').textContent = pendingPlace.name;
-  document.getElementById('mp-addr').textContent = pendingPlace.address;
-  var pcTile = document.getElementById('tile-postcode');
-  if (pcTile) {
-    pcTile.disabled = !pendingPlace.postcode;
-    pcTile.classList.toggle('mode-tile-soon', !pendingPlace.postcode);
-  }
-  setState('modepicker');
-}
-
-function activateMode(modeKey) {
-  if (!pendingPlace) return;
-  if (modeKey === 'walking' || modeKey === 'cycling' || modeKey === 'driving') {
-    mode = modeKey;
-    updateModeButtons();
-    setState('travel');
-    run(pendingPlace.lng, pendingPlace.lat, pendingPlace.name);
-  } else if (modeKey === 'postcode' && pendingPlace.postcode) {
-    document.getElementById('pc-label').textContent = pendingPlace.postcode;
-    document.querySelectorAll('.postcode-cta-btns .travel-mode-btn').forEach(function(b) { b.disabled = true; });
-    setState('postcode');
-    searchPostcode(pendingPlace.postcode);
-  }
-}
-
-function closeModePicker() {
-  pendingPlace = null;
-  setState('idle');
-}
 
 function pickMode(m) {
   if (!pendingPlace) return;
@@ -186,12 +158,18 @@ function updateModeButtons() {
 function changeMode() {
   isoLayers.forEach(function(l) { map.removeLayer(l); });
   isoLayers = [];
-  if (postcodeLayer) { map.removeLayer(postcodeLayer); postcodeLayer = null; }
+  hidePostcodeChip();
   MINS.forEach(function(m) {
     var el = document.getElementById('a' + m);
     if (el) { el.textContent = '—'; el.classList.add('empty'); }
   });
-  showModePicker();
+  if (pendingPlace && pendingPlace.postcode) {
+    showPostcodeChip();
+    searchPostcode(pendingPlace.postcode);
+    setState('modepicker');
+  } else {
+    modePickerBack();
+  }
 }
 
 function closeTravelCard() {
@@ -207,15 +185,41 @@ function closeTravelCard() {
 }
 
 function closePostcodeChip() {
+  hidePostcodeChip();
   if (marker) { map.removeLayer(marker); marker = null; }
-  if (postcodeLayer) { map.removeLayer(postcodeLayer); postcodeLayer = null; }
   pendingPlace = null;
   setState('idle');
 }
 
+function showPostcodeChip() {
+  var name = pendingPlace.name;
+  var postcode = pendingPlace.postcode;
+  var isBare = (name === postcode);
+  document.getElementById('pc-label').textContent = isBare ? postcode : name;
+  var badge = document.getElementById('pc-badge');
+  if (badge) badge.textContent = isBare ? '' : postcode;
+  var pcSt = document.getElementById('pc-st');
+  if (pcSt) { pcSt.textContent = 'Loading boundary…'; pcSt.classList.add('is-loading'); }
+  document.querySelectorAll('.postcode-cta-btns .travel-mode-btn').forEach(function(b) { b.disabled = true; });
+  document.getElementById('postcode-chip').classList.add('postcode-chip-active');
+  document.body.classList.add('postcode-chip-showing');
+  postcodeChipVisible = true;
+}
+
+function hidePostcodeChip() {
+  document.getElementById('postcode-chip').classList.remove('postcode-chip-active');
+  document.body.classList.remove('postcode-chip-showing');
+  postcodeChipVisible = false;
+  if (postcodeLayer) { map.removeLayer(postcodeLayer); postcodeLayer = null; }
+}
+
+function chipBack() {
+  modePickerBack();
+}
+
 function launchFromPostcode(modeKey) {
   if (!pendingPlace) return;
-  if (postcodeLayer) { map.removeLayer(postcodeLayer); postcodeLayer = null; }
+  hidePostcodeChip();
   mode = modeKey;
   updateModeButtons();
   setState('travel');
@@ -223,6 +227,7 @@ function launchFromPostcode(modeKey) {
 }
 
 function modePickerBack() {
+  hidePostcodeChip();
   if (marker) { map.removeLayer(marker); marker = null; }
   openSearchOverlay();
   var q = lastSearchQuery.trim();
@@ -232,14 +237,6 @@ function modePickerBack() {
     fetchSuggest(q);
   }
   pendingPlace = null;
-}
-
-function modePickerClose() {
-  if (marker) { map.removeLayer(marker); marker = null; }
-  isoLayers.forEach(function(l) { map.removeLayer(l); });
-  isoLayers = [];
-  pendingPlace = null;
-  setState('idle');
 }
 
 var sessionToken = (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(36).slice(2);
@@ -338,10 +335,10 @@ function selectSuggestionFromList(i, items) {
   if (!s) return;
   if (s.type === 'postcode') {
     closeSearchOverlay();
-    document.getElementById('pc-label').textContent = s.postcode;
     pendingPlace = { lng: 0, lat: 0, name: s.postcode, address: 'UK postcode boundary', postcode: s.postcode };
-    setState('postcode');
+    showPostcodeChip();
     searchPostcode(s.postcode);
+    setState('modepicker');
     return;
   }
   selectSuggestion(s);
@@ -362,11 +359,35 @@ async function selectSuggestion(s) {
       var props = d.features[0].properties;
       var name = s.name || props.name || '';
       var address = props.full_address || s.place_formatted || '';
-      pendingPlace = { lng: c[0], lat: c[1], name: name, address: address, postcode: null };
+      var postcode = null;
+      if (props.context) {
+        var ctxArr = Array.isArray(props.context) ? props.context : Object.values(props.context);
+        for (var ci = 0; ci < ctxArr.length; ci++) {
+          var ctx = ctxArr[ci];
+          if (ctx && (ctx.layer === 'postcode' || (ctx.id && ctx.id.startsWith('postcode.'))) && ctx.name) {
+            postcode = ctx.name.trim().toUpperCase(); break;
+          }
+        }
+      }
+      if (!postcode) {
+        var fa = props.full_address || address || '';
+        var pcMatch = fa.match(/\b([A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2})\b/i);
+        if (pcMatch) postcode = formatPostcode(pcMatch[1]);
+      }
+      pendingPlace = { lng: c[0], lat: c[1], name: name, address: address, postcode: postcode };
       map.flyTo([c[1], c[0]], 14, { duration: 1.5 });
       placeMarker(c[1], c[0]);
       setStatus(name);
-      showModePicker();
+      if (pendingPlace.postcode) {
+        showPostcodeChip();
+        searchPostcode(pendingPlace.postcode);
+        setState('modepicker');
+      } else {
+        mode = mode || 'walking';
+        updateModeButtons();
+        setState('travel');
+        run(pendingPlace.lng, pendingPlace.lat, pendingPlace.name);
+      }
       sessionToken = (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(36).slice(2);
     } else { setStatus('Could not load that location', true); }
   } catch (e) { setStatus('Search failed', true); }
@@ -480,7 +501,7 @@ function setStatus(msg, isError) {
     el.className = 'travel-card-title' + (isError ? ' error' : '');
   }
   var pcEl = document.getElementById('pc-st');
-  if (pcEl && appState === 'postcode') {
+  if (pcEl && postcodeChipVisible) {
     pcEl.textContent = msg;
   }
 }
