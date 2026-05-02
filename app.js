@@ -147,12 +147,17 @@ function showModePicker() {
     pcTile.disabled = !pendingPlace.postcode;
     pcTile.classList.toggle('mode-tile-soon', !pendingPlace.postcode);
   }
+  if (pendingPlace.postcode) {
+    showPostcodeChip(pendingPlace.postcode);
+    searchPostcode(pendingPlace.postcode);
+  }
   setState('modepicker');
 }
 
 function activateMode(modeKey) {
   if (!pendingPlace) return;
   if (modeKey === 'walking' || modeKey === 'cycling' || modeKey === 'driving') {
+    hidePostcodeChip();
     mode = modeKey;
     updateModeButtons();
     setState('travel');
@@ -189,7 +194,7 @@ function updateModeButtons() {
 function changeMode() {
   isoLayers.forEach(function(l) { map.removeLayer(l); });
   isoLayers = [];
-  if (postcodeLayer) { map.removeLayer(postcodeLayer); postcodeLayer = null; }
+  hidePostcodeChip();
   MINS.forEach(function(m) {
     var el = document.getElementById('a' + m);
     if (el) { el.textContent = '—'; el.classList.add('empty'); }
@@ -233,7 +238,7 @@ function hidePostcodeChip() {
 
 function launchFromPostcode(modeKey) {
   if (!pendingPlace) return;
-  if (postcodeLayer) { map.removeLayer(postcodeLayer); postcodeLayer = null; }
+  hidePostcodeChip();
   mode = modeKey;
   updateModeButtons();
   setState('travel');
@@ -241,6 +246,7 @@ function launchFromPostcode(modeKey) {
 }
 
 function modePickerBack() {
+  hidePostcodeChip();
   if (marker) { map.removeLayer(marker); marker = null; }
   openSearchOverlay();
   var q = lastSearchQuery.trim();
@@ -253,6 +259,7 @@ function modePickerBack() {
 }
 
 function modePickerClose() {
+  hidePostcodeChip();
   if (marker) { map.removeLayer(marker); marker = null; }
   isoLayers.forEach(function(l) { map.removeLayer(l); });
   isoLayers = [];
@@ -513,7 +520,7 @@ function setStatus(msg, isError) {
     el.className = 'travel-card-title' + (isError ? ' error' : '');
   }
   var pcEl = document.getElementById('pc-st');
-  if (pcEl && appState === 'postcode') {
+  if (pcEl && (appState === 'postcode' || postcodeChipVisible)) {
     pcEl.textContent = msg;
   }
 }
