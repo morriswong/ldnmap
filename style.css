@@ -186,6 +186,41 @@
   .postcode-cta-btns { display: flex; gap: 6px; }
   .postcode-cta-btns .travel-mode-btn { flex: 1; font-weight: 600; padding: 10px 0; }
   .postcode-cta-btns .travel-mode-btn:disabled { opacity: 0.4; cursor: default; pointer-events: none; }
+  #postcode-cta-btn {
+    background: rgba(91, 141, 238, 0.22);
+    border-color: rgba(91, 141, 238, 0.45);
+    color: #a8c4f5;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+  #postcode-cta-btn:not(:disabled):hover {
+    background: rgba(91, 141, 238, 0.34);
+    border-color: rgba(91, 141, 238, 0.65);
+    color: #c4d8f8;
+  }
+  #postcode-cta-btn:not(:disabled):active {
+    background: rgba(91, 141, 238, 0.45);
+    border-color: rgba(91, 141, 238, 0.80);
+    color: #ffffff;
+  }
+  body.light #postcode-cta-btn {
+    background: rgba(91, 141, 238, 0.14);
+    border-color: rgba(91, 141, 238, 0.55);
+    color: #2c5fcc;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+  body.light #postcode-cta-btn:not(:disabled):hover {
+    background: rgba(91, 141, 238, 0.24);
+    border-color: rgba(91, 141, 238, 0.70);
+    color: #1a4ab8;
+  }
+  body.light #postcode-cta-btn:not(:disabled):active {
+    background: rgba(91, 141, 238, 0.36);
+    border-color: rgba(91, 141, 238, 0.85);
+    color: #0f3a9e;
+  }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
   @media (max-width: 768px) {
     #search-pill {
