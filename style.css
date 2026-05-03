@@ -184,7 +184,7 @@
   .postcode-cta-row { margin-top: 10px; margin-bottom: 8px; display: flex; flex-direction: column; gap: 6px; }
   .postcode-cta-label { font-size: 10px; font-weight: 500; color: var(--text-dim); letter-spacing: 0.02em; }
   .postcode-cta-btns { display: flex; gap: 6px; }
-  .postcode-cta-btns .travel-mode-btn { flex: 1; }
+  .postcode-cta-btns .travel-mode-btn { flex: 1; font-weight: 600; padding: 10px 0; }
   .postcode-cta-btns .travel-mode-btn:disabled { opacity: 0.4; cursor: default; pointer-events: none; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
   @media (max-width: 768px) {

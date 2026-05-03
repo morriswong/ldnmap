@@ -89,7 +89,8 @@ function renderPostcode(geo, pc) {
   if (pendingPlace && pendingPlace.postcode) {
     pendingPlace.lat = boundsCenter.lat;
     pendingPlace.lng = boundsCenter.lng;
-    document.querySelectorAll('.postcode-cta-btns .travel-mode-btn').forEach(function(b) { b.disabled = false; });
+    var ctaBtn = document.getElementById('postcode-cta-btn');
+    if (ctaBtn) ctaBtn.disabled = false;
   }
 }
 
@@ -123,6 +124,16 @@ var postcodeLayer = null;
 var pendingPlace = null;
 var postcodeChipVisible = false;
 var lastSearchQuery = '';
+
+function isoFitPadding() {
+  return window.innerWidth <= 768 ? [60, 24, 200, 24] : [60, 24, 100, 340];
+}
+function fitIsochroneBounds() {
+  if (!isoLayers.length) return;
+  var bounds = isoLayers[0].getBounds();
+  if (!bounds.isValid()) return;
+  map.fitBounds(bounds, { padding: isoFitPadding(), maxZoom: 14, animate: true });
+}
 
 function placeMarker(lat, lng) {
   if (marker) map.removeLayer(marker);
@@ -200,7 +211,8 @@ function showPostcodeChip() {
   if (badge) badge.textContent = isBare ? '' : postcode;
   var pcSt = document.getElementById('pc-st');
   if (pcSt) { pcSt.textContent = 'Loading boundary…'; pcSt.classList.add('is-loading'); }
-  document.querySelectorAll('.postcode-cta-btns .travel-mode-btn').forEach(function(b) { b.disabled = true; });
+  var ctaBtn = document.getElementById('postcode-cta-btn');
+  if (ctaBtn) ctaBtn.disabled = true;
   document.getElementById('postcode-chip').classList.add('postcode-chip-active');
   document.body.classList.add('postcode-chip-showing');
   postcodeChipVisible = true;
@@ -224,6 +236,10 @@ function launchFromPostcode(modeKey) {
   updateModeButtons();
   setState('travel');
   run(pendingPlace.lng, pendingPlace.lat, pendingPlace.name);
+}
+function launchFromPostcodeDefault() {
+  mode = 'walking';
+  launchFromPostcode('walking');
 }
 
 function modePickerBack() {
@@ -375,7 +391,7 @@ async function selectSuggestion(s) {
         if (pcMatch) postcode = formatPostcode(pcMatch[1]);
       }
       pendingPlace = { lng: c[0], lat: c[1], name: name, address: address, postcode: postcode };
-      map.flyTo([c[1], c[0]], 14, { duration: 1.5 });
+      map.flyTo([c[1], c[0]], 12, { duration: 1.0 });
       placeMarker(c[1], c[0]);
       setStatus(name);
       if (pendingPlace.postcode) {
@@ -461,6 +477,8 @@ async function run(lng, lat, label) {
       var layer = L.geoJSON(f, { style: { fillColor: color, fillOpacity: 0.18, color: color, weight: 2.5, opacity: 0.7 } }).addTo(map);
       isoLayers.push(layer);
     });
+
+    fitIsochroneBounds();
 
     var areas = {};
     data.features.forEach(function(f) { areas[f.properties.contour] = calcArea(f.geometry); });
