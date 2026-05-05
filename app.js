@@ -306,6 +306,14 @@ var suggBox = overlaySugg;
 function closeSugg() { activeIdx = -1; }
 function openSugg() { if (currentSuggestions.length || pendingPostcode) renderSuggestions(); }
 
+var SEARCH_HELPER_HTML = '<div class="search-helper"><p class="search-helper-hint">Search for any place, landmark or postcode</p><div class="search-helper-chips"><button class="search-helper-chip" onclick="triggerExampleSearch(\'Big Ben\')">Big Ben</button></div></div>';
+
+function triggerExampleSearch(q) {
+  overlayInput.value = q;
+  clearTimeout(suggestTimer);
+  fetchSuggest(q);
+}
+
 function openSearchOverlay() {
   preSearchState = appState;
   setState('search');
@@ -313,7 +321,7 @@ function openSearchOverlay() {
   overlayInput.placeholder = 'Search a place or postcode…';
   pendingPostcode = null;
   currentSuggestions = [];
-  overlaySugg.innerHTML = '';
+  overlaySugg.innerHTML = SEARCH_HELPER_HTML;
   requestAnimationFrame(function() {
     overlayEl.classList.add('open');
     overlayInput.focus();
@@ -450,7 +458,7 @@ document.getElementById('search-back-btn').addEventListener('click', closeSearch
 overlayInput.addEventListener('input', function() {
   var q = overlayInput.value.trim();
   clearTimeout(suggestTimer);
-  if (!q) { pendingPostcode = null; currentSuggestions = []; overlaySugg.innerHTML = ''; return; }
+  if (!q) { pendingPostcode = null; currentSuggestions = []; overlaySugg.innerHTML = SEARCH_HELPER_HTML; return; }
   pendingPostcode = PC_RE.test(q) ? formatPostcode(q) : null;
   if (pendingPostcode) renderSuggestions();
   suggestTimer = setTimeout(function() { fetchSuggest(q); }, 180);

@@ -125,6 +125,11 @@
   }
   .search-overlay-list .sugg-item { border-radius: 12px; border-bottom: none; margin-bottom: 2px; }
   .search-overlay-list .sugg-item:hover, .search-overlay-list .sugg-item.active { background: var(--glass-tile-bg); }
+  .search-helper { padding: 12px 4px 8px; }
+  .search-helper-hint { font-size: 13px; color: var(--text-dim); margin: 0 0 12px; }
+  .search-helper-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .search-helper-chip { font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text); background: var(--glass-tile-bg); border: 1px solid var(--btn-border); border-radius: 20px; padding: 6px 14px; cursor: pointer; }
+  .search-helper-chip:active { opacity: 0.6; }
   .travel-card, .postcode-chip {
     position: absolute; bottom: 76px; left: 16px; z-index: 1100;
     width: 320px; border-radius: 20px;
