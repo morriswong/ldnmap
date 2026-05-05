@@ -204,6 +204,23 @@
   .postcode-chip-title-row { display: flex; align-items: baseline; gap: 6px; }
   .postcode-chip-badge { font-size: 11px; font-weight: 500; color: var(--text-dim); white-space: nowrap; flex-shrink: 0; }
   .postcode-chip-badge:empty { display: none; }
+  .pc-copy-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px; flex-shrink: 0;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.15s, background 0.15s, border-color 0.15s;
+    align-self: center;
+  }
+  .pc-copy-btn svg { width: 12px; height: 12px; flex-shrink: 0; }
+  .pc-copy-btn:hover { color: var(--text); background: var(--glass-tile-bg); border-color: var(--glass-border); }
+  .pc-copy-btn:active { opacity: 0.6; }
+  .pc-copy-btn--copied { color: #2ecc71; border-color: rgba(46,204,113,0.3); background: rgba(46,204,113,0.08); }
+  body.light .pc-copy-btn--copied { color: #059669; border-color: rgba(5,150,105,0.3); background: rgba(5,150,105,0.08); }
   .postcode-chip-attrib { font-size: 9px; color: var(--text-faint); text-align: right; margin-top: 6px; }
   .postcode-cta-row { margin-top: 10px; margin-bottom: 8px; display: flex; flex-direction: column; gap: 6px; }
   .postcode-cta-label { font-size: 10px; font-weight: 500; color: var(--text-dim); letter-spacing: 0.02em; }

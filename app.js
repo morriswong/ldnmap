@@ -114,13 +114,8 @@ function renderPostcode(geo, pc) {
       }
     }
 
-    var props = geo.features[0].properties;
-    var info = props.postcodetype + ' · '
-      + props.postcodedeliverypointcount_total + ' delivery points · '
-      + geo.features.length + ' polygon part' + (geo.features.length > 1 ? 's' : '');
-    setStatus(info);
     var pcStEl = document.getElementById('pc-st');
-    if (pcStEl) { pcStEl.textContent = info; pcStEl.classList.remove('is-loading'); }
+    if (pcStEl) { pcStEl.textContent = ''; pcStEl.classList.remove('is-loading'); }
   });
 }
 
@@ -376,6 +371,28 @@ function launchFromPostcode(modeKey) {
 function launchFromPostcodeDefault() {
   mode = 'walking';
   launchFromPostcode('walking');
+}
+function copyPostcode() {
+  if (!pendingPlace || !pendingPlace.postcode) return;
+  var pc = pendingPlace.postcode;
+  var btn = document.getElementById('pc-copy-btn');
+  navigator.clipboard.writeText(pc).then(function() {
+    if (!btn) return;
+    btn.classList.add('pc-copy-btn--copied');
+    setTimeout(function() { if (btn) btn.classList.remove('pc-copy-btn--copied'); }, 1800);
+  }).catch(function() {
+    var ta = document.createElement('textarea');
+    ta.value = pc;
+    ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch(e) {}
+    document.body.removeChild(ta);
+    if (btn) {
+      btn.classList.add('pc-copy-btn--copied');
+      setTimeout(function() { if (btn) btn.classList.remove('pc-copy-btn--copied'); }, 1800);
+    }
+  });
 }
 
 function modePickerBack() {
