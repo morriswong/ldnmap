@@ -156,7 +156,6 @@ function pickMode(m) {
   updateModeButtons();
   isoLayers.forEach(function(l) { map.removeLayer(l); });
   isoLayers = [];
-  document.getElementById('iso-legend').classList.remove('visible');
   run(pendingPlace.lng, pendingPlace.lat, pendingPlace.name);
 }
 
@@ -165,12 +164,14 @@ function updateModeButtons() {
     var btn = document.getElementById('btn-' + m);
     if (btn) btn.classList.toggle('active', m === mode);
   });
+  var LABELS = { walking: 'Walk', cycling: 'Cycle', driving: 'Drive' };
+  var badge = document.getElementById('travel-mode-badge');
+  if (badge) badge.textContent = LABELS[mode] || '';
 }
 
 function changeMode() {
   isoLayers.forEach(function(l) { map.removeLayer(l); });
   isoLayers = [];
-  document.getElementById('iso-legend').classList.remove('visible');
   hidePostcodeChip();
   MINS.forEach(function(m) {
     var el = document.getElementById('a' + m);
@@ -189,7 +190,6 @@ function closeTravelCard() {
   if (marker) { map.removeLayer(marker); marker = null; }
   isoLayers.forEach(function(l) { map.removeLayer(l); });
   isoLayers = [];
-  document.getElementById('iso-legend').classList.remove('visible');
   MINS.forEach(function(m) {
     var el = document.getElementById('a' + m);
     if (el) { el.textContent = '—'; el.classList.add('empty'); }
@@ -461,7 +461,6 @@ async function run(lng, lat, label) {
 
   isoLayers.forEach(function(l) { map.removeLayer(l); });
   isoLayers = [];
-  document.getElementById('iso-legend').classList.remove('visible');
 
   var profile = mode === 'driving' ? 'driving-traffic' : mode;
   var url = 'https://api.mapbox.com/isochrone/v1/mapbox/' + profile + '/' + lng + ',' + lat
@@ -481,7 +480,6 @@ async function run(lng, lat, label) {
       var layer = L.geoJSON(f, { style: { fillColor: color, fillOpacity: 0.18, color: color, weight: 3.5, opacity: 0.9 } }).addTo(map);
       isoLayers.push(layer);
     });
-    document.getElementById('iso-legend').classList.add('visible');
 
     fitIsochroneBounds();
 
