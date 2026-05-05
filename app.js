@@ -1,5 +1,6 @@
 var MAPBOX_TOKEN = '__MAPBOX_TOKEN__';
 var OS_TOKEN = '__OS_TOKEN__';
+mapboxgl.accessToken = MAPBOX_TOKEN;
 var COLORS = ['#2ecc71','#3498db','#f39c12','#e74c3c'];
 var MINS = [5,10,15,20];
 var PC_RE = /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i;
@@ -17,8 +18,7 @@ if (window.visualViewport) {
 }
 
 function buildStyleUrl(dark) {
-  return 'https://api.mapbox.com/styles/v1/mapbox/' +
-    (dark ? 'dark-v11' : 'streets-v12') + '?access_token=' + MAPBOX_TOKEN;
+  return 'mapbox://styles/mapbox/' + (dark ? 'dark-v11' : 'streets-v12');
 }
 function whenStyleReady(fn) {
   if (map.isStyleLoaded()) { fn(); return; }
@@ -28,26 +28,15 @@ function whenStyleReady(fn) {
   map.once('styledata', check);
 }
 
-var map = new maplibregl.Map({
+var map = new mapboxgl.Map({
   container: 'map',
   style: buildStyleUrl(false),
   center: [-0.1246, 51.5007],
   zoom: 13,
-  attributionControl: false,
-  transformRequest: function(url) {
-    if (!url.startsWith('mapbox://')) return;
-    var path = url.slice('mapbox://'.length);
-    if (path.startsWith('fonts/')) {
-      return { url: 'https://api.mapbox.com/fonts/v1/' + path.slice(6) + '?access_token=' + MAPBOX_TOKEN };
-    }
-    if (path.startsWith('sprites/')) {
-      return { url: 'https://api.mapbox.com/styles/v1/' + path.slice(8) + '/sprite?access_token=' + MAPBOX_TOKEN };
-    }
-    return { url: 'https://api.mapbox.com/' + path + (path.includes('?') ? '&' : '?') + 'access_token=' + MAPBOX_TOKEN };
-  }
+  attributionControl: false
 });
-map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
-map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
+map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'top-right');
+map.addControl(new mapboxgl.AttributionControl({ compact: true }), 'bottom-right');
 
 var isDark = false;
 
@@ -170,7 +159,7 @@ function updateMarkerColor() {
   markerEl.style.borderColor = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.3)';
 }
 updateMarkerColor();
-var markerInstance = new maplibregl.Marker({ element: markerEl });
+var markerInstance = new mapboxgl.Marker({ element: markerEl });
 var marker = null;
 
 var isoLayers = [];
@@ -218,7 +207,7 @@ function geojsonBounds(geojson) {
   else if (geojson.type === 'FeatureCollection') { geojson.features.forEach(function(f) { walk(f.geometry); }); }
   else { walk(geojson); }
   if (!coords.length) return null;
-  var b = new maplibregl.LngLatBounds(coords[0], coords[0]);
+  var b = new mapboxgl.LngLatBounds(coords[0], coords[0]);
   coords.forEach(function(c) { b.extend(c); });
   return b;
 }
