@@ -183,7 +183,7 @@
   body.light .travel-modes:has(.active) .travel-mode-btn:not(.active) { opacity: 0.55; }
   .travel-slots { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 6px; }
   .travel-slot {
-    padding: 8px 4px; border-radius: 10px; border: 2px solid var(--slot-color);
+    padding: 8px 4px; border-radius: 10px; border: 1px solid color-mix(in srgb, var(--slot-color) 55%, transparent);
     background: var(--glass-tile-bg); text-align: center;
     cursor: pointer; transition: opacity 0.2s ease, background 0.15s;
   }
