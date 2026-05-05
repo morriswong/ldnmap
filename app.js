@@ -293,10 +293,6 @@ function selectBucket(min) {
 function changeMode() {
   removeAllIsoLayers();
   hidePostcodeChip();
-  MINS.forEach(function(m) {
-    var el = document.getElementById('a' + m);
-    if (el) { el.textContent = '—'; el.classList.add('empty'); }
-  });
   if (pendingPlace && pendingPlace.postcode) {
     showPostcodeChip();
     searchPostcode(pendingPlace.postcode);
@@ -309,10 +305,6 @@ function changeMode() {
 function closeTravelCard() {
   if (marker) { marker.remove(); marker = null; }
   removeAllIsoLayers();
-  MINS.forEach(function(m) {
-    var el = document.getElementById('a' + m);
-    if (el) { el.textContent = '—'; el.classList.add('empty'); }
-  });
   pendingPlace = null;
   resetBucketSelection();
   setState('idle');
@@ -638,38 +630,10 @@ async function run(lng, lat, label) {
       fitIsochroneBounds();
     });
 
-    var areas = {};
-    data.features.forEach(function(f) { areas[f.properties.contour] = calcArea(f.geometry); });
-    MINS.forEach(function(m) {
-      var el = document.getElementById('a' + m);
-      if (!el) return;
-      var a = areas[m];
-      if (a !== undefined && a > 0) { el.textContent = a >= 0.995 ? Math.round(a) + ' km²' : a.toFixed(2) + ' km²'; el.classList.remove('empty'); }
-      else { el.textContent = '—'; el.classList.add('empty'); }
-    });
-
     setStatus(label || lat.toFixed(4) + '°N, ' + lng.toFixed(4) + '°E');
   } catch(e) { setStatus('Failed to load isochrones', true); }
 }
 
-function calcArea(geom) {
-  if (geom.type === 'Polygon') return ringArea(geom.coordinates);
-  if (geom.type === 'MultiPolygon') return geom.coordinates.reduce(function(s, p) { return s + ringArea(p); }, 0);
-  return 0;
-}
-function ringArea(rings) {
-  var total = 0;
-  for (var r = 0; r < rings.length; r++) {
-    var ring = rings[r], a = 0;
-    for (var i = 0; i < ring.length - 1; i++) {
-      var x1 = ring[i][0], y1 = ring[i][1], x2 = ring[i+1][0], y2 = ring[i+1][1];
-      a += rad(x2 - x1) * (2 + Math.sin(rad(y1)) + Math.sin(rad(y2)));
-    }
-    total += Math.abs(a * 6371 * 6371 / 2);
-  }
-  return total;
-}
-function rad(d) { return d * Math.PI / 180; }
 function setStatus(msg, isError) {
   var el = document.getElementById('st');
   if (el) {
