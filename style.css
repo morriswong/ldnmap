@@ -59,7 +59,7 @@
   #search-pill.icon-only .pill-label { display: none; }
   #search-pill.icon-only { padding: 0; width: 48px; justify-content: center; }
   .theme-fab {
-    display: flex; position: absolute; top: 16px; right: 16px; z-index: 1000;
+    display: flex; position: absolute; top: 90px; right: 16px; z-index: 1000;
     width: 40px; height: 40px; border-radius: 20px;
     background: var(--glass-fab-bg);
     backdrop-filter: blur(30px) saturate(180%);
