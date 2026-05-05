@@ -21,11 +21,7 @@ function buildStyleUrl(dark) {
   return 'mapbox://styles/mapbox/' + (dark ? 'dark-v11' : 'streets-v12');
 }
 function whenStyleReady(fn) {
-  if (map.isStyleLoaded()) { fn(); return; }
-  var check = function() {
-    if (map.isStyleLoaded()) { fn(); } else { map.once('styledata', check); }
-  };
-  map.once('styledata', check);
+  if (map.isStyleLoaded()) { fn(); } else { map.once('style.load', fn); }
 }
 
 var map = new mapboxgl.Map({
@@ -138,15 +134,11 @@ function toggleTheme() {
     : '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>';
   var fab = document.getElementById('theme-icon-fab');
   if (fab) fab.innerHTML = iconHtml;
-  map.setStyle(buildStyleUrl(isDark));
-  map.once('styledata', function onThemeData() {
-    if (map.isStyleLoaded()) {
-      rehydrateLayers();
-      updateMarkerColor();
-    } else {
-      map.once('styledata', onThemeData);
-    }
+  map.once('style.load', function() {
+    rehydrateLayers();
+    updateMarkerColor();
   });
+  map.setStyle(buildStyleUrl(isDark));
 }
 
 var markerEl = (function() {
