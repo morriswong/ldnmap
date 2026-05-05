@@ -43,7 +43,6 @@
       </svg>
     </button>
     <div class="travel-card-title" id="st">Loading…</div>
-    <span id="travel-mode-badge" class="travel-mode-badge"></span>
     <button class="travel-card-btn" onclick="closeTravelCard()" aria-label="Close">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M18 6L6 18M6 6l12 12"/>
@@ -55,29 +54,11 @@
     <button class="travel-mode-btn" id="btn-cycling" onclick="pickMode('cycling')">Cycle</button>
     <button class="travel-mode-btn" id="btn-driving" onclick="pickMode('driving')">Drive</button>
   </div>
-  <div class="travel-card-legend">
-    <div class="travel-card-legend-item">
-      <span class="travel-card-legend-swatch" style="background:#2ecc71"></span>
-      <span class="travel-card-legend-label">5 min</span>
-    </div>
-    <div class="travel-card-legend-item">
-      <span class="travel-card-legend-swatch" style="background:#3498db"></span>
-      <span class="travel-card-legend-label">10 min</span>
-    </div>
-    <div class="travel-card-legend-item">
-      <span class="travel-card-legend-swatch" style="background:#f39c12"></span>
-      <span class="travel-card-legend-label">15 min</span>
-    </div>
-    <div class="travel-card-legend-item">
-      <span class="travel-card-legend-swatch" style="background:#e74c3c"></span>
-      <span class="travel-card-legend-label">20 min</span>
-    </div>
-  </div>
   <div class="travel-slots">
-    <div class="travel-slot"><div class="travel-slot-min">5 min</div><div class="travel-slot-area" id="a5">—</div></div>
-    <div class="travel-slot"><div class="travel-slot-min">10 min</div><div class="travel-slot-area" id="a10">—</div></div>
-    <div class="travel-slot"><div class="travel-slot-min">15 min</div><div class="travel-slot-area" id="a15">—</div></div>
-    <div class="travel-slot"><div class="travel-slot-min">20 min</div><div class="travel-slot-area" id="a20">—</div></div>
+    <div class="travel-slot" id="slot-5"  onclick="selectBucket(5)"  style="--slot-color:#2ecc71"><div class="travel-slot-min">5 min</div><div class="travel-slot-area" id="a5">—</div></div>
+    <div class="travel-slot" id="slot-10" onclick="selectBucket(10)" style="--slot-color:#3498db"><div class="travel-slot-min">10 min</div><div class="travel-slot-area" id="a10">—</div></div>
+    <div class="travel-slot" id="slot-15" onclick="selectBucket(15)" style="--slot-color:#f39c12"><div class="travel-slot-min">15 min</div><div class="travel-slot-area" id="a15">—</div></div>
+    <div class="travel-slot" id="slot-20" onclick="selectBucket(20)" style="--slot-color:#e74c3c"><div class="travel-slot-min">20 min</div><div class="travel-slot-area" id="a20">—</div></div>
   </div>
 </div>
 

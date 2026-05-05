@@ -166,29 +166,22 @@
   }
   .travel-mode-btn:hover { background: var(--glass-tile-active); }
   .travel-mode-btn.active { background: var(--glass-tile-active); border-color: var(--glass-highlight); font-weight: 600; }
-  .travel-card-legend {
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 6px; margin-bottom: 10px; padding: 6px 8px;
-    border-radius: 10px; background: var(--glass-tile-bg); border: 1px solid var(--glass-border);
-  }
-  .travel-card-legend-item { display: flex; align-items: center; gap: 5px; flex: 1; justify-content: center; }
-  .travel-card-legend-swatch { display: block; width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; opacity: 0.85; }
-  .travel-card-legend-label { font-size: 10px; font-weight: 500; color: var(--text-dim); white-space: nowrap; }
-  .travel-mode-badge {
-    font-size: 10px; font-weight: 600; color: var(--text-dim);
-    background: var(--glass-tile-bg); border: 1px solid var(--glass-border);
-    border-radius: 6px; padding: 2px 7px; flex-shrink: 0;
-    letter-spacing: 0.02em; text-transform: uppercase;
-  }
-  .travel-mode-badge:empty { display: none; }
   .travel-slots { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 6px; }
   .travel-slot {
     padding: 8px 4px; border-radius: 10px; border: 1px solid var(--glass-border);
     background: var(--glass-tile-bg); text-align: center;
+    cursor: pointer; transition: opacity 0.2s ease, background 0.15s;
   }
+  .travel-slot:hover { background: var(--glass-tile-active); }
   .travel-slot-min { font-size: 10px; color: var(--text-dim); font-weight: 500; }
+  .travel-slot-min::before {
+    content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 2px;
+    background: var(--slot-color); margin-right: 3px; opacity: 0.85; vertical-align: middle;
+  }
   .travel-slot-area { font-size: 12px; color: var(--text); font-weight: 600; margin-top: 2px; font-variant-numeric: tabular-nums; }
   .travel-slot-area.empty { color: var(--text-dim); font-weight: 400; }
+  .travel-slot.active { background: var(--glass-tile-active); box-shadow: 0 0 0 1.5px var(--slot-color); }
+  .travel-slots.has-selection .travel-slot:not(.active) { opacity: 0.4; }
   .postcode-chip-info { flex: 1; min-width: 0; }
   .postcode-chip-label { font-size: 14px; font-weight: 600; color: #8b5cf6; }
   .postcode-chip-status { font-size: 11px; color: var(--text-dim); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

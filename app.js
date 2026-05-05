@@ -118,6 +118,7 @@ initTile();
 
 var marker = null;
 var isoLayers = [];
+var selectedMin = null;
 var mode = 'walking';
 var center = null;
 var postcodeLayer = null;
@@ -164,9 +165,40 @@ function updateModeButtons() {
     var btn = document.getElementById('btn-' + m);
     if (btn) btn.classList.toggle('active', m === mode);
   });
-  var LABELS = { walking: 'Walk', cycling: 'Cycle', driving: 'Drive' };
-  var badge = document.getElementById('travel-mode-badge');
-  if (badge) badge.textContent = LABELS[mode] || '';
+}
+
+function resetBucketSelection() {
+  selectedMin = null;
+  var slots = document.querySelector('.travel-slots');
+  if (slots) slots.classList.remove('has-selection');
+  MINS.forEach(function(m) {
+    var slot = document.getElementById('slot-' + m);
+    if (slot) slot.classList.remove('active');
+  });
+}
+
+function updateIsoHighlight() {
+  isoLayers.forEach(function(layer) {
+    var min = layer._isoMin;
+    var isSelected = selectedMin !== null && min === selectedMin;
+    var isDimmed   = selectedMin !== null && min !== selectedMin;
+    layer.setStyle({
+      weight:      isSelected ? 5.5 : (isDimmed ? 2   : 3.5),
+      opacity:     isSelected ? 1.0 : (isDimmed ? 0.35 : 0.9),
+      fillOpacity: isSelected ? 0.28 : (isDimmed ? 0.08 : 0.18)
+    });
+  });
+}
+
+function selectBucket(min) {
+  selectedMin = (selectedMin === min) ? null : min;
+  var slots = document.querySelector('.travel-slots');
+  MINS.forEach(function(m) {
+    var slot = document.getElementById('slot-' + m);
+    if (slot) slot.classList.toggle('active', m === selectedMin);
+  });
+  if (slots) slots.classList.toggle('has-selection', selectedMin !== null);
+  updateIsoHighlight();
 }
 
 function changeMode() {
@@ -195,6 +227,7 @@ function closeTravelCard() {
     if (el) { el.textContent = '—'; el.classList.add('empty'); }
   });
   pendingPlace = null;
+  resetBucketSelection();
   setState('idle');
 }
 
@@ -461,6 +494,7 @@ async function run(lng, lat, label) {
 
   isoLayers.forEach(function(l) { map.removeLayer(l); });
   isoLayers = [];
+  resetBucketSelection();
 
   var profile = mode === 'driving' ? 'driving-traffic' : mode;
   var url = 'https://api.mapbox.com/isochrone/v1/mapbox/' + profile + '/' + lng + ',' + lat
@@ -478,6 +512,7 @@ async function run(lng, lat, label) {
     sorted.forEach(function(f) {
       var color = COLORS[MINS.indexOf(f.properties.contour)] || '#888';
       var layer = L.geoJSON(f, { style: { fillColor: color, fillOpacity: 0.18, color: color, weight: 3.5, opacity: 0.9 } }).addTo(map);
+      layer._isoMin = f.properties.contour;
       isoLayers.push(layer);
     });
 
