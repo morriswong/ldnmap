@@ -318,7 +318,7 @@ function openSearchOverlay() {
   preSearchState = appState;
   setState('search');
   overlayInput.value = '';
-  overlayInput.placeholder = 'Search a place or postcode…';
+  overlayInput.placeholder = 'Search Maps';
   pendingPostcode = null;
   currentSuggestions = [];
   overlaySugg.innerHTML = SEARCH_HELPER_HTML;
