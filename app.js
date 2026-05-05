@@ -16,11 +16,25 @@ if (window.visualViewport) {
   window.visualViewport.addEventListener('scroll', syncAppHeight);
 }
 
-var map = L.map('map', { zoomControl: false }).setView([51.5007, -0.1246], 13);
-L.control.zoom({ position: 'topright' }).addTo(map);
+function buildStyleUrl(dark) {
+  return 'https://api.mapbox.com/styles/v1/mapbox/' +
+    (dark ? 'dark-v11' : 'streets-v12') + '?access_token=' + MAPBOX_TOKEN;
+}
+function whenStyleReady(fn) {
+  if (map.isStyleLoaded()) { fn(); } else { map.once('style.load', fn); }
+}
+
+var map = new maplibregl.Map({
+  container: 'map',
+  style: buildStyleUrl(false),
+  center: [-0.1246, 51.5007],
+  zoom: 13,
+  attributionControl: false
+});
+map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
 
 var isDark = false;
-var tileLayer = null;
 
 var prevState = null;
 var appState = 'idle';
@@ -72,38 +86,46 @@ function searchPostcode(pc) {
         : 'Error: ' + msg, true);
     });
 }
+
 function renderPostcode(geo, pc) {
-  if (postcodeLayer) { map.removeLayer(postcodeLayer); }
-  postcodeLayer = L.geoJSON(geo, {
-    style: { color: '#8b5cf6', weight: 2.5, fillColor: '#8b5cf6', fillOpacity: 0.18 }
-  }).addTo(map);
-  map.fitBounds(postcodeLayer.getBounds(), { padding: [24, 24], maxZoom: 16 });
-  var props = geo.features[0].properties;
-  var info = props.postcodetype + ' · '
-    + props.postcodedeliverypointcount_total + ' delivery points · '
-    + geo.features.length + ' polygon part' + (geo.features.length > 1 ? 's' : '');
-  setStatus(info);
-  var pcStEl = document.getElementById('pc-st');
-  if (pcStEl) { pcStEl.textContent = info; pcStEl.classList.remove('is-loading'); }
-  var boundsCenter = postcodeLayer.getBounds().getCenter();
-  if (pendingPlace && pendingPlace.postcode) {
-    pendingPlace.lat = boundsCenter.lat;
-    pendingPlace.lng = boundsCenter.lng;
-    var ctaBtn = document.getElementById('postcode-cta-btn');
-    if (ctaBtn) ctaBtn.disabled = false;
+  if (postcodeLayer) {
+    if (map.getLayer('postcode-fill')) map.removeLayer('postcode-fill');
+    if (map.getLayer('postcode-line')) map.removeLayer('postcode-line');
+    if (map.getSource('postcode'))     map.removeSource('postcode');
+    postcodeLayer = null;
   }
+  whenStyleReady(function() {
+    map.addSource('postcode', { type: 'geojson', data: geo });
+    map.addLayer({ id: 'postcode-fill', type: 'fill', source: 'postcode',
+      paint: { 'fill-color': '#8b5cf6', 'fill-opacity': 0.18 } });
+    map.addLayer({ id: 'postcode-line', type: 'line', source: 'postcode',
+      paint: { 'line-color': '#8b5cf6', 'line-width': 2.5, 'line-opacity': 1 } });
+    postcodeLayer = geo;
+
+    var bounds = geojsonBounds(geo);
+    if (bounds) {
+      map.fitBounds(bounds, { padding: { top: 24, right: 24, bottom: 24, left: 24 }, maxZoom: 16 });
+      var ctr = bounds.getCenter();
+      if (pendingPlace && pendingPlace.postcode) {
+        pendingPlace.lat = ctr.lat;
+        pendingPlace.lng = ctr.lng;
+        var ctaBtn = document.getElementById('postcode-cta-btn');
+        if (ctaBtn) ctaBtn.disabled = false;
+      }
+    }
+
+    var props = geo.features[0].properties;
+    var info = props.postcodetype + ' · '
+      + props.postcodedeliverypointcount_total + ' delivery points · '
+      + geo.features.length + ' polygon part' + (geo.features.length > 1 ? 's' : '');
+    setStatus(info);
+    var pcStEl = document.getElementById('pc-st');
+    if (pcStEl) { pcStEl.textContent = info; pcStEl.classList.remove('is-loading'); }
+  });
 }
 
 setState('idle');
 
-function initTile() {
-  var style = isDark ? 'dark-v11' : 'streets-v12';
-  if (tileLayer) map.removeLayer(tileLayer);
-  tileLayer = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/' + style + '/tiles/{z}/{x}/{y}@2x?access_token=' + MAPBOX_TOKEN, {
-    tileSize: 512, zoomOffset: -1, maxZoom: 18,
-    attribution: '&copy; <a href="https://www.mapbox.com/">Mapbox</a> &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
-  }).addTo(map);
-}
 function toggleTheme() {
   isDark = !isDark;
   document.body.classList.toggle('light', !isDark);
@@ -112,11 +134,26 @@ function toggleTheme() {
     : '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>';
   var fab = document.getElementById('theme-icon-fab');
   if (fab) fab.innerHTML = iconHtml;
-  initTile();
+  map.once('style.load', function() {
+    rehydrateLayers();
+    updateMarkerColor();
+  });
+  map.setStyle(buildStyleUrl(isDark));
 }
-initTile();
 
+var markerEl = (function() {
+  var el = document.createElement('div');
+  el.style.cssText = 'width:20px;height:20px;border-radius:50%;border:4px solid;cursor:pointer;box-sizing:border-box;';
+  return el;
+})();
+function updateMarkerColor() {
+  markerEl.style.backgroundColor = isDark ? '#fff' : '#1a1a1a';
+  markerEl.style.borderColor = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.3)';
+}
+updateMarkerColor();
+var markerInstance = new maplibregl.Marker({ element: markerEl });
 var marker = null;
+
 var isoLayers = [];
 var selectedMin = null;
 var mode = 'walking';
@@ -126,28 +163,87 @@ var pendingPlace = null;
 var postcodeChipVisible = false;
 var lastSearchQuery = '';
 
+function isoFillId(m)  { return 'iso-' + m + '-fill'; }
+function isoLineId(m)  { return 'iso-' + m + '-line'; }
+
+function addIsoLayer(feature, color) {
+  var mins = feature.properties.contour;
+  var sid  = 'iso-' + mins;
+  if (map.getSource(sid)) return;
+  map.addSource(sid, { type: 'geojson', data: feature });
+  map.addLayer({ id: isoFillId(mins), type: 'fill', source: sid,
+    paint: { 'fill-color': color, 'fill-opacity': 0.18 } });
+  map.addLayer({ id: isoLineId(mins), type: 'line', source: sid,
+    paint: { 'line-color': color, 'line-width': 3.5, 'line-opacity': 0.9 } });
+  isoLayers.push({ minutes: mins, sourceId: sid, data: feature });
+}
+
+function removeAllIsoLayers() {
+  isoLayers.forEach(function(l) {
+    var m = l.minutes;
+    if (map.getLayer(isoFillId(m)))  map.removeLayer(isoFillId(m));
+    if (map.getLayer(isoLineId(m)))  map.removeLayer(isoLineId(m));
+    if (map.getSource(l.sourceId))   map.removeSource(l.sourceId);
+  });
+  isoLayers = [];
+}
+
+function geojsonBounds(geojson) {
+  var coords = [];
+  function walk(geom) {
+    if (!geom) return;
+    if (geom.type === 'Polygon')           { geom.coordinates.forEach(function(r) { coords = coords.concat(r); }); }
+    else if (geom.type === 'MultiPolygon') { geom.coordinates.forEach(function(p) { p.forEach(function(r) { coords = coords.concat(r); }); }); }
+  }
+  if (geojson.type === 'Feature')                { walk(geojson.geometry); }
+  else if (geojson.type === 'FeatureCollection') { geojson.features.forEach(function(f) { walk(f.geometry); }); }
+  else { walk(geojson); }
+  if (!coords.length) return null;
+  var b = new maplibregl.LngLatBounds(coords[0], coords[0]);
+  coords.forEach(function(c) { b.extend(c); });
+  return b;
+}
+
+function rehydrateLayers() {
+  var saved = isoLayers.slice();
+  isoLayers = [];
+  saved.forEach(function(l) {
+    var color = COLORS[MINS.indexOf(l.minutes)] || '#888';
+    addIsoLayer(l.data, color);
+  });
+  if (selectedMin !== null) updateIsoHighlight();
+
+  if (postcodeLayer) {
+    var geo = postcodeLayer;
+    postcodeLayer = null;
+    map.addSource('postcode', { type: 'geojson', data: geo });
+    map.addLayer({ id: 'postcode-fill', type: 'fill', source: 'postcode',
+      paint: { 'fill-color': '#8b5cf6', 'fill-opacity': 0.18 } });
+    map.addLayer({ id: 'postcode-line', type: 'line', source: 'postcode',
+      paint: { 'line-color': '#8b5cf6', 'line-width': 2.5, 'line-opacity': 1 } });
+    postcodeLayer = geo;
+  }
+}
+
 function isoFitPadding() {
-  return window.innerWidth <= 768 ? [60, 24, 200, 24] : [60, 24, 100, 340];
+  return window.innerWidth <= 768
+    ? { top: 60, right: 24, bottom: 200, left: 24 }
+    : { top: 60, right: 24, bottom: 100, left: 340 };
 }
 function fitIsochroneBounds() {
   if (!isoLayers.length) return;
-  var bounds = isoLayers[0].getBounds();
-  if (!bounds.isValid()) return;
-  map.fitBounds(bounds, { padding: isoFitPadding(), maxZoom: 14, animate: true });
+  var bounds = geojsonBounds(isoLayers[0].data);
+  if (bounds) map.fitBounds(bounds, { padding: isoFitPadding(), maxZoom: 14 });
 }
 
 function placeMarker(lat, lng) {
-  if (marker) map.removeLayer(marker);
-  var markerFill = isDark ? '#fff' : '#1a1a1a';
-  var markerRing = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.3)';
-  marker = L.circleMarker([lat, lng], {
-    radius: 6, fillColor: markerFill, fillOpacity: 1,
-    color: markerRing, weight: 8
-  }).addTo(map);
+  updateMarkerColor();
+  markerInstance.setLngLat([lng, lat]).addTo(map);
+  marker = markerInstance;
 }
 
 map.on('mousemove', function(e) {
-  document.getElementById('coords').textContent = e.latlng.lat.toFixed(4) + '°N, ' + e.latlng.lng.toFixed(4) + '°E';
+  document.getElementById('coords').textContent = e.lngLat.lat.toFixed(4) + '°N, ' + e.lngLat.lng.toFixed(4) + '°E';
 });
 
 
@@ -155,8 +251,7 @@ function pickMode(m) {
   if (!pendingPlace) return;
   mode = m;
   updateModeButtons();
-  isoLayers.forEach(function(l) { map.removeLayer(l); });
-  isoLayers = [];
+  removeAllIsoLayers();
   run(pendingPlace.lng, pendingPlace.lat, pendingPlace.name);
 }
 
@@ -178,15 +273,17 @@ function resetBucketSelection() {
 }
 
 function updateIsoHighlight() {
-  isoLayers.forEach(function(layer) {
-    var min = layer._isoMin;
-    var isSelected = selectedMin !== null && min === selectedMin;
-    var isDimmed   = selectedMin !== null && min !== selectedMin;
-    layer.setStyle({
-      weight:      isSelected ? 5.5 : (isDimmed ? 2   : 3.5),
-      opacity:     isSelected ? 1.0 : (isDimmed ? 0.35 : 0.9),
-      fillOpacity: isSelected ? 0.28 : (isDimmed ? 0.08 : 0.18)
-    });
+  isoLayers.forEach(function(l) {
+    var m = l.minutes;
+    var sel = selectedMin !== null && m === selectedMin;
+    var dim = selectedMin !== null && m !== selectedMin;
+    if (map.getLayer(isoLineId(m))) {
+      map.setPaintProperty(isoLineId(m), 'line-width',   sel ? 5.5 : (dim ? 2   : 3.5));
+      map.setPaintProperty(isoLineId(m), 'line-opacity', sel ? 1.0 : (dim ? 0.35 : 0.9));
+    }
+    if (map.getLayer(isoFillId(m))) {
+      map.setPaintProperty(isoFillId(m), 'fill-opacity', sel ? 0.28 : (dim ? 0.08 : 0.18));
+    }
   });
 }
 
@@ -202,8 +299,7 @@ function selectBucket(min) {
 }
 
 function changeMode() {
-  isoLayers.forEach(function(l) { map.removeLayer(l); });
-  isoLayers = [];
+  removeAllIsoLayers();
   hidePostcodeChip();
   MINS.forEach(function(m) {
     var el = document.getElementById('a' + m);
@@ -219,9 +315,8 @@ function changeMode() {
 }
 
 function closeTravelCard() {
-  if (marker) { map.removeLayer(marker); marker = null; }
-  isoLayers.forEach(function(l) { map.removeLayer(l); });
-  isoLayers = [];
+  if (marker) { marker.remove(); marker = null; }
+  removeAllIsoLayers();
   MINS.forEach(function(m) {
     var el = document.getElementById('a' + m);
     if (el) { el.textContent = '—'; el.classList.add('empty'); }
@@ -233,7 +328,7 @@ function closeTravelCard() {
 
 function closePostcodeChip() {
   hidePostcodeChip();
-  if (marker) { map.removeLayer(marker); marker = null; }
+  if (marker) { marker.remove(); marker = null; }
   pendingPlace = null;
   setState('idle');
 }
@@ -258,7 +353,12 @@ function hidePostcodeChip() {
   document.getElementById('postcode-chip').classList.remove('postcode-chip-active');
   document.body.classList.remove('postcode-chip-showing');
   postcodeChipVisible = false;
-  if (postcodeLayer) { map.removeLayer(postcodeLayer); postcodeLayer = null; }
+  if (postcodeLayer) {
+    if (map.getLayer('postcode-fill')) map.removeLayer('postcode-fill');
+    if (map.getLayer('postcode-line')) map.removeLayer('postcode-line');
+    if (map.getSource('postcode'))     map.removeSource('postcode');
+    postcodeLayer = null;
+  }
 }
 
 function chipBack() {
@@ -280,7 +380,7 @@ function launchFromPostcodeDefault() {
 
 function modePickerBack() {
   hidePostcodeChip();
-  if (marker) { map.removeLayer(marker); marker = null; }
+  if (marker) { marker.remove(); marker = null; }
   openSearchOverlay();
   var q = lastSearchQuery.trim();
   overlayInput.value = lastSearchQuery;
@@ -435,7 +535,7 @@ async function selectSuggestion(s) {
         if (pcMatch) postcode = formatPostcode(pcMatch[1]);
       }
       pendingPlace = { lng: c[0], lat: c[1], name: name, address: address, postcode: postcode };
-      map.flyTo([c[1], c[0]], 12, { duration: 1.0 });
+      map.flyTo({ center: [c[0], c[1]], zoom: 12, duration: 1000 });
       placeMarker(c[1], c[0]);
       setStatus(name);
       if (pendingPlace.postcode) {
@@ -500,8 +600,7 @@ async function run(lng, lat, label) {
   setStatus('Loading isochrones…');
   placeMarker(lat, lng);
 
-  isoLayers.forEach(function(l) { map.removeLayer(l); });
-  isoLayers = [];
+  removeAllIsoLayers();
   resetBucketSelection();
 
   var profile = mode === 'driving' ? 'driving-traffic' : mode;
@@ -517,14 +616,13 @@ async function run(lng, lat, label) {
     if (!data.features || !data.features.length) { setStatus('No data for this location', true); return; }
 
     var sorted = data.features.slice().sort(function(a, b) { return b.properties.contour - a.properties.contour; });
-    sorted.forEach(function(f) {
-      var color = COLORS[MINS.indexOf(f.properties.contour)] || '#888';
-      var layer = L.geoJSON(f, { style: { fillColor: color, fillOpacity: 0.18, color: color, weight: 3.5, opacity: 0.9 } }).addTo(map);
-      layer._isoMin = f.properties.contour;
-      isoLayers.push(layer);
+    whenStyleReady(function() {
+      sorted.forEach(function(f) {
+        var color = COLORS[MINS.indexOf(f.properties.contour)] || '#888';
+        addIsoLayer(f, color);
+      });
+      fitIsochroneBounds();
     });
-
-    fitIsochroneBounds();
 
     var areas = {};
     data.features.forEach(function(f) { areas[f.properties.contour] = calcArea(f.geometry); });
