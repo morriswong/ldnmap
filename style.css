@@ -6,7 +6,7 @@
     --btn-on-bg: rgba(255,255,255,0.1); --btn-on-border: rgba(255,255,255,0.2);
     --input-bg: rgba(255,255,255,0.04); --input-focus-bg: rgba(255,255,255,0.06); --input-placeholder: rgba(255,255,255,0.2);
     --divider: rgba(255,255,255,0.06); --slot-bg: rgba(255,255,255,0.02); --slot-border: rgba(255,255,255,0.05); --slot-hover-border: rgba(255,255,255,0.1);
-    --coord-bg: rgba(0,0,0,0.5); --zoom-bg: rgba(10,10,10,0.85); --zoom-hover-bg: rgba(30,30,30,0.9);
+    --zoom-bg: rgba(10,10,10,0.85); --zoom-hover-bg: rgba(30,30,30,0.9);
     --attrib-bg: rgba(0,0,0,0.6); --attrib-text: rgba(255,255,255,0.4); --attrib-link: rgba(255,255,255,0.5);
     --sbtn-bg: #fff; --sbtn-text: #0a0a0a;
     --mbtn-text: rgba(255,255,255,0.4); --mbtn-hover-text: rgba(255,255,255,0.7);
@@ -23,7 +23,7 @@
     --btn-on-bg: rgba(0,0,0,0.08); --btn-on-border: rgba(0,0,0,0.2);
     --input-bg: rgba(0,0,0,0.04); --input-focus-bg: rgba(0,0,0,0.06); --input-placeholder: rgba(0,0,0,0.3);
     --divider: rgba(0,0,0,0.08); --slot-bg: rgba(0,0,0,0.02); --slot-border: rgba(0,0,0,0.06); --slot-hover-border: rgba(0,0,0,0.12);
-    --coord-bg: rgba(255,255,255,0.7); --zoom-bg: rgba(255,255,255,0.9); --zoom-hover-bg: rgba(240,240,240,0.95);
+    --zoom-bg: rgba(255,255,255,0.9); --zoom-hover-bg: rgba(240,240,240,0.95);
     --attrib-bg: rgba(255,255,255,0.7); --attrib-text: rgba(0,0,0,0.5); --attrib-link: rgba(0,0,0,0.6);
     --sbtn-bg: #1a1a1a; --sbtn-text: #fff;
     --mbtn-text: rgba(0,0,0,0.5); --mbtn-hover-text: rgba(0,0,0,0.8);
@@ -93,7 +93,6 @@
   body.light .mapboxgl-ctrl-icon { filter: brightness(0); }
   .mapboxgl-ctrl-attrib { background: var(--attrib-bg) !important; color: var(--attrib-text) !important; font-size: 10px !important; backdrop-filter: blur(8px) !important; -webkit-backdrop-filter: blur(8px) !important; border-radius: 6px 0 0 0 !important; padding: 3px 8px !important; }
   .mapboxgl-ctrl-attrib a { color: var(--attrib-link) !important; }
-  .coord-display { position: absolute; bottom: 28px; left: 16px; z-index: 1000; font-size: 11px; color: var(--text-dim); background: var(--coord-bg); padding: 4px 10px; border-radius: 8px; backdrop-filter: blur(8px); font-variant-numeric: tabular-nums; }
   .search-overlay {
     position: fixed; inset: 0; z-index: 1200;
     background: var(--glass-sheet-bg);
@@ -269,7 +268,6 @@
     }
     #search-pill:active { transform: translateX(-50%) scale(0.97); }
     .theme-fab { top: 12px; bottom: auto; left: 12px; right: auto; }
-    .coord-display { display: none; }
     .sinput { font-size: 16px; }
     .travel-card, .postcode-chip {
       bottom: 0; left: 0; right: 0; width: auto;

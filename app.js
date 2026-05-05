@@ -237,9 +237,6 @@ function placeMarker(lat, lng) {
   marker = markerInstance;
 }
 
-map.on('mousemove', function(e) {
-  document.getElementById('coords').textContent = e.lngLat.lat.toFixed(4) + '°N, ' + e.lngLat.lng.toFixed(4) + '°E';
-});
 
 
 function pickMode(m) {
