@@ -21,7 +21,11 @@ function buildStyleUrl(dark) {
     (dark ? 'dark-v11' : 'streets-v12') + '?access_token=' + MAPBOX_TOKEN;
 }
 function whenStyleReady(fn) {
-  if (map.isStyleLoaded()) { fn(); } else { map.once('style.load', fn); }
+  if (map.isStyleLoaded()) { fn(); return; }
+  var check = function() {
+    if (map.isStyleLoaded()) { fn(); } else { map.once('styledata', check); }
+  };
+  map.once('styledata', check);
 }
 
 var map = new maplibregl.Map({
@@ -29,7 +33,18 @@ var map = new maplibregl.Map({
   style: buildStyleUrl(false),
   center: [-0.1246, 51.5007],
   zoom: 13,
-  attributionControl: false
+  attributionControl: false,
+  transformRequest: function(url) {
+    if (!url.startsWith('mapbox://')) return;
+    var path = url.slice('mapbox://'.length);
+    if (path.startsWith('fonts/')) {
+      return { url: 'https://api.mapbox.com/fonts/v1/' + path.slice(6) + '?access_token=' + MAPBOX_TOKEN };
+    }
+    if (path.startsWith('sprites/')) {
+      return { url: 'https://api.mapbox.com/styles/v1/' + path.slice(8) + '/sprite?access_token=' + MAPBOX_TOKEN };
+    }
+    return { url: 'https://api.mapbox.com/' + path + (path.includes('?') ? '&' : '?') + 'access_token=' + MAPBOX_TOKEN };
+  }
 });
 map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
 map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
@@ -134,11 +149,15 @@ function toggleTheme() {
     : '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>';
   var fab = document.getElementById('theme-icon-fab');
   if (fab) fab.innerHTML = iconHtml;
-  map.once('style.load', function() {
-    rehydrateLayers();
-    updateMarkerColor();
-  });
   map.setStyle(buildStyleUrl(isDark));
+  map.once('styledata', function onThemeData() {
+    if (map.isStyleLoaded()) {
+      rehydrateLayers();
+      updateMarkerColor();
+    } else {
+      map.once('styledata', onThemeData);
+    }
+  });
 }
 
 var markerEl = (function() {
