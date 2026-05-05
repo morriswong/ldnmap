@@ -9,7 +9,6 @@ A travel-time visualisation tool for London. Pick a point on the map and instant
 - Isochrone overlays via the Mapbox Isochrone API (walking, cycling, driving)
 - Location search with Mapbox Search Box (suggest + retrieve flow)
 - Postcode boundary lookup via Ordnance Survey NGD API
-- Area calculation for each time band (spherical polygon math, no library)
 - Light / dark theme toggle
 - Responsive layout: side panel on desktop, bottom sheet on mobile
 
@@ -23,7 +22,7 @@ Zero-dependency static site — no framework, no bundler, no build step.
 | `style.css` | Layout, responsive rules, glass effects, theme variables |
 | `app.js` | Map init, isochrone logic, search, UI state |
 
-Built on **Leaflet 1.9** for the map and **Mapbox** for tiles, isochrones, and geocoding.
+Built on **Mapbox GL JS** for the map, tiles, isochrones, and geocoding.
 
 ## Running locally
 
