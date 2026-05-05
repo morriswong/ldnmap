@@ -162,10 +162,19 @@
   .travel-mode-btn {
     flex: 1; padding: 7px 0; border-radius: 10px; border: 1px solid var(--glass-border);
     background: var(--glass-tile-bg); color: var(--text); font-family: 'DM Sans', sans-serif;
-    font-size: 12px; font-weight: 500; cursor: pointer; transition: background 0.15s;
+    font-size: 12px; font-weight: 500; cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s, opacity 0.15s;
   }
-  .travel-mode-btn:hover { background: var(--glass-tile-active); }
-  .travel-mode-btn.active { background: var(--glass-tile-active); border-color: var(--glass-highlight); font-weight: 600; }
+  .travel-mode-btn:not(.active):hover { background: var(--glass-tile-active); }
+  .travel-mode-btn.active {
+    background: rgba(91, 141, 238, 0.22); border-color: rgba(91, 141, 238, 0.55);
+    color: #a8c4f5; font-weight: 600;
+  }
+  .travel-modes:has(.active) .travel-mode-btn:not(.active) { opacity: 0.5; }
+  body.light .travel-mode-btn.active {
+    background: rgba(91, 141, 238, 0.14); border-color: rgba(91, 141, 238, 0.65); color: #2c5fcc;
+  }
+  body.light .travel-modes:has(.active) .travel-mode-btn:not(.active) { opacity: 0.55; }
   .travel-slots { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 6px; }
   .travel-slot {
     padding: 8px 4px; border-radius: 10px; border: 1px solid var(--glass-border);
