@@ -77,13 +77,30 @@ function searchPostcode(pc) {
       try { localStorage.setItem('pc:' + pc, JSON.stringify({ geojson: geo, ts: Date.now() })); } catch(e) {}
       renderPostcode(geo, pc);
     })
-    .catch(function(e) {
-      var pcSt = document.getElementById('pc-st');
-      if (pcSt) pcSt.classList.remove('is-loading');
-      var msg = e.message || '';
-      setStatus((msg.toLowerCase().includes('load') || msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('network'))
-        ? 'Network error — OS API key may not be configured yet.'
-        : 'Error: ' + msg, true);
+    .catch(function() {
+      fetch('https://api.postcodes.io/postcodes/' + pc.replace(/\s+/g, ''))
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          var pcSt = document.getElementById('pc-st');
+          if (pcSt) pcSt.classList.remove('is-loading');
+          if (data.status === 200 && data.result && data.result.latitude) {
+            if (pendingPlace) {
+              pendingPlace.lat = data.result.latitude;
+              pendingPlace.lng = data.result.longitude;
+            }
+            var ctaBtn = document.getElementById('postcode-cta-btn');
+            if (ctaBtn) ctaBtn.disabled = false;
+            map.flyTo({ center: [data.result.longitude, data.result.latitude], zoom: 14 });
+            setStatus('Boundary unavailable — showing postcode centre', false);
+          } else {
+            setStatus('Postcode lookup failed.', true);
+          }
+        })
+        .catch(function() {
+          var pcSt = document.getElementById('pc-st');
+          if (pcSt) pcSt.classList.remove('is-loading');
+          setStatus('Postcode lookup failed.', true);
+        });
     });
 }
 
