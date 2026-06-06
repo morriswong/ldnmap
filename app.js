@@ -431,6 +431,67 @@ function openSugg() { if (currentSuggestions.length || pendingPostcode) renderSu
 
 var SEARCH_HELPER_HTML = '<div class="search-helper"><p class="search-helper-hint">Search for any place, landmark or postcode</p><div class="search-helper-chips"><button class="search-helper-chip" onclick="triggerExampleSearch(\'Big Ben\')">Big Ben</button></div></div>';
 
+var RECENT_KEY = 'recent_searches';
+
+function getRecentSearches() {
+  try { return JSON.parse(localStorage.getItem(RECENT_KEY)) || []; } catch(e) { return []; }
+}
+
+function saveRecentSearch(entry) {
+  if (!entry || !entry.name) return;
+  var recent = getRecentSearches();
+  recent = recent.filter(function(r) { return r.name !== entry.name; });
+  recent.unshift(entry);
+  try { localStorage.setItem(RECENT_KEY, JSON.stringify(recent.slice(0, 5))); } catch(e) {}
+}
+
+function renderHelperContent() {
+  var recent = getRecentSearches();
+  overlaySugg.innerHTML = recent.length
+    ? '<div class="search-helper"><p class="search-helper-hint">Recent searches</p></div>'
+    : SEARCH_HELPER_HTML;
+  recent.forEach(function(r, i) {
+    var item = document.createElement('div');
+    item.className = 'sugg-item';
+    item.innerHTML = '<div class="sugg-name"><span class="sugg-recent-icon">◷</span> </div><div class="sugg-addr"></div>';
+    item.querySelector('.sugg-name').appendChild(document.createTextNode(r.name));
+    item.querySelector('.sugg-addr').textContent = r.address || '';
+    item.addEventListener('mousedown', (function(idx) {
+      return function(e) { e.preventDefault(); launchRecentSearch(idx); };
+    })(i));
+    overlaySugg.appendChild(item);
+  });
+}
+
+function launchRecentSearch(idx) {
+  var recent = getRecentSearches();
+  var r = recent[idx];
+  if (!r) return;
+  closeSearchOverlay();
+  if (r.type === 'place') {
+    pendingPlace = { lng: r.lng, lat: r.lat, name: r.name, address: r.address, postcode: r.postcode };
+    lastSearchQuery = r.name;
+    map.flyTo({ center: [r.lng, r.lat], zoom: 12, duration: 1000 });
+    placeMarker(r.lat, r.lng);
+    setStatus(r.name);
+    if (r.postcode) {
+      showPostcodeChip();
+      searchPostcode(r.postcode);
+      setState('modepicker');
+    } else {
+      mode = mode || 'walking';
+      updateModeButtons();
+      setState('travel');
+      run(r.lng, r.lat, r.name);
+    }
+  } else {
+    pendingPlace = { lng: 0, lat: 0, name: r.postcode, address: 'UK postcode boundary', postcode: r.postcode };
+    showPostcodeChip();
+    searchPostcode(r.postcode);
+    setState('modepicker');
+  }
+}
+
 function triggerExampleSearch(q) {
   overlayInput.value = q;
   clearTimeout(suggestTimer);
@@ -444,7 +505,7 @@ function openSearchOverlay() {
   overlayInput.placeholder = 'Search Maps';
   pendingPostcode = null;
   currentSuggestions = [];
-  overlaySugg.innerHTML = SEARCH_HELPER_HTML;
+  renderHelperContent();
   requestAnimationFrame(function() {
     overlayEl.classList.add('open');
     overlayInput.focus();
@@ -519,6 +580,7 @@ function selectSuggestionFromList(i, items) {
   if (s.type === 'postcode') {
     closeSearchOverlay();
     pendingPlace = { lng: 0, lat: 0, name: s.postcode, address: 'UK postcode boundary', postcode: s.postcode };
+    saveRecentSearch({ type: 'postcode', name: s.postcode, address: 'UK postcode', postcode: s.postcode });
     showPostcodeChip();
     searchPostcode(s.postcode);
     setState('modepicker');
@@ -558,6 +620,7 @@ async function selectSuggestion(s) {
         if (pcMatch) postcode = formatPostcode(pcMatch[1]);
       }
       pendingPlace = { lng: c[0], lat: c[1], name: name, address: address, postcode: postcode };
+      saveRecentSearch({ type: 'place', name: name, address: address, lat: c[1], lng: c[0], postcode: postcode });
       map.flyTo({ center: [c[0], c[1]], zoom: 12, duration: 1000 });
       placeMarker(c[1], c[0]);
       setStatus(name);
@@ -581,7 +644,7 @@ document.getElementById('search-back-btn').addEventListener('click', closeSearch
 overlayInput.addEventListener('input', function() {
   var q = overlayInput.value.trim();
   clearTimeout(suggestTimer);
-  if (!q) { pendingPostcode = null; currentSuggestions = []; overlaySugg.innerHTML = SEARCH_HELPER_HTML; return; }
+  if (!q) { pendingPostcode = null; currentSuggestions = []; renderHelperContent(); return; }
   pendingPostcode = PC_RE.test(q) ? formatPostcode(q) : null;
   if (pendingPostcode) renderSuggestions();
   suggestTimer = setTimeout(function() { fetchSuggest(q); }, 180);
