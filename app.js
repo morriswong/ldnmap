@@ -235,6 +235,8 @@ function rehydrateLayers() {
       paint: { 'line-color': '#8b5cf6', 'line-width': 2.5, 'line-opacity': 1 } });
     postcodeLayer = geo;
   }
+
+  if (stationsData) addStationsLayer(stationsData); // [stations]
 }
 
 function isoFitPadding() {
@@ -309,6 +311,7 @@ function selectBucket(min) {
 
 function changeMode() {
   removeAllIsoLayers();
+  clearStations(); // [stations]
   hidePostcodeChip();
   if (pendingPlace && pendingPlace.postcode) {
     showPostcodeChip();
@@ -322,6 +325,7 @@ function changeMode() {
 function closeTravelCard() {
   if (marker) { marker.remove(); marker = null; }
   removeAllIsoLayers();
+  clearStations(); // [stations]
   pendingPlace = null;
   resetBucketSelection();
   setState('idle');
@@ -329,6 +333,7 @@ function closeTravelCard() {
 
 function closePostcodeChip() {
   hidePostcodeChip();
+  clearStations(); // [stations]
   if (marker) { marker.remove(); marker = null; }
   pendingPlace = null;
   setState('idle');
@@ -711,8 +716,164 @@ async function run(lng, lat, label) {
     });
 
     setStatus(label || lat.toFixed(4) + '°N, ' + lng.toFixed(4) + '°E');
+    loadNearbyStations(lat, lng); // [stations]
   } catch(e) { setStatus('Failed to load isochrones', true); }
 }
+
+/* ===== NEARBY STATIONS ===== */
+var stationsData = null; // GeoJSON FeatureCollection of currently-shown stations (null when none)
+
+function haversineMetres(lat1, lng1, lat2, lng2) {
+  var R = 6371000;
+  var toRad = Math.PI / 180;
+  var dLat = (lat2 - lat1) * toRad;
+  var dLng = (lng2 - lng1) * toRad;
+  var a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+    + Math.cos(lat1 * toRad) * Math.cos(lat2 * toRad) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// Map a TfL mode array to a single primary mode key + short label.
+function stationPrimaryMode(modes) {
+  var order = ['tube', 'elizabeth-line', 'dlr', 'overground', 'national-rail', 'tram', 'cable-car', 'river-bus'];
+  var m = (modes || []).slice().sort(function(a, b) {
+    var ia = order.indexOf(a); var ib = order.indexOf(b);
+    return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+  })[0] || 'rail';
+  var labels = {
+    'tube': 'Tube', 'elizabeth-line': 'Elizabeth', 'dlr': 'DLR',
+    'overground': 'Overground', 'national-rail': 'Rail', 'tram': 'Tram',
+    'cable-car': 'Cable car', 'river-bus': 'River'
+  };
+  return { key: m, label: labels[m] || 'Rail' };
+}
+
+async function loadNearbyStations(lat, lng) {
+  var listEl = document.getElementById('travel-stations');
+  if (!listEl) return;
+  listEl.innerHTML = '<div class="travel-stations-title">Nearby stations</div>'
+    + '<div class="travel-stations-empty">Finding stations…</div>';
+  try {
+    var url = 'https://api.tfl.gov.uk/StopPoint?stopTypes=NaptanMetroStation,NaptanRailStation&lat='
+      + lat + '&lon=' + lng + '&radius=1500&useStopPointHierarchy=false';
+    var r = await fetch(url);
+    var d = await r.json();
+    var pts = (d && d.stopPoints) || [];
+    var stations = pts.filter(function(s) { return typeof s.lat === 'number' && typeof s.lon === 'number'; })
+      .map(function(s) {
+        var dist = haversineMetres(lat, lng, s.lat, s.lon);
+        var lines = (s.lines || []).map(function(l) { return l.name; }).filter(Boolean);
+        return {
+          name: (s.commonName || '').replace(/\s+(Underground|Rail|DLR)\s+Station$/i, '').replace(/\s+Station$/i, ''),
+          lat: s.lat, lng: s.lon, modes: s.modes || [], lines: lines, dist: dist
+        };
+      })
+      .sort(function(a, b) { return a.dist - b.dist; })
+      .slice(0, 5);
+
+    if (!stations.length) {
+      stationsData = null;
+      clearStationsLayer();
+      listEl.innerHTML = '<div class="travel-stations-title">Nearby stations</div>'
+        + '<div class="travel-stations-empty">No nearby stations</div>';
+      return;
+    }
+    renderStationList(stations);
+    renderStationMarkers(stations);
+  } catch (e) {
+    stationsData = null;
+    clearStationsLayer();
+    listEl.innerHTML = '<div class="travel-stations-title">Nearby stations</div>'
+      + '<div class="travel-stations-empty">Couldn’t load stations</div>';
+  }
+}
+
+function renderStationList(stations) {
+  var listEl = document.getElementById('travel-stations');
+  if (!listEl) return;
+  listEl.innerHTML = '';
+  var title = document.createElement('div');
+  title.className = 'travel-stations-title';
+  title.textContent = 'Nearby stations';
+  listEl.appendChild(title);
+
+  stations.forEach(function(st) {
+    var pm = stationPrimaryMode(st.modes);
+    var mins = Math.max(1, Math.round(st.dist / 80));
+    var row = document.createElement('div');
+    row.className = 'travel-station-row';
+
+    var badge = document.createElement('span');
+    badge.className = 'station-badge station-badge-' + pm.key;
+    badge.textContent = pm.label;
+
+    var info = document.createElement('div');
+    info.className = 'travel-station-info';
+    var nameEl = document.createElement('div');
+    nameEl.className = 'travel-station-name';
+    nameEl.textContent = st.name;
+    var metaEl = document.createElement('div');
+    metaEl.className = 'travel-station-meta';
+    metaEl.textContent = mins + ' min walk · ' + Math.round(st.dist) + ' m';
+    info.appendChild(nameEl);
+    info.appendChild(metaEl);
+
+    row.appendChild(badge);
+    row.appendChild(info);
+    row.addEventListener('click', (function(s) {
+      return function() { map.flyTo({ center: [s.lng, s.lat], zoom: 15, duration: 800 }); };
+    })(st));
+    listEl.appendChild(row);
+  });
+}
+
+function stationsToGeoJSON(stations) {
+  return {
+    type: 'FeatureCollection',
+    features: stations.map(function(st) {
+      return {
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [st.lng, st.lat] },
+        properties: { name: st.name }
+      };
+    })
+  };
+}
+
+function addStationsLayer(geojson) {
+  whenStyleReady(function() {
+    if (map.getLayer('stations-circle')) map.removeLayer('stations-circle');
+    if (map.getSource('stations')) map.removeSource('stations');
+    map.addSource('stations', { type: 'geojson', data: geojson });
+    map.addLayer({
+      id: 'stations-circle', type: 'circle', source: 'stations',
+      paint: {
+        'circle-radius': 5,
+        'circle-color': '#5b8dee',
+        'circle-stroke-width': 2,
+        'circle-stroke-color': isDark ? '#0a0a0a' : '#ffffff'
+      }
+    });
+  });
+}
+
+function renderStationMarkers(stations) {
+  stationsData = stationsToGeoJSON(stations);
+  addStationsLayer(stationsData);
+}
+
+function clearStationsLayer() {
+  if (map.getLayer('stations-circle')) map.removeLayer('stations-circle');
+  if (map.getSource('stations')) map.removeSource('stations');
+}
+
+function clearStations() {
+  stationsData = null;
+  clearStationsLayer();
+  var listEl = document.getElementById('travel-stations');
+  if (listEl) listEl.innerHTML = '';
+}
+/* ===== END NEARBY STATIONS ===== */
 
 function setStatus(msg, isError) {
   var el = document.getElementById('st');
