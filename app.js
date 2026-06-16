@@ -178,6 +178,58 @@ var lastSearchQuery = '';
 function isoFillId(m)  { return 'iso-' + m + '-fill'; }
 function isoLineId(m)  { return 'iso-' + m + '-line'; }
 
+/* ===== ISO RING LABELS ===== */
+function isoLabelId(m)  { return 'iso-' + m + '-label'; }
+function isoLabelSrc(m) { return 'iso-' + m + '-label-src'; }
+
+// Northern-tip anchor: the contour vertex with the maximum latitude.
+// Handles Polygon and MultiPolygon (same walk pattern as geojsonBounds).
+function isoLabelAnchor(geometry) {
+  if (!geometry) return null;
+  var best = null;
+  function consider(c) { if (!best || c[1] > best[1]) best = c; }
+  if (geometry.type === 'Polygon') {
+    geometry.coordinates.forEach(function(r) { r.forEach(consider); });
+  } else if (geometry.type === 'MultiPolygon') {
+    geometry.coordinates.forEach(function(p) { p.forEach(function(r) { r.forEach(consider); }); });
+  }
+  return best;
+}
+
+function addIsoLabel(feature, mins, color) {
+  var anchor = isoLabelAnchor(feature.geometry);
+  if (!anchor) return;
+  var srcId = isoLabelSrc(mins);
+  if (map.getSource(srcId)) return;
+  map.addSource(srcId, { type: 'geojson', data: {
+    type: 'Feature',
+    geometry: { type: 'Point', coordinates: anchor },
+    properties: { label: mins + ' min' }
+  } });
+  map.addLayer({ id: isoLabelId(mins), type: 'symbol', source: srcId,
+    layout: {
+      'text-field': ['get', 'label'],
+      'text-size': 13,
+      'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Regular'],
+      'text-offset': [0, -0.6],
+      'text-anchor': 'bottom',
+      'text-allow-overlap': true,
+      'text-ignore-placement': true
+    },
+    paint: {
+      'text-color': color,
+      'text-halo-color': '#ffffff',
+      'text-halo-width': 1.6,
+      'text-halo-blur': 0.3
+    } });
+}
+
+function removeIsoLabel(mins) {
+  if (map.getLayer(isoLabelId(mins)))   map.removeLayer(isoLabelId(mins));
+  if (map.getSource(isoLabelSrc(mins))) map.removeSource(isoLabelSrc(mins));
+}
+/* ===== END ISO RING LABELS ===== */
+
 function addIsoLayer(feature, color) {
   var mins = feature.properties.contour;
   var sid  = 'iso-' + mins;
@@ -187,6 +239,7 @@ function addIsoLayer(feature, color) {
     paint: { 'fill-color': color, 'fill-opacity': 0.18 } });
   map.addLayer({ id: isoLineId(mins), type: 'line', source: sid,
     paint: { 'line-color': color, 'line-width': 3.5, 'line-opacity': 0.9 } });
+  addIsoLabel(feature, mins, color); // [ring-labels]
   isoLayers.push({ minutes: mins, sourceId: sid, data: feature });
 }
 
@@ -195,6 +248,7 @@ function removeAllIsoLayers() {
     var m = l.minutes;
     if (map.getLayer(isoFillId(m)))  map.removeLayer(isoFillId(m));
     if (map.getLayer(isoLineId(m)))  map.removeLayer(isoLineId(m));
+    removeIsoLabel(m); // [ring-labels]
     if (map.getSource(l.sourceId))   map.removeSource(l.sourceId);
   });
   isoLayers = [];
@@ -292,6 +346,9 @@ function updateIsoHighlight() {
     }
     if (map.getLayer(isoFillId(m))) {
       map.setPaintProperty(isoFillId(m), 'fill-opacity', sel ? 0.28 : (dim ? 0.08 : 0.18));
+    }
+    if (map.getLayer(isoLabelId(m))) {
+      map.setPaintProperty(isoLabelId(m), 'text-opacity', dim ? 0.35 : 1.0); // [ring-labels]
     }
   });
 }
