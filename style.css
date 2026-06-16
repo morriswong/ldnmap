@@ -301,3 +301,38 @@
     background: rgba(5,150,105,0.10);
   }
   /* ===== end permalink ===== */
+
+  /* ===== NEARBY STATIONS ===== */
+  .travel-stations { margin-top: 12px; max-height: 240px; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+  .travel-stations:empty { display: none; }
+  .travel-stations-title { font-size: 10px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-dim); margin: 0 0 8px; }
+  .travel-stations-empty { font-size: 12px; color: var(--text-dim); padding: 4px 2px 2px; }
+  .travel-station-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; border-radius: 10px;
+    border: 1px solid var(--glass-border); background: var(--glass-tile-bg);
+    cursor: pointer; margin-bottom: 6px;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .travel-station-row:last-child { margin-bottom: 0; }
+  .travel-station-row:hover { background: var(--glass-tile-active); }
+  .travel-station-row:active { opacity: 0.7; }
+  .travel-station-info { flex: 1; min-width: 0; }
+  .travel-station-name { font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .travel-station-meta { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
+  .station-badge {
+    flex-shrink: 0; font-size: 9px; font-weight: 700; letter-spacing: 0.02em;
+    padding: 3px 7px; border-radius: 6px; color: #fff;
+    min-width: 56px; text-align: center;
+  }
+  .station-badge-tube { background: #dc241f; }
+  .station-badge-national-rail { background: #1f3b8b; }
+  .station-badge-overground { background: #ee7c0e; }
+  .station-badge-dlr { background: #00a4a7; }
+  .station-badge-elizabeth-line { background: #6950a1; }
+  .station-badge-tram { background: #5fb526; }
+  .station-badge-cable-car, .station-badge-river-bus { background: #009fe0; }
+  @media (max-width: 768px) {
+    .travel-stations { max-height: 200px; }
+  }
+  /* ===== END NEARBY STATIONS ===== */
