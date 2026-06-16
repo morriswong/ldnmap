@@ -305,6 +305,7 @@ function selectBucket(min) {
   });
   if (slots) slots.classList.toggle('has-selection', selectedMin !== null);
   updateIsoHighlight();
+  updatePermalink(); // [permalink]
 }
 
 function changeMode() {
@@ -325,6 +326,7 @@ function closeTravelCard() {
   pendingPlace = null;
   resetBucketSelection();
   setState('idle');
+  clearPermalink(); // [permalink]
 }
 
 function closePostcodeChip() {
@@ -332,6 +334,7 @@ function closePostcodeChip() {
   if (marker) { marker.remove(); marker = null; }
   pendingPlace = null;
   setState('idle');
+  clearPermalink(); // [permalink]
 }
 
 function showPostcodeChip() {
@@ -711,6 +714,7 @@ async function run(lng, lat, label) {
     });
 
     setStatus(label || lat.toFixed(4) + '°N, ' + lng.toFixed(4) + '°E');
+    updatePermalink(); // [permalink]
   } catch(e) { setStatus('Failed to load isochrones', true); }
 }
 
@@ -725,3 +729,93 @@ function setStatus(msg, isError) {
     pcEl.textContent = msg;
   }
 }
+
+/* ===== SHARE / PERMALINK ===== */
+// Encodes the active travel view in location.hash so it can be copied/shared,
+// and restores that view on load. Hash scheme: #p=<lat>,<lng>&m=<mode>&b=<bucket>&q=<label>
+
+function updatePermalink() {
+  // Only meaningful while a travel view is active and we have coordinates.
+  if (appState !== 'travel' || !center) return;
+  try {
+    var lng = center[0], lat = center[1];
+    var parts = ['p=' + lat.toFixed(5) + ',' + lng.toFixed(5)];
+    parts.push('m=' + (mode || 'walking'));
+    if (selectedMin !== null && selectedMin !== undefined) parts.push('b=' + selectedMin);
+    var label = pendingPlace && pendingPlace.name ? pendingPlace.name : '';
+    if (label) parts.push('q=' + encodeURIComponent(label));
+    history.replaceState(null, '', location.pathname + location.search + '#' + parts.join('&'));
+  } catch (e) {}
+}
+
+function clearPermalink() {
+  try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+}
+
+function parsePermalink() {
+  var hash = location.hash.replace(/^#/, '');
+  if (!hash) return null;
+  var out = {};
+  hash.split('&').forEach(function(pair) {
+    var idx = pair.indexOf('=');
+    if (idx === -1) return;
+    out[pair.slice(0, idx)] = pair.slice(idx + 1);
+  });
+  if (!out.p) return null;
+  var coords = out.p.split(',');
+  var lat = parseFloat(coords[0]);
+  var lng = parseFloat(coords[1]);
+  if (!isFinite(lat) || !isFinite(lng)) return null;
+  var mode = (out.m === 'walking' || out.m === 'cycling' || out.m === 'driving') ? out.m : 'walking';
+  var bucket = out.b !== undefined ? parseInt(out.b, 10) : null;
+  if (bucket !== null && MINS.indexOf(bucket) === -1) bucket = null;
+  var name = '';
+  if (out.q) { try { name = decodeURIComponent(out.q); } catch (e) { name = out.q; } }
+  return { lat: lat, lng: lng, mode: mode, bucket: bucket, name: name };
+}
+
+function restoreFromPermalink() {
+  try {
+    var p = parsePermalink();
+    if (!p) return;
+    mode = p.mode;
+    updateModeButtons();
+    pendingPlace = { lng: p.lng, lat: p.lat, name: p.name, address: '', postcode: null };
+    placeMarker(p.lat, p.lng);
+    setState('travel');
+    run(p.lng, p.lat, p.name).then(function() {
+      if (p.bucket !== null && selectedMin !== p.bucket) selectBucket(p.bucket);
+    });
+  } catch (e) {}
+}
+
+function shareLink() {
+  updatePermalink();
+  var url = location.href;
+  var btn = document.getElementById('share-btn');
+  function feedback() {
+    if (!btn) return;
+    btn.classList.add('share-btn--copied');
+    setTimeout(function() { if (btn) btn.classList.remove('share-btn--copied'); }, 1800);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(feedback).catch(function() { fallbackCopy(url, feedback); });
+  } else {
+    fallbackCopy(url, feedback);
+  }
+}
+
+function fallbackCopy(text, done) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); } catch (e) {}
+  document.body.removeChild(ta);
+  if (done) done();
+}
+
+// Startup restore — run once after the map and all functions are ready.
+whenStyleReady(function() { restoreFromPermalink(); });
+/* ===== end permalink ===== */
