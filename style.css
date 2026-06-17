@@ -336,3 +336,40 @@
     .travel-stations { max-height: 200px; }
   }
   /* ===== END NEARBY STATIONS ===== */
+
+  /* ===== DRAGGABLE BOTTOM SHEET (mobile snap points) ===== */
+  /* Desktop: grabber hidden, travel-card behaves as the original left-side card. */
+  .sheet-grabber { display: none; }
+
+  @media (max-width: 768px) {
+    /* Grabber handle (the pill at the top of the sheet). */
+    .sheet-grabber {
+      display: flex; align-items: center; justify-content: center;
+      flex: 0 0 auto; height: 22px; cursor: grab;
+      touch-action: none; -webkit-tap-highlight-color: transparent;
+    }
+    .sheet-grabber span {
+      width: 36px; height: 5px; border-radius: 3px;
+      background: var(--text-dim); opacity: 0.4;
+    }
+
+    /* The travel-card becomes a fixed-height sheet whose vertical position
+       (transform: translateY) is owned by JS snap logic in app.js.
+       postcode-chip is intentionally NOT a drag sheet. */
+    .travel-card {
+      height: calc(var(--app-h, 100dvh) * 0.92);
+      max-height: calc(var(--app-h, 100dvh) * 0.92);
+      padding: 0 16px max(16px, env(safe-area-inset-bottom, 16px));
+      display: flex; flex-direction: column;
+      overflow: hidden;
+      touch-action: none;
+      transform: translateY(100%);
+    }
+    /* Header is part of the drag area; let JS handle vertical gestures. */
+    .travel-card .travel-card-header { touch-action: none; flex: 0 0 auto; }
+    /* Disable the position transition while a finger is dragging. */
+    .travel-card.no-anim { transition: none !important; }
+    /* Stations grow to fill the sheet at full height instead of a fixed cap. */
+    .travel-card .travel-stations { max-height: none; flex: 1 1 auto; }
+  }
+  /* ===== END DRAGGABLE BOTTOM SHEET ===== */

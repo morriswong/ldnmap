@@ -43,6 +43,10 @@ function setState(newState) {
   prevState = appState;
   appState = newState;
   document.body.dataset.state = newState;
+  if (window.__sheet) {                                  // [snap-sheet]
+    if (newState === 'travel') window.__sheet.open();
+    else if (prevState === 'travel') window.__sheet.close();
+  }
   if (location.hostname === 'localhost' || location.port) {
     console.log('[state] ' + prevState + ' → ' + newState);
   }
@@ -1037,3 +1041,133 @@ function fallbackCopy(text, done) {
 // Startup restore — run once after the map and all functions are ready.
 whenStyleReady(function() { restoreFromPermalink(); });
 /* ===== end permalink ===== */
+
+/* ===== DRAGGABLE BOTTOM SHEET (mobile snap points) ===== */
+/* Apple/Google-Maps-style sheet: peek (grabber + title), half (~50%), full (~92%).
+   Mobile only (<=768px). On desktop the travel-card keeps its original CSS, so
+   we never touch inline transform there. */
+(function () {
+  var card, grabber, header;
+  var snaps = { full: 0, half: 0, peek: 0 };
+  var current = 'half';
+  var curT = 0;                 // current translateY in px
+  var dragging = false, startY = 0, startT = 0, moved = false, suppressClick = false;
+
+  function isMobile() { return window.matchMedia('(max-width: 768px)').matches; }
+  function vh() { return (window.visualViewport && window.visualViewport.height) || window.innerHeight; }
+
+  function compute() {
+    if (!card) return;
+    var H = card.offsetHeight;
+    var peekVisible = (header ? header.offsetHeight : 52) + (grabber ? grabber.offsetHeight : 22) + 8;
+    snaps.full = 0;                                  // top of sheet near top of screen
+    snaps.half = Math.max(0, H - vh() * 0.5);        // header sits at ~50%
+    snaps.peek = Math.max(0, H - peekVisible);       // only grabber + header visible
+  }
+
+  function setT(t, animate) {
+    curT = t;
+    if (animate) {
+      card.classList.remove('no-anim');
+      card.style.transform = 'translateY(' + t + 'px)';
+    } else {
+      card.classList.add('no-anim');
+      card.style.transform = 'translateY(' + t + 'px)';
+      void card.offsetWidth;                         // flush, so the next change can animate
+      card.classList.remove('no-anim');
+    }
+  }
+
+  function applySnap(name, animate) {
+    current = name;
+    compute();
+    setT(snaps[name], animate);
+  }
+
+  function hide(animate) {
+    if (!card) return;
+    setT(card.offsetHeight + 40, animate);           // fully below the viewport
+  }
+
+  function nearest(t) {
+    var arr = [['full', snaps.full], ['half', snaps.half], ['peek', snaps.peek]];
+    var best = arr[0], bd = Math.abs(t - arr[0][1]);
+    for (var i = 1; i < arr.length; i++) {
+      var d = Math.abs(t - arr[i][1]);
+      if (d < bd) { bd = d; best = arr[i]; }
+    }
+    return best[0];
+  }
+
+  function onStart(e) {
+    if (!isMobile()) return;
+    dragging = true; moved = false;
+    startY = e.touches ? e.touches[0].clientY : e.clientY;
+    startT = curT;
+    card.classList.add('no-anim');
+  }
+  function onMove(e) {
+    if (!dragging) return;
+    var y = e.touches ? e.touches[0].clientY : e.clientY;
+    var dy = y - startY;
+    if (!moved && Math.abs(dy) > 5) moved = true;
+    if (!moved) return;
+    if (e.cancelable) e.preventDefault();            // stop page from scrolling/refresh
+    var t = Math.max(snaps.full, Math.min(snaps.peek, startT + dy));
+    curT = t;
+    card.style.transform = 'translateY(' + t + 'px)';
+  }
+  function onEnd() {
+    if (!dragging) return;
+    dragging = false;
+    card.classList.remove('no-anim');
+    if (!moved) return;                              // a tap — let the click through
+    suppressClick = true;
+    setTimeout(function () { suppressClick = false; }, 350);
+    applySnap(nearest(curT), true);
+  }
+
+  function openSheet() {
+    if (!card) return;
+    if (!isMobile()) { card.style.transform = ''; return; }
+    compute();
+    applySnap('half', true);
+  }
+  function closeSheet() {
+    if (!card) return;
+    if (!isMobile()) { card.style.transform = ''; return; }
+    hide(true);
+  }
+
+  window.__sheet = { open: openSheet, close: closeSheet };
+
+  function init() {
+    card = document.getElementById('travel-card');
+    grabber = document.getElementById('sheet-grabber');
+    header = card ? card.querySelector('.travel-card-header') : null;
+    if (!card || !grabber) return;
+
+    var dragEls = [grabber, header];
+    for (var i = 0; i < dragEls.length; i++) {
+      if (!dragEls[i]) continue;
+      dragEls[i].addEventListener('touchstart', onStart, { passive: true });
+      dragEls[i].addEventListener('touchmove', onMove, { passive: false });
+      dragEls[i].addEventListener('touchend', onEnd);
+      dragEls[i].addEventListener('touchcancel', onEnd);
+    }
+    // Tap the grabber to step up: peek -> half -> full.
+    grabber.addEventListener('click', function () {
+      if (!isMobile() || suppressClick) return;
+      applySnap(current === 'peek' ? 'half' : current === 'half' ? 'full' : 'half', true);
+    });
+    // Keep the active snap correct across rotation / viewport changes.
+    window.addEventListener('resize', function () {
+      if (isMobile() && document.body.dataset.state === 'travel') applySnap(current, false);
+      else if (!isMobile()) card.style.transform = '';
+    });
+
+    if (isMobile()) hide(false);                     // start parked below the viewport
+  }
+  init();
+})();
+/* ===== END DRAGGABLE BOTTOM SHEET ===== */
