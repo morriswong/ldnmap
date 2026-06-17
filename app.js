@@ -704,8 +704,26 @@ overlayInput.addEventListener('keydown', function(e) {
   }
 });
 
+// [retry] Args of the most recent run(), so a transient failure can be re-attempted
+// — automatically below, or by the user tapping the error status line.
+var lastRunArgs = null;
+var ISO_MAX_RETRIES = 2; // re-attempts for a transient isochrone fetch (network blip / 429 / 5xx)
+
+function isoDelay(ms) { return new Promise(function(res) { setTimeout(res, ms); }); }
+function isoTransientStatus(s) { return s === 429 || (s >= 500 && s <= 599); }
+function retryLastRun() { if (lastRunArgs) run(lastRunArgs.lng, lastRunArgs.lat, lastRunArgs.label); }
+
+// Surface a recoverable failure: recenter on the searched point so a failed search
+// still takes you SOMEWHERE (fitIsochroneBounds can't run with no layers), then show
+// a clear message — with a tap-to-retry hint only when retrying could actually help.
+function isoError(lng, lat, msg, retryable) {
+  map.flyTo({ center: [lng, lat], zoom: 14 });
+  setStatus(retryable ? msg + ' · Tap to retry' : msg, true);
+}
+
 async function run(lng, lat, label) {
   center = [lng, lat];
+  lastRunArgs = { lng: lng, lat: lat, label: label }; // [retry]
   setStatus('Loading isochrones…');
   placeMarker(lat, lng);
 
@@ -718,26 +736,50 @@ async function run(lng, lat, label) {
     + '&contours_colors=' + COLORS.map(function(c) { return c.slice(1); }).join(',')
     + '&polygons=true&generalize=50&access_token=' + MAPBOX_TOKEN;
 
-  try {
-    var r = await fetch(url);
-    var data = await r.json();
-    if (data.message) { setStatus('API error: ' + data.message, true); return; }
-    if (!data.features || !data.features.length) { setStatus('No data for this location', true); return; }
+  // Transient failures (network blip, 429, 5xx) are the usual reason a perimeter
+  // "sometimes" fails to appear on first search. Retry those a couple of times with
+  // a short backoff before giving up. Permanent errors (bad coords, empty result)
+  // fall straight through without retrying.
+  var data = null;
+  for (var attempt = 0; attempt <= ISO_MAX_RETRIES; attempt++) {
+    try {
+      var r = await fetch(url);
+      if (isoTransientStatus(r.status)) {
+        if (attempt < ISO_MAX_RETRIES) { await isoDelay(400 * (attempt + 1)); continue; }
+        return isoError(lng, lat, 'Map service is busy', true);
+      }
+      data = await r.json();
+      break;
+    } catch (e) {
+      if (attempt < ISO_MAX_RETRIES) { await isoDelay(400 * (attempt + 1)); continue; }
+      return isoError(lng, lat, 'Couldn’t reach the map service', true);
+    }
+  }
 
-    var sorted = data.features.slice().sort(function(a, b) { return b.properties.contour - a.properties.contour; });
-    whenStyleReady(function() {
-      sorted.forEach(function(f) {
-        var color = COLORS[MINS.indexOf(f.properties.contour)] || '#888';
-        addIsoLayer(f, color);
-      });
-      fitIsochroneBounds();
+  if (data.message) { return isoError(lng, lat, 'API error: ' + data.message, false); }
+  if (!data.features || !data.features.length) { return isoError(lng, lat, 'No travel data for this spot', false); }
+
+  var sorted = data.features.slice().sort(function(a, b) { return b.properties.contour - a.properties.contour; });
+  whenStyleReady(function() {
+    sorted.forEach(function(f) {
+      var color = COLORS[MINS.indexOf(f.properties.contour)] || '#888';
+      addIsoLayer(f, color);
     });
+    fitIsochroneBounds();
+  });
 
-    setStatus(label || lat.toFixed(4) + '°N, ' + lng.toFixed(4) + '°E');
-    updatePermalink(); // [permalink]
-    loadNearbyStations(lat, lng); // [stations]
-  } catch(e) { setStatus('Failed to load isochrones', true); }
+  setStatus(label || lat.toFixed(4) + '°N, ' + lng.toFixed(4) + '°E');
+  updatePermalink(); // [permalink]
+  loadNearbyStations(lat, lng); // [stations]
 }
+
+// [retry] Tapping the status line while it shows an error re-runs the last search.
+(function() {
+  var st = document.getElementById('st');
+  if (st) st.addEventListener('click', function() {
+    if (st.classList.contains('error') && lastRunArgs) retryLastRun();
+  });
+})();
 
 /* ===== NEARBY STATIONS ===== */
 var stationsData = null; // GeoJSON FeatureCollection of currently-shown stations (null when none)
