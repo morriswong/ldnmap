@@ -317,12 +317,11 @@
   .travel-station-row:last-child { margin-bottom: 0; }
   .travel-station-row:hover { background: var(--glass-tile-active); }
   .travel-station-row:active { opacity: 0.7; }
-  /* Name fills the row so dots + time are pushed to the right edge. */
+  /* Name fills the row so the time pill is pushed to the right edge. */
   .travel-station-name { flex: 1; min-width: 0; font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .travel-station-dots { flex-shrink: 0; display: flex; gap: 3px; }
-  /* The ring keeps dark (Northern) and pale (Circle/Waterloo & City) dots visible on both themes. */
-  .station-dot { width: 9px; height: 9px; border-radius: 50%; box-shadow: 0 0 0 1px rgba(127, 127, 127, 0.55); }
-  .travel-station-time { flex-shrink: 0; font-size: 12px; font-weight: 600; color: var(--text-dim); font-variant-numeric: tabular-nums; min-width: 42px; text-align: right; }
+  /* Time pill: colour/border-color/background are set inline per bucket (see renderStationList).
+     Outlined + faintly tinted to match the 5/10/15/20 travel-slot buttons above. */
+  .travel-station-time { flex-shrink: 0; font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; min-width: 52px; text-align: center; padding: 3px 10px; border: 1px solid transparent; border-radius: 999px; }
   @media (max-width: 768px) {
     .travel-stations { max-height: 200px; }
   }

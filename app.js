@@ -856,12 +856,19 @@ function lineColor(name) {
 
 // Map a walk-time (minutes) to its isochrone bucket colour: ≤5 green, ≤10 blue,
 // ≤15 orange, ≤20 (and anything beyond) red. Mirrors the COLORS/MINS pairing used
-// for the travel slots, so a station's dots match the ring it falls inside.
+// for the travel slots, so a station's time label matches the ring it falls inside.
 function bucketColor(mins) {
   for (var i = 0; i < MINS.length; i++) {
     if (mins <= MINS[i]) return COLORS[i];
   }
   return COLORS[COLORS.length - 1];
+}
+
+// "#2ecc71" → "rgba(46,204,113,a)". Used for the faint tinted fill behind a
+// station's time pill, so the bucket colour reads as a soft background.
+function hexToRgba(hex, a) {
+  var n = parseInt(hex.slice(1), 16);
+  return 'rgba(' + ((n >> 16) & 255) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
 }
 
 // Build the ordered, de-duplicated list of dot colours for a station. Prefers real
@@ -983,25 +990,17 @@ function renderStationList(stations) {
     nameEl.className = 'travel-station-name';
     nameEl.textContent = st.name;
 
-    // Middle: one dot per line (count preserved), all coloured by the station's
-    // walk-time bucket so the dots match the isochrone ring it falls inside.
-    var dotsEl = document.createElement('div');
-    dotsEl.className = 'travel-station-dots';
+    // Right: walk time as a pill coloured by the station's isochrone bucket —
+    // outlined + faintly tinted to match the 5/10/15/20 travel-slot buttons.
     var bc = bucketColor(mins);
-    stationDotColors(st).forEach(function() {
-      var dot = document.createElement('span');
-      dot.className = 'station-dot';
-      dot.style.background = bc;
-      dotsEl.appendChild(dot);
-    });
-
-    // Right: walk time only.
     var timeEl = document.createElement('div');
     timeEl.className = 'travel-station-time';
     timeEl.textContent = mins + ' min';
+    timeEl.style.color = bc;
+    timeEl.style.borderColor = hexToRgba(bc, 0.55);
+    timeEl.style.background = hexToRgba(bc, 0.12);
 
     row.appendChild(nameEl);
-    row.appendChild(dotsEl);
     row.appendChild(timeEl);
     row.addEventListener('click', (function(s) {
       return function() { map.flyTo({ center: [s.lng, s.lat], zoom: 15, duration: 800 }); };
