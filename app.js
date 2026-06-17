@@ -941,22 +941,39 @@ function setStatus(msg, isError) {
 // Encodes the active travel view in location.hash so it can be copied/shared,
 // and restores that view on load. Hash scheme: #p=<lat>,<lng>&m=<mode>&b=<bucket>&q=<label>
 
+// Last-view persistence. iOS Safari does not reliably restore a history.replaceState
+// fragment when it relaunches a purged tab, so we also mirror the active view into
+// localStorage and restore from it on cold start when the hash is absent.
+var LAST_VIEW_KEY = 'ldnmap:lastView';
+var LAST_VIEW_TTL = 30 * 24 * 60 * 60 * 1000; // 30 days
+
+// Snapshot of the active travel view, or null when not in a shareable state.
+function currentViewState() {
+  if (appState !== 'travel' || !center) return null;
+  return {
+    lat: center[1], lng: center[0],
+    mode: mode || 'walking',
+    bucket: (selectedMin !== null && selectedMin !== undefined) ? selectedMin : null,
+    name: (pendingPlace && pendingPlace.name) ? pendingPlace.name : ''
+  };
+}
+
 function updatePermalink() {
-  // Only meaningful while a travel view is active and we have coordinates.
-  if (appState !== 'travel' || !center) return;
+  var s = currentViewState();
+  if (!s) return;
   try {
-    var lng = center[0], lat = center[1];
-    var parts = ['p=' + lat.toFixed(5) + ',' + lng.toFixed(5)];
-    parts.push('m=' + (mode || 'walking'));
-    if (selectedMin !== null && selectedMin !== undefined) parts.push('b=' + selectedMin);
-    var label = pendingPlace && pendingPlace.name ? pendingPlace.name : '';
-    if (label) parts.push('q=' + encodeURIComponent(label));
+    var parts = ['p=' + s.lat.toFixed(5) + ',' + s.lng.toFixed(5)];
+    parts.push('m=' + s.mode);
+    if (s.bucket !== null) parts.push('b=' + s.bucket);
+    if (s.name) parts.push('q=' + encodeURIComponent(s.name));
     history.replaceState(null, '', location.pathname + location.search + '#' + parts.join('&'));
   } catch (e) {}
+  try { localStorage.setItem(LAST_VIEW_KEY, JSON.stringify({ v: s, ts: Date.now() })); } catch (e) {}
 }
 
 function clearPermalink() {
   try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+  try { localStorage.removeItem(LAST_VIEW_KEY); } catch (e) {}
 }
 
 function parsePermalink() {
@@ -981,9 +998,25 @@ function parsePermalink() {
   return { lat: lat, lng: lng, mode: mode, bucket: bucket, name: name };
 }
 
+// Read the persisted last view from localStorage (used when no hash is present,
+// e.g. after iOS Safari relaunches a purged tab). Returns the same shape as parsePermalink.
+function readLastView() {
+  try {
+    var raw = localStorage.getItem(LAST_VIEW_KEY);
+    if (!raw) return null;
+    var entry = JSON.parse(raw);
+    if (!entry || !entry.v || (Date.now() - entry.ts) > LAST_VIEW_TTL) return null;
+    var v = entry.v;
+    if (!isFinite(v.lat) || !isFinite(v.lng)) return null;
+    var mode = (v.mode === 'walking' || v.mode === 'cycling' || v.mode === 'driving') ? v.mode : 'walking';
+    var bucket = (v.bucket !== null && v.bucket !== undefined && MINS.indexOf(v.bucket) !== -1) ? v.bucket : null;
+    return { lat: v.lat, lng: v.lng, mode: mode, bucket: bucket, name: v.name || '' };
+  } catch (e) { return null; }
+}
+
 function restoreFromPermalink() {
   try {
-    var p = parsePermalink();
+    var p = parsePermalink() || readLastView();
     if (!p) return;
     mode = p.mode;
     updateModeButtons();
