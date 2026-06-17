@@ -813,28 +813,70 @@ function stationPrimaryMode(modes) {
   return { key: m, label: labels[m] || 'Rail' };
 }
 
+// Re-rank a raw station list (no dist) against an exact point: compute walk
+// distance, sort nearest-first, keep the closest 5. Used for both fresh fetches
+// and cache hits, so distances stay accurate even when a cache entry (keyed to a
+// rounded coordinate) is reused for a slightly different pin.
+function rankStations(list, lat, lng) {
+  return (list || []).map(function(s) {
+    return {
+      name: s.name, lat: s.lat, lng: s.lng, modes: s.modes || [], lines: s.lines || [],
+      dist: haversineMetres(lat, lng, s.lat, s.lng)
+    };
+  }).sort(function(a, b) { return a.dist - b.dist; }).slice(0, 5);
+}
+
+var STATION_CACHE_TTL = 30 * 24 * 60 * 60 * 1000; // 30 days
+function stationCacheKey(lat, lng) {
+  // Round to 3 decimals (~110 m grid) so nearby pins share a cache entry.
+  return 'st:' + lat.toFixed(3) + ',' + lng.toFixed(3);
+}
+function readStationCache(key) {
+  try {
+    var raw = localStorage.getItem(key);
+    if (!raw) return null;
+    var e = JSON.parse(raw);
+    if (Date.now() - e.ts > STATION_CACHE_TTL) { localStorage.removeItem(key); return null; }
+    return e.stations || null;
+  } catch (e) { return null; }
+}
+function writeStationCache(key, stations) {
+  try { localStorage.setItem(key, JSON.stringify({ ts: Date.now(), stations: stations })); } catch (e) {}
+}
+
 async function loadNearbyStations(lat, lng) {
   var listEl = document.getElementById('travel-stations');
   if (!listEl) return;
+
+  // Cache hit → render instantly, skip the (cold-slow) TfL round-trip.
+  var key = stationCacheKey(lat, lng);
+  var cached = readStationCache(key);
+  if (cached) {
+    var hit = rankStations(cached, lat, lng);
+    if (hit.length) { renderStationList(hit); renderStationMarkers(hit); return; }
+  }
+
   listEl.innerHTML = '<div class="travel-stations-title">Nearby stations</div>'
     + '<div class="travel-stations-empty">Finding stations…</div>';
   try {
+    // 1000 m radius is plenty — we only ever show the 5 nearest, and a tighter
+    // radius means far less work for TfL to hydrate (faster cold response).
     var url = 'https://api.tfl.gov.uk/StopPoint?stopTypes=NaptanMetroStation,NaptanRailStation&lat='
-      + lat + '&lon=' + lng + '&radius=1500&useStopPointHierarchy=false';
+      + lat + '&lon=' + lng + '&radius=1000&useStopPointHierarchy=false';
     var r = await fetch(url);
     var d = await r.json();
     var pts = (d && d.stopPoints) || [];
-    var stations = pts.filter(function(s) { return typeof s.lat === 'number' && typeof s.lon === 'number'; })
+    // Cache the raw (dist-less) list; distances are derived per-render via rankStations.
+    var raw = pts.filter(function(s) { return typeof s.lat === 'number' && typeof s.lon === 'number'; })
       .map(function(s) {
-        var dist = haversineMetres(lat, lng, s.lat, s.lon);
         var lines = (s.lines || []).map(function(l) { return l.name; }).filter(Boolean);
         return {
           name: (s.commonName || '').replace(/\s+(Underground|Rail|DLR)\s+Station$/i, '').replace(/\s+Station$/i, ''),
-          lat: s.lat, lng: s.lon, modes: s.modes || [], lines: lines, dist: dist
+          lat: s.lat, lng: s.lon, modes: s.modes || [], lines: lines
         };
-      })
-      .sort(function(a, b) { return a.dist - b.dist; })
-      .slice(0, 5);
+      });
+    writeStationCache(key, raw);
+    var stations = rankStations(raw, lat, lng);
 
     if (!stations.length) {
       stationsData = null;
