@@ -21,7 +21,18 @@ function buildStyleUrl(dark) {
   return 'mapbox://styles/mapbox/' + (dark ? 'dark-v11' : 'streets-v12');
 }
 function whenStyleReady(fn) {
-  if (map.isStyleLoaded()) { fn(); } else { map.once('style.load', fn); }
+  if (map.isStyleLoaded()) { fn(); return; }
+  // The style isn't ready yet. `style.load` is a ONE-SHOT event: if it has
+  // already fired (or isStyleLoaded() reports false transiently right after it,
+  // as Mapbox GL JS sometimes does on cold load), a lone `once('style.load')`
+  // would register a callback that never runs — silently dropping the work.
+  // This is what broke isochrone rendering on shared-permalink cold loads:
+  // run()'s draw+fitBounds block deferred here and was never invoked.
+  // `idle` re-fires on every render-settle, so it guarantees forward progress.
+  var fired = false;
+  function go() { if (fired) return; fired = true; fn(); }
+  map.once('style.load', go);
+  map.once('idle', go);
 }
 
 var map = new mapboxgl.Map({
