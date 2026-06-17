@@ -756,6 +756,67 @@ function stationPrimaryMode(modes) {
   return { key: m, label: labels[m] || 'Rail' };
 }
 
+// Official TfL brand colours, keyed by a normalised line name (see normaliseLineName).
+// Covers Underground lines, the post-2024 Overground line names (Lioness, Mildmay,
+// Windrush, Weaver, Suffragette, Liberty), Elizabeth line, DLR, tram, cable car and
+// river bus. Line names come straight from the TfL StopPoint response (app.js fetch),
+// so no extra dataset or network call is needed — this is a pure name → hex lookup.
+var LINE_COLORS = {
+  // London Underground
+  'bakerloo': '#B36305', 'central': '#E32017', 'circle': '#FFD300',
+  'district': '#00782A', 'hammersmith-city': '#F3A9BB', 'jubilee': '#A0A5A9',
+  'metropolitan': '#9B0056', 'northern': '#000000', 'piccadilly': '#003688',
+  'victoria': '#0098D4', 'waterloo-city': '#95CDBA',
+  // Elizabeth line + DLR
+  'elizabeth': '#6950A1', 'dlr': '#00A4A7',
+  // Overground — legacy single brand + 2024 named lines
+  'london-overground': '#EE7C0E', 'overground': '#EE7C0E',
+  'liberty': '#61686B', 'lioness': '#FAA61A', 'mildmay': '#0077AD',
+  'suffragette': '#5BBD72', 'weaver': '#823A62', 'windrush': '#EE2E24',
+  // Tram, cable car, river bus, Thameslink
+  'tram': '#84B817', 'trams': '#84B817', 'tramlink': '#84B817',
+  'ifs-cloud-cable-car': '#E51937', 'emirates-air-line': '#E51937',
+  'thames-clippers': '#00A0E2', 'uber-boat': '#00A0E2', 'river-bus': '#00A0E2',
+  'thameslink': '#E10080', 'national-rail': '#C00000'
+};
+
+// Colour used when a station resolves to no recognised line (common for National Rail
+// stations, where TfL does not populate a lines[] array). "Train" → red per request.
+var MODE_FALLBACK_COLORS = {
+  'tube': '#7b7b7b', 'national-rail': '#C00000', 'overground': '#EE7C0E',
+  'dlr': '#00A4A7', 'elizabeth-line': '#6950A1', 'tram': '#84B817',
+  'cable-car': '#E51937', 'river-bus': '#00A0E2'
+};
+
+// "Hammersmith & City" → "hammersmith-city", "Elizabeth line" → "elizabeth".
+function normaliseLineName(name) {
+  return String(name || '').toLowerCase().trim()
+    .replace(/\s+line$/, '')
+    .replace(/\s*&\s*/g, '-')
+    .replace(/\s+/g, '-');
+}
+
+// Resolve a single line name to its brand hex, or null if unknown.
+function lineColor(name) {
+  return LINE_COLORS[normaliseLineName(name)] || null;
+}
+
+// Build the ordered, de-duplicated list of dot colours for a station. Prefers real
+// line colours; falls back to a single mode-based colour when none are recognised.
+function stationDotColors(st) {
+  var seen = {};
+  var colors = [];
+  (st.lines || []).forEach(function(ln) {
+    var c = lineColor(ln);
+    if (c && !seen[c]) { seen[c] = 1; colors.push(c); }
+  });
+  if (!colors.length) {
+    var pm = stationPrimaryMode(st.modes);
+    colors.push(MODE_FALLBACK_COLORS[pm.key] || '#7b7b7b');
+  }
+  return colors.slice(0, 6); // cap so large interchanges don't overflow the row
+}
+
 // Re-rank a raw station list (no dist) against an exact point: compute walk
 // distance, sort nearest-first, keep the closest 5. Used for both fresh fetches
 // and cache hits, so distances stay accurate even when a cache entry (keyed to a
@@ -848,28 +909,33 @@ function renderStationList(stations) {
   listEl.appendChild(title);
 
   stations.forEach(function(st) {
-    var pm = stationPrimaryMode(st.modes);
     var mins = Math.max(1, Math.round(st.dist / 80));
     var row = document.createElement('div');
     row.className = 'travel-station-row';
 
-    var badge = document.createElement('span');
-    badge.className = 'station-badge station-badge-' + pm.key;
-    badge.textContent = pm.label;
-
-    var info = document.createElement('div');
-    info.className = 'travel-station-info';
+    // Left: station name (truncates when long).
     var nameEl = document.createElement('div');
     nameEl.className = 'travel-station-name';
     nameEl.textContent = st.name;
-    var metaEl = document.createElement('div');
-    metaEl.className = 'travel-station-meta';
-    metaEl.textContent = mins + ' min walk · ' + Math.round(st.dist) + ' m';
-    info.appendChild(nameEl);
-    info.appendChild(metaEl);
 
-    row.appendChild(badge);
-    row.appendChild(info);
+    // Middle: one coloured dot per line, in official TfL colours.
+    var dotsEl = document.createElement('div');
+    dotsEl.className = 'travel-station-dots';
+    stationDotColors(st).forEach(function(c) {
+      var dot = document.createElement('span');
+      dot.className = 'station-dot';
+      dot.style.background = c;
+      dotsEl.appendChild(dot);
+    });
+
+    // Right: walk time only.
+    var timeEl = document.createElement('div');
+    timeEl.className = 'travel-station-time';
+    timeEl.textContent = mins + ' min';
+
+    row.appendChild(nameEl);
+    row.appendChild(dotsEl);
+    row.appendChild(timeEl);
     row.addEventListener('click', (function(s) {
       return function() { map.flyTo({ center: [s.lng, s.lat], zoom: 15, duration: 800 }); };
     })(st));
