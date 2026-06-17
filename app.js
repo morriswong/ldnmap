@@ -1089,9 +1089,9 @@ whenStyleReady(function() { restoreFromPermalink(); });
    Mobile only (<=768px). On desktop the travel-card keeps its original CSS, so
    we never touch inline transform there. */
 (function () {
-  var card, grabber, header;
-  var snaps = { full: 0, half: 0, peek: 0 };
-  var current = 'half';
+  var card, grabber, header, slots;
+  var snaps = { full: 0, half: 0, compact: 0, peek: 0 };
+  var current = 'compact';
   var curT = 0;                 // current translateY in px
   var dragging = false, startY = 0, startT = 0, moved = false, suppressClick = false;
 
@@ -1102,8 +1102,13 @@ whenStyleReady(function() { restoreFromPermalink(); });
     if (!card) return;
     var H = card.offsetHeight;
     var peekVisible = (header ? header.offsetHeight : 52) + (grabber ? grabber.offsetHeight : 22) + 8;
+    // Compact = show everything down through the time slots (title + mode + slots),
+    // hiding the stations list. Measured from the slots row so it's exact and
+    // independent of whether the stations list has loaded yet.
+    var compactVisible = slots ? (slots.offsetTop + slots.offsetHeight + 16) : (peekVisible + 110);
     snaps.full = 0;                                  // top of sheet near top of screen
     snaps.half = Math.max(0, H - vh() * 0.5);        // header sits at ~50%
+    snaps.compact = Math.max(0, H - compactVisible); // title + mode + time toggles only
     snaps.peek = Math.max(0, H - peekVisible);       // only grabber + header visible
   }
 
@@ -1132,7 +1137,7 @@ whenStyleReady(function() { restoreFromPermalink(); });
   }
 
   function nearest(t) {
-    var arr = [['full', snaps.full], ['half', snaps.half], ['peek', snaps.peek]];
+    var arr = [['full', snaps.full], ['half', snaps.half], ['compact', snaps.compact], ['peek', snaps.peek]];
     var best = arr[0], bd = Math.abs(t - arr[0][1]);
     for (var i = 1; i < arr.length; i++) {
       var d = Math.abs(t - arr[i][1]);
@@ -1173,7 +1178,7 @@ whenStyleReady(function() { restoreFromPermalink(); });
     if (!card) return;
     if (!isMobile()) { card.style.transform = ''; return; }
     compute();
-    applySnap('half', true);
+    applySnap('compact', true);   // open showing the time toggles, map dominant
   }
   function closeSheet() {
     if (!card) return;
@@ -1187,6 +1192,7 @@ whenStyleReady(function() { restoreFromPermalink(); });
     card = document.getElementById('travel-card');
     grabber = document.getElementById('sheet-grabber');
     header = card ? card.querySelector('.travel-card-header') : null;
+    slots = card ? card.querySelector('.travel-slots') : null;
     if (!card || !grabber) return;
 
     var dragEls = [grabber, header];
@@ -1197,10 +1203,14 @@ whenStyleReady(function() { restoreFromPermalink(); });
       dragEls[i].addEventListener('touchend', onEnd);
       dragEls[i].addEventListener('touchcancel', onEnd);
     }
-    // Tap the grabber to step up: peek -> half -> full.
+    // Tap the grabber to step up through the snaps: peek -> compact -> half -> full.
+    // From full, wrap back to compact (a tap never collapses all the way to peek).
     grabber.addEventListener('click', function () {
       if (!isMobile() || suppressClick) return;
-      applySnap(current === 'peek' ? 'half' : current === 'half' ? 'full' : 'half', true);
+      var order = ['peek', 'compact', 'half', 'full'];
+      var idx = order.indexOf(current);
+      var next = (idx < 0 || idx >= order.length - 1) ? 'compact' : order[idx + 1];
+      applySnap(next, true);
     });
     // Keep the active snap correct across rotation / viewport changes.
     window.addEventListener('resize', function () {
