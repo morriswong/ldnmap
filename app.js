@@ -854,8 +854,20 @@ function lineColor(name) {
   return LINE_COLORS[normaliseLineName(name)] || null;
 }
 
+// Map a walk-time (minutes) to its isochrone bucket colour: ≤5 green, ≤10 blue,
+// ≤15 orange, ≤20 (and anything beyond) red. Mirrors the COLORS/MINS pairing used
+// for the travel slots, so a station's dots match the ring it falls inside.
+function bucketColor(mins) {
+  for (var i = 0; i < MINS.length; i++) {
+    if (mins <= MINS[i]) return COLORS[i];
+  }
+  return COLORS[COLORS.length - 1];
+}
+
 // Build the ordered, de-duplicated list of dot colours for a station. Prefers real
 // line colours; falls back to a single mode-based colour when none are recognised.
+// (Now used only for its COUNT — the dots are recoloured by walk-time bucket — but
+// the per-line dedup is what gives each station the right number of dots.)
 function stationDotColors(st) {
   var seen = {};
   var colors = [];
@@ -971,13 +983,15 @@ function renderStationList(stations) {
     nameEl.className = 'travel-station-name';
     nameEl.textContent = st.name;
 
-    // Middle: one coloured dot per line, in official TfL colours.
+    // Middle: one dot per line (count preserved), all coloured by the station's
+    // walk-time bucket so the dots match the isochrone ring it falls inside.
     var dotsEl = document.createElement('div');
     dotsEl.className = 'travel-station-dots';
-    stationDotColors(st).forEach(function(c) {
+    var bc = bucketColor(mins);
+    stationDotColors(st).forEach(function() {
       var dot = document.createElement('span');
       dot.className = 'station-dot';
-      dot.style.background = c;
+      dot.style.background = bc;
       dotsEl.appendChild(dot);
     });
 
