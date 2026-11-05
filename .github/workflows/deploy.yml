@@ -20,18 +20,17 @@ jobs:
         run: sed -i 's/__OS_TOKEN__/${{ secrets.OS_TOKEN }}/g' app.js
 
       # The fuel lookup's server URL and key live in repo secrets and are copied into the
-      # Pages project's Preview environment, so it is only switched on for dev.
-      # Skipped until FUEL_MCP_TOKEN is set. Production stays off. The null entries
-      # remove the old chat's settings.
-      - name: Configure fuel prices (Preview)
-        if: github.ref_name == 'dev'
+      # Pages project's environment for this branch (dev -> Preview, main -> Production).
+      # Skipped until FUEL_MCP_TOKEN is set. The null entries remove the old chat's settings.
+      - name: Configure fuel prices
         env:
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           FUEL_MCP_URL: ${{ secrets.FUEL_MCP_URL }}
           FUEL_MCP_TOKEN: ${{ secrets.FUEL_MCP_TOKEN }}
+          PAGES_ENV: ${{ github.ref_name == 'main' && 'production' || 'preview' }}
         run: |
           if [ -z "$FUEL_MCP_TOKEN" ]; then echo "Fuel secrets not set; skipping"; exit 0; fi
-          jq -n '{deployment_configs: {preview: {env_vars: {
+          jq -n '{deployment_configs: {(env.PAGES_ENV): {env_vars: {
             FUEL_ENABLED: {type: "plain_text", value: "true"},
             FUEL_MCP_URL: {type: "plain_text", value: env.FUEL_MCP_URL},
             FUEL_MCP_TOKEN: {type: "secret_text", value: env.FUEL_MCP_TOKEN},

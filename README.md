@@ -44,7 +44,7 @@ Cloudflare Pages via GitHub Actions. Tokens are injected at build time from repo
 
 `GET /api/fuel?location=E8%204QN&fuel=E10` calls the `cheapest_fuel_near` tool on the [uk-fuel-mcp](https://github.com/morriswong/uk-fuel-mcp) server (a Cloudflare Worker) with one MCP request and returns its JSON: the 10 cheapest stations within 5 miles, which the panel lists and the map plots. Fuel codes: `E10` (petrol), `E5` (super), `B7_STANDARD` (diesel), `B7_PREMIUM` (premium diesel). The Fuel Prices button on the postcode card only shows when `GET /api/fuel` reports the endpoint is enabled.
 
-Set these in Cloudflare Pages → ldnmap → Settings → Variables and Secrets, per environment (Preview covers `dev`; the deploy workflow sets them for Preview from the repo secrets of the same name):
+Set these in Cloudflare Pages → ldnmap → Settings → Variables and Secrets, per environment (Preview covers `dev`, Production covers `main`; the deploy workflow sets them for the branch's environment from the repo secrets of the same name):
 
 | Name | Value |
 |------|-------|
