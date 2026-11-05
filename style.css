@@ -219,14 +219,24 @@
   .postcode-cta-row { margin-top: 10px; margin-bottom: 8px; display: flex; flex-direction: column; gap: 6px; }
   .postcode-cta-label { font-size: 10px; font-weight: 500; color: var(--text-dim); letter-spacing: 0.02em; }
   .postcode-cta-btns { display: flex; gap: 6px; }
-  .postcode-cta-btns .travel-mode-btn { flex: 1; font-weight: 600; padding: 10px 0; }
+  .postcode-cta-btns .travel-mode-btn {
+    flex: 1; font-weight: 600; padding: 10px 0;
+    display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap;
+  }
+  .postcode-cta-btns .travel-mode-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+  /* The desktop card is 320px wide, so its two buttons use slightly smaller labels. */
+  #postcode-cta-btn, #postcode-fuel-btn { font-size: 12px; }
+  @media (max-width: 768px) {
+    #postcode-cta-btn, #postcode-fuel-btn { font-size: 13px; }
+    .postcode-cta-btns .travel-mode-btn svg { width: 16px; height: 16px; }
+    .postcode-cta-btns .travel-mode-btn { gap: 7px; }
+  }
   .postcode-cta-btns .travel-mode-btn[hidden] { display: none; }
   .postcode-cta-btns .travel-mode-btn:disabled { opacity: 0.4; cursor: default; pointer-events: none; }
   #postcode-cta-btn {
     background: rgba(91, 141, 238, 0.22);
     border-color: rgba(91, 141, 238, 0.45);
     color: #a8c4f5;
-    font-size: 13px;
     font-weight: 600;
     letter-spacing: 0.01em;
     transition: background 0.15s, border-color 0.15s, color 0.15s;
@@ -257,6 +267,19 @@
     border-color: rgba(91, 141, 238, 0.85);
     color: #0f3a9e;
   }
+  /* Fuel Prices: the green twin of Check Travel Time (green = cheapest pins on the map). */
+  #postcode-fuel-btn {
+    background: rgba(46, 204, 113, 0.18);
+    border-color: rgba(46, 204, 113, 0.45);
+    color: #7fe0a8;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+  #postcode-fuel-btn:hover { background: rgba(46, 204, 113, 0.28); border-color: rgba(46, 204, 113, 0.65); color: #a6ecc4; }
+  #postcode-fuel-btn:active { background: rgba(46, 204, 113, 0.38); border-color: rgba(46, 204, 113, 0.8); color: #ffffff; }
+  body.light #postcode-fuel-btn { background: rgba(5, 150, 105, 0.10); border-color: rgba(5, 150, 105, 0.45); color: #047857; }
+  body.light #postcode-fuel-btn:hover { background: rgba(5, 150, 105, 0.18); border-color: rgba(5, 150, 105, 0.6); color: #065f46; }
+  body.light #postcode-fuel-btn:active { background: rgba(5, 150, 105, 0.28); border-color: rgba(5, 150, 105, 0.75); color: #064e3b; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
   @media (max-width: 768px) {
     #search-pill {

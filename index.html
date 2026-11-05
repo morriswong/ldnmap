@@ -127,8 +127,19 @@
   </div>
   <div class="postcode-cta-row">
     <div class="postcode-cta-btns">
-      <button class="travel-mode-btn" id="postcode-cta-btn" disabled onclick="launchFromPostcodeDefault()">Check Travel Time</button>
-      <button class="travel-mode-btn" id="postcode-fuel-btn" onclick="fuelFromPostcode()" hidden>Fuel Prices</button>
+      <button class="travel-mode-btn" id="postcode-cta-btn" disabled onclick="launchFromPostcodeDefault()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
+        </svg>
+        Check Travel Time
+      </button>
+      <button class="travel-mode-btn" id="postcode-fuel-btn" onclick="fuelFromPostcode()" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 22h12M4 9h10M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"/>
+          <path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 4 0V9.8a2 2 0 0 0-.6-1.4L18 5"/>
+        </svg>
+        Fuel Prices
+      </button>
     </div>
   </div>
   <div class="postcode-chip-attrib">© OS data © Crown copyright 2025</div>
