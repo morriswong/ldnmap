@@ -9,18 +9,20 @@ A travel-time visualisation tool for London. Pick a point on the map and instant
 - Isochrone overlays via the Mapbox Isochrone API (walking, cycling, driving)
 - Location search with Mapbox Search Box (suggest + retrieve flow)
 - Postcode boundary lookup via Ordnance Survey NGD API
+- Fuel price chat (optional): ask "cheapest petrol near Hackney?" and the stations appear on the map
 - Light / dark theme toggle
 - Responsive layout: side panel on desktop, bottom sheet on mobile
 
 ## Tech
 
-Zero-dependency static site — no framework, no bundler, no build step.
+Static site — no framework, no bundler, no build step for the page itself.
 
 | File | Purpose |
 |------|---------|
 | `index.html` | Structure + CDN links |
 | `style.css` | Layout, responsive rules, glass effects, theme variables |
-| `app.js` | Map init, isochrone logic, search, UI state |
+| `app.js` | Map init, isochrone logic, search, fuel chat, UI state |
+| `functions/api/chat.js` | Cloudflare Pages Function behind the fuel chat (the only code with npm dependencies) |
 
 Built on **Mapbox GL JS** for the map, tiles, isochrones, and geocoding.
 
@@ -37,3 +39,24 @@ Cloudflare Pages via GitHub Actions. Tokens are injected at build time from repo
 
 - `main` branch &rarr; production
 - `dev` branch &rarr; preview
+
+## Fuel chat
+
+`POST /api/chat` asks Claude, which calls the [uk-fuel-mcp](https://github.com/morriswong/uk-fuel-mcp) server (hosted on Prefect Horizon) through the MCP connector, and returns the reply plus the station data the map plots. The chat button only shows when `GET /api/chat` reports the endpoint is enabled.
+
+Set these in Cloudflare Pages → ldnmap → Settings → Variables and Secrets, per environment (Preview covers `dev`):
+
+| Name | Value |
+|------|-------|
+| `CHAT_ENABLED` | `true` to switch the chat on (anything else → 404, button hidden) |
+| `ANTHROPIC_API_KEY` | Claude API key (secret) |
+| `FUEL_MCP_URL` | Horizon MCP endpoint of uk-fuel-mcp |
+| `FUEL_MCP_TOKEN` | Horizon API key, `fmcp_…` (secret) |
+
+The function caps questions at 500 characters, sends the last 10 turns, and rate-limits each IP to 10 requests a minute per isolate.
+
+```bash
+npm ci
+npm test                       # function tests, no network
+npx wrangler pages dev . --binding CHAT_ENABLED=true   # runs the function locally
+```

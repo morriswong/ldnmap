@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-`ldnmap` is a static web app that visualises travel-time isochrones ("how far can you go?") on a Mapbox GL JS map. There is no build step, no package.json, no bundler.
+`ldnmap` is a static web app that visualises travel-time isochrones ("how far can you go?") on a Mapbox GL JS map. The page has no build step and no bundler. The one exception is the fuel chat's Cloudflare Pages Function (`functions/api/chat.js`), whose only npm dependency is `@anthropic-ai/sdk` (`package.json`); the deploy workflow runs `npm ci` so wrangler can bundle it. `node_modules` and `functions/` are never uploaded as static assets.
 
 ## Architecture
 
@@ -24,6 +24,7 @@ Key subsystems in `app.js`:
 - **State machine**: `appState` is a string variable (`idle`, `search`, `modepicker`, `travel`) managed by `setState()`. `document.body.dataset.state` is set to match, which CSS uses to show/hide panels via `body[data-state="X"]` selectors.
 - **Travel slots**: Four clickable cards (5/10/15/20 min). `selectedMin` tracks which is active. Each card has `--slot-color` as an inline CSS custom property; the left border uses this for color. Active state: glow `box-shadow`. Inactive slots dim to 40% opacity.
 - **Responsive**: `@media (max-width: 768px)` rules in `style.css` switch the panel from a left-side sheet to a bottom sheet on mobile. Search uses a full-screen overlay on mobile (not inline) to avoid iOS keyboard viewport arithmetic.
+- **Fuel chat** (`[fuel-chat]` section): a chat panel that POSTs to `/api/chat` and plots the returned stations as the `fuel` GeoJSON source (`fuel-origin`, `fuel-circle`, `fuel-label` layers), rehydrated in `rehydrateLayers()`. The chat button is hidden unless `GET /api/chat` returns `{enabled: true}` (env var `CHAT_ENABLED=true`). On mobile the panel is a full-screen overlay with the input at the top, same as search. Server side: `functions/api/chat.js` (Claude + MCP connector to the uk-fuel-mcp server); tests in `tests/` (`npm test`).
 
 State is held in plain script-level variables: `mode`, `center`, `marker`, `isoLayers`, `isDark`, `selectedMin`, `postcodeLayer`, `pendingPlace`, `postcodeChipVisible`, `lastSearchQuery`, `appState`. No framework, no module system. `app.js` must load synchronously at the bottom of `<body>` (no `defer`/`async`/`type="module"`) because it queries the DOM immediately and inline `onclick` handlers reference its global functions.
 

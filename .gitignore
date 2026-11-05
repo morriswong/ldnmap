@@ -7,3 +7,5 @@
 .env.*
 .claude/
 .playwright-mcp/
+node_modules/
+.wrangler/

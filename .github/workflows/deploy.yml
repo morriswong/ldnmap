@@ -19,6 +19,16 @@ jobs:
       - name: Inject OS token
         run: sed -i 's/__OS_TOKEN__/${{ secrets.OS_TOKEN }}/g' app.js
 
+      # Only the Pages Function (functions/api/chat.js) has dependencies; wrangler
+      # bundles them from node_modules, which is never uploaded as a static asset.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install function dependencies
+        run: npm ci
+
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
