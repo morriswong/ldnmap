@@ -1219,7 +1219,12 @@ function renderFuelResults(d) {
     head.appendChild(btn);
   }
   fuelResults.appendChild(head);
-  if (d.warning) fuelResults.appendChild(fuelNote(d.warning));
+  // The server flags data older than its 15-minute cache and refreshes it in the
+  // background; only mention it once the prices are really old.
+  var fetched = Date.parse(d.data_fetched_at);
+  if (isFinite(fetched) && Date.now() - fetched > 60 * 60000) {
+    fuelResults.appendChild(fuelNote('Prices were last checked ' + timeAgo(d.data_fetched_at) + ', so they may have changed.'));
+  }
 
   var list = document.createElement('ol');
   list.className = 'fuel-list';
