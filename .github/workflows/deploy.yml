@@ -19,33 +19,24 @@ jobs:
       - name: Inject OS token
         run: sed -i 's/__OS_TOKEN__/${{ secrets.OS_TOKEN }}/g' app.js
 
-      # Only the Pages Function (functions/api/chat.js) has dependencies; wrangler
-      # bundles them from node_modules, which is never uploaded as a static asset.
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-
-      - name: Install function dependencies
-        run: npm ci
-
-      # The fuel chat's keys live in repo secrets and are copied into the Pages
-      # project's Preview environment, so the chat is only switched on for dev.
-      # Skipped until ANTHROPIC_API_KEY is set. Production stays off.
-      - name: Configure fuel chat (Preview)
+      # The fuel lookup's server URL and key live in repo secrets and are copied into the
+      # Pages project's Preview environment, so it is only switched on for dev.
+      # Skipped until FUEL_MCP_TOKEN is set. Production stays off. The null entries
+      # remove the old chat's settings.
+      - name: Configure fuel prices (Preview)
         if: github.ref_name == 'dev'
         env:
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           FUEL_MCP_URL: ${{ secrets.FUEL_MCP_URL }}
           FUEL_MCP_TOKEN: ${{ secrets.FUEL_MCP_TOKEN }}
         run: |
-          if [ -z "$ANTHROPIC_API_KEY" ]; then echo "Chat secrets not set; skipping"; exit 0; fi
+          if [ -z "$FUEL_MCP_TOKEN" ]; then echo "Fuel secrets not set; skipping"; exit 0; fi
           jq -n '{deployment_configs: {preview: {env_vars: {
-            CHAT_ENABLED: {type: "plain_text", value: "true"},
+            FUEL_ENABLED: {type: "plain_text", value: "true"},
             FUEL_MCP_URL: {type: "plain_text", value: env.FUEL_MCP_URL},
-            ANTHROPIC_API_KEY: {type: "secret_text", value: env.ANTHROPIC_API_KEY},
-            FUEL_MCP_TOKEN: {type: "secret_text", value: env.FUEL_MCP_TOKEN}
+            FUEL_MCP_TOKEN: {type: "secret_text", value: env.FUEL_MCP_TOKEN},
+            CHAT_ENABLED: null,
+            ANTHROPIC_API_KEY: null
           }}}}' > body.json
           curl -sf -X PATCH -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json" \
             --data @body.json \

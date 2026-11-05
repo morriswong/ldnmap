@@ -364,9 +364,9 @@
   }
   /* ===== END DRAGGABLE BOTTOM SHEET ===== */
 
-  /* ===== FUEL CHAT ===== */
-  /* Chat button sits above the theme FAB (desktop) / below it (mobile); hidden until /api/chat is enabled. */
-  .chat-fab {
+  /* ===== FUEL PRICES ===== */
+  /* Fuel button sits above the theme FAB (desktop) / below it (mobile); hidden until /api/fuel is enabled. */
+  .fuel-fab {
     display: flex; position: absolute; bottom: 64px; right: 16px; z-index: 1000;
     width: 40px; height: 40px; border-radius: 20px;
     background: var(--glass-fab-bg);
@@ -377,13 +377,13 @@
     align-items: center; justify-content: center; cursor: pointer; color: var(--text);
     transition: transform 0.2s, background 0.3s, opacity 0.2s;
   }
-  .chat-fab[hidden] { display: none; }
-  .chat-fab:active { transform: scale(0.94); }
-  .chat-fab svg { width: 18px; height: 18px; }
-  body.chat-open .chat-fab { opacity: 0; pointer-events: none; }
+  .fuel-fab[hidden] { display: none; }
+  .fuel-fab:active { transform: scale(0.94); }
+  .fuel-fab svg { width: 18px; height: 18px; }
+  body.fuel-open .fuel-fab { opacity: 0; pointer-events: none; }
 
   /* Desktop: a floating card on the right, clear of the left-hand travel card. */
-  .chat-panel {
+  .fuel-panel {
     position: absolute; right: 16px; bottom: 64px; z-index: 1150;
     width: 340px; max-height: min(560px, calc(var(--app-h, 100dvh) - 140px));
     display: flex; flex-direction: column;
@@ -396,42 +396,61 @@
     opacity: 0; transform: translateY(16px); pointer-events: none;
     transition: opacity 0.28s ease, transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
   }
-  .chat-panel.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
-  .chat-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-shrink: 0; }
-  .chat-title { flex: 1; font-size: 13px; font-weight: 600; color: var(--text); }
-  .chat-log {
-    order: 1; flex: 1 1 auto; min-height: 120px; overflow-y: auto;
-    -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
-    display: flex; flex-direction: column; gap: 8px; padding: 2px 0 10px;
-  }
-  .chat-empty { padding: 4px 0; }
-  .chat-msg {
-    max-width: 88%; padding: 8px 11px; border-radius: 14px;
-    font-size: 13px; line-height: 1.4; color: var(--text); white-space: pre-wrap; overflow-wrap: anywhere;
-  }
-  .chat-msg--user { align-self: flex-end; background: rgba(91,141,238,0.22); border: 1px solid rgba(91,141,238,0.45); }
-  body.light .chat-msg--user { background: rgba(91,141,238,0.14); border-color: rgba(91,141,238,0.5); }
-  .chat-msg--bot, .chat-msg--pending { align-self: flex-start; background: var(--glass-tile-bg); border: 1px solid var(--glass-border); }
-  .chat-msg--pending { color: var(--text-dim); }
-  .chat-msg--pending::after { content: ' ···'; display: inline-block; animation: pc-loading-dots 1.2s infinite ease-in-out; }
-  .chat-msg--error { align-self: flex-start; color: #e74c3c; background: rgba(231,76,60,0.08); border: 1px solid rgba(231,76,60,0.3); }
-  .chat-map-btn {
-    display: block; margin-top: 8px; padding: 5px 12px; border-radius: 999px;
-    border: 1px solid rgba(46,204,113,0.5); background: rgba(46,204,113,0.12); color: #2ecc71;
-    font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer;
-  }
-  body.light .chat-map-btn { color: #059669; border-color: rgba(5,150,105,0.45); background: rgba(5,150,105,0.08); }
-  .chat-map-btn:active { opacity: 0.6; }
-  .chat-form { order: 2; display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
-  .chat-form .chat-input { flex: 1; margin-bottom: 0; }
-  .chat-send {
+  .fuel-panel.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .fuel-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-shrink: 0; }
+  .fuel-title { flex: 1; font-size: 13px; font-weight: 600; color: var(--text); }
+  .fuel-form { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+  .fuel-form .fuel-input { flex: 1; margin-bottom: 0; }
+  .fuel-send {
     width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
     border: 1px solid rgba(91,141,238,0.55); background: rgba(91,141,238,0.22); color: var(--text);
     display: flex; align-items: center; justify-content: center; cursor: pointer;
   }
-  .chat-send:disabled { opacity: 0.4; cursor: default; }
-  .chat-send svg { width: 16px; height: 16px; }
-  .chat-attrib { order: 3; font-size: 9px; color: var(--text-faint); text-align: right; margin-top: 6px; flex-shrink: 0; }
+  .fuel-send:disabled { opacity: 0.4; cursor: default; }
+  .fuel-send svg { width: 16px; height: 16px; }
+  .fuel-types { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 8px; flex-shrink: 0; }
+  .fuel-type {
+    padding: 5px 11px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--glass-border); background: var(--glass-tile-bg); color: var(--text-soft);
+    font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500;
+  }
+  .fuel-type[aria-checked="true"] { color: var(--text); border-color: rgba(91,141,238,0.6); background: rgba(91,141,238,0.22); font-weight: 600; }
+  .fuel-results {
+    flex: 1 1 auto; min-height: 120px; overflow-y: auto;
+    -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+    display: flex; flex-direction: column; gap: 8px; padding: 2px 0 6px;
+  }
+  .fuel-empty { padding: 4px 0; }
+  .fuel-msg { padding: 8px 11px; border-radius: 12px; font-size: 13px; line-height: 1.4; color: var(--text); }
+  .fuel-msg--pending { color: var(--text-dim); }
+  .fuel-msg--pending::after { content: ' ···'; display: inline-block; animation: pc-loading-dots 1.2s infinite ease-in-out; }
+  .fuel-msg--error { color: #e74c3c; background: rgba(231,76,60,0.08); border: 1px solid rgba(231,76,60,0.3); }
+  .fuel-msg--warn { font-size: 12px; color: #f39c12; background: rgba(243,156,18,0.08); border: 1px solid rgba(243,156,18,0.3); }
+  .fuel-summary { display: flex; align-items: center; gap: 8px; }
+  .fuel-summary-text { flex: 1; font-size: 12px; color: var(--text-dim); }
+  .fuel-map-btn {
+    padding: 4px 12px; border-radius: 999px; flex-shrink: 0;
+    border: 1px solid rgba(46,204,113,0.5); background: rgba(46,204,113,0.12); color: #2ecc71;
+    font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+  body.light .fuel-map-btn { color: #059669; border-color: rgba(5,150,105,0.45); background: rgba(5,150,105,0.08); }
+  .fuel-map-btn:active { opacity: 0.6; }
+  .fuel-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  .fuel-row {
+    width: 100%; display: flex; align-items: center; gap: 10px; text-align: left; cursor: pointer;
+    padding: 8px 11px; border-radius: 12px;
+    border: 1px solid var(--glass-border); background: var(--glass-tile-bg); color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+  }
+  .fuel-row:active { opacity: 0.7; }
+  .fuel-row--cheapest { border-color: rgba(46,204,113,0.55); }
+  .fuel-row-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .fuel-row-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fuel-row-meta { font-size: 11px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fuel-row-price { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .fuel-row--cheapest .fuel-row-price { color: #2ecc71; }
+  body.light .fuel-row--cheapest .fuel-row-price { color: #059669; }
+  .fuel-attrib { font-size: 9px; color: var(--text-faint); text-align: right; margin-top: 6px; flex-shrink: 0; }
 
   /* Station popup on the map. */
   .fuel-popup .mapboxgl-popup-content {
@@ -450,8 +469,8 @@
   /* Mobile: full-screen overlay, input at the top (same pattern as .search-overlay,
      which avoids iOS keyboard / visualViewport arithmetic). */
   @media (max-width: 768px) {
-    .chat-fab { top: 60px; left: 12px; bottom: auto; right: auto; }
-    .chat-panel {
+    .fuel-fab { top: 60px; left: 12px; bottom: auto; right: auto; }
+    .fuel-panel {
       position: fixed; inset: 0; z-index: 1200; width: auto; max-height: none;
       border-radius: 0; border: none;
       background: var(--glass-sheet-bg);
@@ -459,12 +478,13 @@
       transform: translateY(100%);
       transition: transform 0.36s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.28s ease;
     }
-    .chat-panel.open { transform: translateY(0); }
-    .chat-form { order: 0; margin-bottom: 10px; }
-    .chat-form .chat-input { font-size: 16px; }
-    .chat-msg { font-size: 14px; }
+    .fuel-panel.open { transform: translateY(0); }
+    .fuel-form .fuel-input { font-size: 16px; }
+    .fuel-type { font-size: 13px; padding: 7px 13px; }
+    .fuel-row { padding: 10px 12px; }
+    .fuel-row-name { font-size: 14px; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .chat-panel, .chat-fab { transition: none !important; }
+    .fuel-panel, .fuel-fab { transition: none !important; }
   }
-  /* ===== END FUEL CHAT ===== */
+  /* ===== END FUEL PRICES ===== */

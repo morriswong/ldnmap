@@ -252,7 +252,7 @@ function rehydrateLayers() {
   }
 
   if (stationsData) addStationsLayer(stationsData); // [stations]
-  if (fuelData) addFuelLayer(fuelData); // [fuel-chat]
+  if (fuelData) addFuelLayer(fuelData); // [fuel]
 }
 
 function isoFitPadding() {
@@ -1058,140 +1058,207 @@ function clearStations() {
 }
 /* ===== END NEARBY STATIONS ===== */
 
-/* ===== FUEL CHAT ===== */
-// Chat with the fuel-price assistant (functions/api/chat.js), which answers via the
-// uk-fuel MCP server. Replies are plain text; tool results carry station coordinates,
-// which are plotted as the 'fuel' GeoJSON source. The chat button only appears when
-// GET /api/chat says the endpoint is enabled, so production stays clean until it is.
-var CHAT_URL = '/api/chat';
-var chatHistory = [];      // [{ role: 'user'|'assistant', content: string }] sent to the server
-var chatBusy = false;
+/* ===== FUEL PRICES ===== */
+// Postcode lookup (functions/api/fuel.js), which asks the uk-fuel MCP server for the
+// cheapest stations near a place. Results are listed in the panel and plotted as the
+// 'fuel' GeoJSON source. The button only appears when GET /api/fuel says the endpoint
+// is enabled, so production stays clean until it is.
+var FUEL_URL = '/api/fuel';
+var FUEL_LAST_KEY = 'ldnmap:fuelLast';  // { location, fuel } remembered per browser
+var fuelBusy = false;
+var fuelType = 'E10';
 var fuelData = null;       // GeoJSON FeatureCollection currently plotted (null when none)
 var fuelStations = {};     // node_id → station record, for popups
 var fuelPopup = null;
 var FUEL_NAMES = { E10: 'E10 petrol', E5: 'E5 super', B7_STANDARD: 'Diesel', B7_PREMIUM: 'Premium diesel', B10: 'B10 diesel', HVO: 'HVO' };
-var CHAT_EXAMPLES = ['Cheapest petrol near SW1A 1AA', 'Diesel prices around Hackney', 'Average E10 price in Croydon'];
+var FUEL_EXAMPLES = ['SW1A 1AA', 'Hackney', 'Croydon'];
 
-var chatPanel = document.getElementById('chat-panel');
-var chatLog = document.getElementById('chat-log');
-var chatInput = document.getElementById('chat-input');
+var fuelPanel = document.getElementById('fuel-panel');
+var fuelResults = document.getElementById('fuel-results');
+var fuelInput = document.getElementById('fuel-input');
 
 function isMobileView() { return window.matchMedia('(max-width: 768px)').matches; }
 
-function probeChat() {
-  fetch(CHAT_URL, { method: 'GET' })
+function probeFuel() {
+  fetch(FUEL_URL, { method: 'GET' })
     .then(function(r) { return r.ok ? r.json() : null; })
-    .then(function(d) { if (d && d.enabled) document.getElementById('chat-fab').hidden = false; })
+    .then(function(d) { if (d && d.enabled) document.getElementById('fuel-fab').hidden = false; })
     .catch(function() {});
 }
 
-function openChat() {
-  if (!chatHistory.length && !chatLog.children.length) renderChatEmpty();
-  chatPanel.classList.add('open');
-  document.body.classList.add('chat-open');
-  requestAnimationFrame(function() { chatInput.focus(); });
+function loadFuelLast() {
+  try {
+    var v = JSON.parse(localStorage.getItem(FUEL_LAST_KEY) || 'null');
+    if (v && typeof v.location === 'string') fuelInput.value = v.location;
+    if (v && FUEL_NAMES[v.fuel]) setFuelType(v.fuel);
+  } catch (e) {}
 }
 
-function closeChat() {
-  chatInput.blur();
-  chatPanel.classList.remove('open');
-  document.body.classList.remove('chat-open');
+function saveFuelLast(location) {
+  try { localStorage.setItem(FUEL_LAST_KEY, JSON.stringify({ location: location, fuel: fuelType })); } catch (e) {}
 }
 
-function resetChat() {
-  if (chatBusy) return;
-  chatHistory = [];
-  clearFuel();
-  renderChatEmpty();
-  chatInput.value = '';
-  chatInput.focus();
+function openFuel() {
+  if (!fuelResults.children.length) renderFuelEmpty();
+  fuelPanel.classList.add('open');
+  document.body.classList.add('fuel-open');
+  // On mobile, only focus an empty box: re-opening to read results shouldn't raise the keyboard.
+  if (!isMobileView() || !fuelInput.value) requestAnimationFrame(function() { fuelInput.focus(); });
 }
 
-function renderChatEmpty() {
-  chatLog.innerHTML = '';
+function closeFuel() {
+  fuelInput.blur();
+  fuelPanel.classList.remove('open');
+  document.body.classList.remove('fuel-open');
+}
+
+function setFuelType(code) {
+  fuelType = code;
+  document.querySelectorAll('#fuel-types .fuel-type').forEach(function(b) {
+    b.setAttribute('aria-checked', b.dataset.fuel === code ? 'true' : 'false');
+  });
+}
+
+document.getElementById('fuel-types').addEventListener('click', function(e) {
+  var b = e.target.closest('.fuel-type');
+  if (!b || b.dataset.fuel === fuelType) return;
+  setFuelType(b.dataset.fuel);
+  if (fuelInput.value.trim()) lookupFuel();  // re-run the current search for the new fuel
+});
+
+function renderFuelEmpty() {
+  fuelResults.innerHTML = '';
   var wrap = document.createElement('div');
-  wrap.className = 'search-helper chat-empty';
+  wrap.className = 'search-helper fuel-empty';
   var hint = document.createElement('p');
   hint.className = 'search-helper-hint';
-  hint.textContent = 'Ask about fuel prices anywhere in the UK. Stations show up on the map.';
+  hint.textContent = 'Enter a UK postcode or area to see the cheapest fuel within 5 miles.';
   var chips = document.createElement('div');
   chips.className = 'search-helper-chips';
-  CHAT_EXAMPLES.forEach(function(q) {
+  FUEL_EXAMPLES.forEach(function(q) {
     var b = document.createElement('button');
     b.type = 'button';
     b.className = 'search-helper-chip';
     b.textContent = q;
-    b.addEventListener('click', function() { chatInput.value = q; sendChat(); });
+    b.addEventListener('click', function() { fuelInput.value = q; lookupFuel(); });
     chips.appendChild(b);
   });
   wrap.appendChild(hint);
   wrap.appendChild(chips);
-  chatLog.appendChild(wrap);
+  fuelResults.appendChild(wrap);
 }
 
-function addChatBubble(kind, text) {
-  var empty = chatLog.querySelector('.chat-empty');
-  if (empty) empty.remove();
+function fuelMessage(kind, text) {
+  fuelResults.innerHTML = '';
   var el = document.createElement('div');
-  el.className = 'chat-msg chat-msg--' + kind;
+  el.className = 'fuel-msg fuel-msg--' + kind;
   el.textContent = text;
-  chatLog.appendChild(el);
-  chatLog.scrollTop = chatLog.scrollHeight;
+  fuelResults.appendChild(el);
   return el;
 }
 
-async function sendChat(e) {
+async function lookupFuel(e) {
   if (e) e.preventDefault();
-  var text = chatInput.value.trim();
-  if (!text || chatBusy) return false;
-  chatBusy = true;
-  document.getElementById('chat-send').disabled = true;
-  chatInput.value = '';
-  if (isMobileView()) chatInput.blur();               // drop the iOS keyboard so the reply is visible
-  addChatBubble('user', text);
-  chatHistory.push({ role: 'user', content: text });
+  var location = fuelInput.value.trim();
+  if (!location || fuelBusy) return false;
+  fuelBusy = true;
+  document.getElementById('fuel-send').disabled = true;
+  if (isMobileView()) fuelInput.blur();               // drop the iOS keyboard so the results are visible
+  saveFuelLast(location);
 
-  var pending = addChatBubble('pending', 'Checking fuel prices');
+  var pending = fuelMessage('pending', 'Checking prices');
   var slowTimer = setTimeout(function() {
-    pending.textContent = 'Still working. The first question after a quiet spell can take up to 30 seconds';
-  }, 6000);
+    pending.textContent = 'Still checking. The first lookup after a quiet spell can take up to 30 seconds';
+  }, 4000);
 
   try {
-    var r = await fetch(CHAT_URL, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ messages: chatHistory.slice(-10) })
-    });
+    var q = '?location=' + encodeURIComponent(location) + '&fuel=' + encodeURIComponent(fuelType);
+    var r = await fetch(FUEL_URL + q);
     var d = null;
     try { d = await r.json(); } catch (err) {}
-    if (!r.ok || !d || typeof d.reply !== 'string') {
-      throw new Error((d && d.error) || 'Couldn’t reach the fuel assistant.');
+    if (!r.ok || !d || !Array.isArray(d.stations)) {
+      throw new Error((d && d.error) || 'Couldn’t reach the fuel price service.');
     }
-    pending.remove();
-    chatHistory.push({ role: 'assistant', content: d.reply });
-    var bubble = addChatBubble('bot', d.reply);
-    if (plotFuelResults(d.results || [])) {
-      var btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'chat-map-btn';
-      btn.textContent = 'Show on map';
-      btn.addEventListener('click', function() { if (isMobileView()) closeChat(); fitFuelBounds(); });
-      bubble.appendChild(btn);
-      chatLog.scrollTop = chatLog.scrollHeight;
-    }
+    renderFuelResults(d);
+    plotFuelResults([{ tool: 'cheapest_fuel_near', data: d }]);
   } catch (err) {
-    pending.remove();
-    chatHistory.pop();                                  // forget the unanswered question so a resend works
-    addChatBubble('error', err.message || 'Something went wrong.');
+    fuelMessage('error', err.message || 'Something went wrong.');
   } finally {
     clearTimeout(slowTimer);
-    chatBusy = false;
-    document.getElementById('chat-send').disabled = false;
+    fuelBusy = false;
+    document.getElementById('fuel-send').disabled = false;
   }
   return false;
 }
 
-chatInput.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeChat(); });
+function renderFuelResults(d) {
+  fuelResults.innerHTML = '';
+  var head = document.createElement('div');
+  head.className = 'fuel-summary';
+  var where = document.createElement('div');
+  where.className = 'fuel-summary-text';
+  var place = (d.location && d.location.label) || fuelInput.value.trim();
+  where.textContent = d.stations.length
+    ? (FUEL_NAMES[d.fuel] || d.fuel) + ' within ' + d.radius_miles + ' mi of ' + place
+    : 'No stations selling ' + (FUEL_NAMES[d.fuel] || d.fuel) + ' within ' + d.radius_miles + ' mi of ' + place + '.';
+  head.appendChild(where);
+  if (d.stations.length) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'fuel-map-btn';
+    btn.textContent = 'Map';
+    btn.addEventListener('click', function() { if (isMobileView()) closeFuel(); fitFuelBounds(); });
+    head.appendChild(btn);
+  }
+  fuelResults.appendChild(head);
+  if (d.warning) fuelResults.appendChild(fuelNote(d.warning));
+
+  var list = document.createElement('ol');
+  list.className = 'fuel-list';
+  var min = d.stations.length ? d.stations[0].price_ppl : null;
+  d.stations.forEach(function(s) {
+    var li = document.createElement('li');
+    var row = document.createElement('button');
+    row.type = 'button';
+    row.className = 'fuel-row' + (s.price_ppl === min ? ' fuel-row--cheapest' : '');
+    var main = document.createElement('span');
+    main.className = 'fuel-row-main';
+    var name = document.createElement('span');
+    name.className = 'fuel-row-name';
+    name.textContent = s.name || 'Fuel station';
+    var meta = document.createElement('span');
+    meta.className = 'fuel-row-meta';
+    // Some stations' brand is just their name again; skip it then.
+    var brand = s.brand && (s.name || '').toLowerCase().indexOf(s.brand.toLowerCase()) === -1 ? s.brand : '';
+    meta.textContent = [brand, s.distance_miles.toFixed(1) + ' mi', s.price_updated ? 'updated ' + timeAgo(s.price_updated) : '']
+      .filter(Boolean).join(' · ');
+    main.appendChild(name);
+    main.appendChild(meta);
+    var price = document.createElement('span');
+    price.className = 'fuel-row-price';
+    price.textContent = s.price_ppl.toFixed(1) + 'p';
+    row.appendChild(main);
+    row.appendChild(price);
+    row.addEventListener('click', function() {
+      if (isMobileView()) closeFuel();
+      map.flyTo({ center: [s.longitude, s.latitude], zoom: 15 });
+      showFuelPopup(s.node_id, [s.longitude, s.latitude]);
+    });
+    li.appendChild(row);
+    list.appendChild(li);
+  });
+  fuelResults.appendChild(list);
+}
+
+function fuelNote(text) {
+  var el = document.createElement('div');
+  el.className = 'fuel-msg fuel-msg--warn';
+  el.textContent = text;
+  return el;
+}
+
+fuelInput.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeFuel(); });
+loadFuelLast();
 
 // "2026-11-05T09:00:00Z" → "4h ago"
 function timeAgo(iso) {
@@ -1207,7 +1274,7 @@ function timeAgo(iso) {
 // Turn tool results into one de-duplicated station list plus the searched point,
 // and a node_id → { station, prices } lookup for popups.
 // cheapest_fuel_near / area_summary name one fuel; stations_near lists every price,
-// so its pins are labelled with that same fuel (or E10 when the chat never named one).
+// so its pins are labelled with that same fuel (or E10 when none was named).
 function fuelFeaturesFromResults(results) {
   var fuel = null, origin = null, byId = {}, order = [];
   results.forEach(function(r) {
@@ -1321,7 +1388,7 @@ function fitFuelBounds() {
   coords.forEach(function(c) { b.extend(c); });
   var pad = isMobileView()
     ? { top: 80, right: 32, bottom: 96, left: 32 }
-    : { top: 60, right: 390, bottom: 60, left: 60 };   // keep pins clear of the chat panel
+    : { top: 60, right: 390, bottom: 60, left: 60 };   // keep pins clear of the fuel panel
   map.fitBounds(b, { padding: pad, maxZoom: 14 });
 }
 
@@ -1371,8 +1438,8 @@ map.on('click', 'fuel-circle', function(e) {
 map.on('mouseenter', 'fuel-circle', function() { map.getCanvas().style.cursor = 'pointer'; });
 map.on('mouseleave', 'fuel-circle', function() { map.getCanvas().style.cursor = ''; });
 
-probeChat();
-/* ===== END FUEL CHAT ===== */
+probeFuel();
+/* ===== END FUEL PRICES ===== */
 
 function setStatus(msg, isError) {
   var el = document.getElementById('st');

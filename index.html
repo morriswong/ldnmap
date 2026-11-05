@@ -22,37 +22,38 @@
     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
   </svg>
 </button>
-<!-- [fuel-chat] hidden until /api/chat reports it is enabled -->
-<button class="chat-fab" id="chat-fab" onclick="openChat()" title="Ask about fuel prices" aria-label="Ask about fuel prices" hidden>
+<!-- [fuel] hidden until /api/fuel reports it is enabled -->
+<button class="fuel-fab" id="fuel-fab" onclick="openFuel()" title="Fuel prices" aria-label="Fuel prices" hidden>
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M3 22h12M4 9h10M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"/>
     <path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 4 0V9.8a2 2 0 0 0-.6-1.4L18 5"/>
   </svg>
 </button>
-<div id="chat-panel" class="chat-panel" role="dialog" aria-label="Fuel price chat">
-  <div class="chat-header">
-    <button class="travel-card-btn" onclick="closeChat()" aria-label="Close chat">
+<div id="fuel-panel" class="fuel-panel" role="dialog" aria-label="Fuel prices">
+  <div class="fuel-header">
+    <button class="travel-card-btn" onclick="closeFuel()" aria-label="Close fuel prices">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M18 6L6 18M6 6l12 12"/>
       </svg>
     </button>
-    <div class="chat-title">Fuel prices</div>
-    <button class="travel-card-btn" onclick="resetChat()" aria-label="New chat" title="New chat">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>
-      </svg>
-    </button>
+    <div class="fuel-title">Fuel prices</div>
   </div>
-  <form class="chat-form" id="chat-form" onsubmit="sendChat(event); return false;">
-    <input class="sinput chat-input" id="chat-input" maxlength="500" autocomplete="off" enterkeyhint="send" placeholder="Cheapest petrol near Hackney?">
-    <button class="chat-send" id="chat-send" type="submit" aria-label="Send">
+  <form class="fuel-form" id="fuel-form" onsubmit="lookupFuel(event); return false;">
+    <input class="sinput fuel-input" id="fuel-input" maxlength="60" autocomplete="postal-code" autocapitalize="characters" spellcheck="false" enterkeyhint="search" placeholder="Postcode or area, e.g. E8 4QN" aria-label="Postcode or area">
+    <button class="fuel-send" id="fuel-send" type="submit" aria-label="Find prices">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M5 12h14M13 6l6 6-6 6"/>
       </svg>
     </button>
   </form>
-  <div class="chat-log" id="chat-log" aria-live="polite"></div>
-  <div class="chat-attrib">Prices from the UK Fuel Finder service · Open Government Licence v3.0</div>
+  <div class="fuel-types" id="fuel-types" role="radiogroup" aria-label="Fuel type">
+    <button type="button" class="fuel-type" role="radio" data-fuel="E10" aria-checked="true">Petrol</button>
+    <button type="button" class="fuel-type" role="radio" data-fuel="B7_STANDARD" aria-checked="false">Diesel</button>
+    <button type="button" class="fuel-type" role="radio" data-fuel="E5" aria-checked="false">Super</button>
+    <button type="button" class="fuel-type" role="radio" data-fuel="B7_PREMIUM" aria-checked="false">Premium diesel</button>
+  </div>
+  <div class="fuel-results" id="fuel-results" aria-live="polite"></div>
+  <div class="fuel-attrib">Prices from the UK Fuel Finder service · Open Government Licence v3.0</div>
 </div>
 
 <div id="search-overlay" class="search-overlay">
