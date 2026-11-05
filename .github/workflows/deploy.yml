@@ -29,6 +29,30 @@ jobs:
       - name: Install function dependencies
         run: npm ci
 
+      # The fuel chat's keys live in repo secrets and are copied into the Pages
+      # project's Preview environment, so the chat is only switched on for dev.
+      # Skipped until ANTHROPIC_API_KEY is set. Production stays off.
+      - name: Configure fuel chat (Preview)
+        if: github.ref_name == 'dev'
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          FUEL_MCP_URL: ${{ secrets.FUEL_MCP_URL }}
+          FUEL_MCP_TOKEN: ${{ secrets.FUEL_MCP_TOKEN }}
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then echo "Chat secrets not set; skipping"; exit 0; fi
+          jq -n '{deployment_configs: {preview: {env_vars: {
+            CHAT_ENABLED: {type: "plain_text", value: "true"},
+            FUEL_MCP_URL: {type: "plain_text", value: env.FUEL_MCP_URL},
+            ANTHROPIC_API_KEY: {type: "secret_text", value: env.ANTHROPIC_API_KEY},
+            FUEL_MCP_TOKEN: {type: "secret_text", value: env.FUEL_MCP_TOKEN}
+          }}}}' > body.json
+          curl -sf -X PATCH -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json" \
+            --data @body.json \
+            "https://api.cloudflare.com/client/v4/accounts/a30a1eec7f8eb1e19439a3bc00d47beb/pages/projects/ldnmap" \
+            | jq '{success, errors}'
+          rm body.json
+
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
