@@ -22,13 +22,7 @@
     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
   </svg>
 </button>
-<!-- [fuel] hidden until /api/fuel reports it is enabled -->
-<button class="fuel-fab" id="fuel-fab" onclick="openFuel()" title="Fuel prices" aria-label="Fuel prices" hidden>
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M3 22h12M4 9h10M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"/>
-    <path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 4 0V9.8a2 2 0 0 0-.6-1.4L18 5"/>
-  </svg>
-</button>
+<!-- [fuel] opened from the postcode card's Fuel Prices button -->
 <div id="fuel-panel" class="fuel-panel" role="dialog" aria-label="Fuel prices">
   <div class="fuel-header">
     <button class="travel-card-btn" onclick="closeFuel()" aria-label="Close fuel prices">
@@ -133,6 +127,7 @@
   <div class="postcode-cta-row">
     <div class="postcode-cta-btns">
       <button class="travel-mode-btn" id="postcode-cta-btn" disabled onclick="launchFromPostcodeDefault()">Check Travel Time</button>
+      <button class="travel-mode-btn" id="postcode-fuel-btn" onclick="fuelFromPostcode()" hidden>Fuel Prices</button>
     </div>
   </div>
   <div class="postcode-chip-attrib">© OS data © Crown copyright 2025</div>

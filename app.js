@@ -1061,8 +1061,9 @@ function clearStations() {
 /* ===== FUEL PRICES ===== */
 // Postcode lookup (functions/api/fuel.js), which asks the uk-fuel MCP server for the
 // cheapest stations near a place. Results are listed in the panel and plotted as the
-// 'fuel' GeoJSON source. The button only appears when GET /api/fuel says the endpoint
-// is enabled, so production stays clean until it is.
+// 'fuel' GeoJSON source. It opens from the postcode card's Fuel Prices button, which
+// only appears when GET /api/fuel says the endpoint is enabled, so production stays
+// clean until it is.
 var FUEL_URL = '/api/fuel';
 var FUEL_LAST_KEY = 'ldnmap:fuelLast';  // { location, fuel } remembered per browser
 var fuelBusy = false;
@@ -1082,7 +1083,7 @@ function isMobileView() { return window.matchMedia('(max-width: 768px)').matches
 function probeFuel() {
   fetch(FUEL_URL, { method: 'GET' })
     .then(function(r) { return r.ok ? r.json() : null; })
-    .then(function(d) { if (d && d.enabled) document.getElementById('fuel-fab').hidden = false; })
+    .then(function(d) { if (d && d.enabled) document.getElementById('postcode-fuel-btn').hidden = false; })
     .catch(function() {});
 }
 
@@ -1101,15 +1102,22 @@ function saveFuelLast(location) {
 function openFuel() {
   if (!fuelResults.children.length) renderFuelEmpty();
   fuelPanel.classList.add('open');
-  document.body.classList.add('fuel-open');
   // On mobile, only focus an empty box: re-opening to read results shouldn't raise the keyboard.
   if (!isMobileView() || !fuelInput.value) requestAnimationFrame(function() { fuelInput.focus(); });
+}
+
+// Postcode card button: look up prices for the place the user just picked.
+function fuelFromPostcode() {
+  if (!pendingPlace || !pendingPlace.postcode) return;
+  fuelInput.value = pendingPlace.postcode;
+  openFuel();
+  if (isMobileView()) fuelInput.blur();
+  lookupFuel();
 }
 
 function closeFuel() {
   fuelInput.blur();
   fuelPanel.classList.remove('open');
-  document.body.classList.remove('fuel-open');
 }
 
 function setFuelType(code) {

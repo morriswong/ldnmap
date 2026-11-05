@@ -220,6 +220,7 @@
   .postcode-cta-label { font-size: 10px; font-weight: 500; color: var(--text-dim); letter-spacing: 0.02em; }
   .postcode-cta-btns { display: flex; gap: 6px; }
   .postcode-cta-btns .travel-mode-btn { flex: 1; font-weight: 600; padding: 10px 0; }
+  .postcode-cta-btns .travel-mode-btn[hidden] { display: none; }
   .postcode-cta-btns .travel-mode-btn:disabled { opacity: 0.4; cursor: default; pointer-events: none; }
   #postcode-cta-btn {
     background: rgba(91, 141, 238, 0.22);
@@ -365,23 +366,6 @@
   /* ===== END DRAGGABLE BOTTOM SHEET ===== */
 
   /* ===== FUEL PRICES ===== */
-  /* Fuel button sits above the theme FAB (desktop) / below it (mobile); hidden until /api/fuel is enabled. */
-  .fuel-fab {
-    display: flex; position: absolute; bottom: 64px; right: 16px; z-index: 1000;
-    width: 40px; height: 40px; border-radius: 20px;
-    background: var(--glass-fab-bg);
-    backdrop-filter: blur(30px) saturate(180%);
-    -webkit-backdrop-filter: blur(30px) saturate(180%);
-    border: 1px solid var(--glass-border);
-    box-shadow: inset 0 1px 0 0 var(--glass-highlight), 0 4px 16px rgba(0,0,0,0.12);
-    align-items: center; justify-content: center; cursor: pointer; color: var(--text);
-    transition: transform 0.2s, background 0.3s, opacity 0.2s;
-  }
-  .fuel-fab[hidden] { display: none; }
-  .fuel-fab:active { transform: scale(0.94); }
-  .fuel-fab svg { width: 18px; height: 18px; }
-  body.fuel-open .fuel-fab { opacity: 0; pointer-events: none; }
-
   /* Desktop: a floating card on the right, clear of the left-hand travel card. */
   .fuel-panel {
     position: absolute; right: 16px; bottom: 64px; z-index: 1150;
@@ -469,7 +453,6 @@
   /* Mobile: full-screen overlay, input at the top (same pattern as .search-overlay,
      which avoids iOS keyboard / visualViewport arithmetic). */
   @media (max-width: 768px) {
-    .fuel-fab { top: 60px; left: 12px; bottom: auto; right: auto; }
     .fuel-panel {
       position: fixed; inset: 0; z-index: 1200; width: auto; max-height: none;
       border-radius: 0; border: none;
@@ -485,6 +468,6 @@
     .fuel-row-name { font-size: 14px; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .fuel-panel, .fuel-fab { transition: none !important; }
+    .fuel-panel { transition: none !important; }
   }
   /* ===== END FUEL PRICES ===== */
