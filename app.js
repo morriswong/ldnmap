@@ -1102,6 +1102,8 @@ function saveFuelLast(location) {
 function openFuel() {
   if (!fuelResults.children.length) renderFuelEmpty();
   fuelPanel.classList.add('open');
+  document.body.classList.add('fuel-open');
+  if (window.__fuelSheet) window.__fuelSheet.open();
   // On mobile, only focus an empty box: re-opening to read results shouldn't raise the keyboard.
   if (!isMobileView() || !fuelInput.value) requestAnimationFrame(function() { fuelInput.focus(); });
 }
@@ -1118,7 +1120,19 @@ function fuelFromPostcode() {
 function closeFuel() {
   fuelInput.blur();
   fuelPanel.classList.remove('open');
+  document.body.classList.remove('fuel-open');
+  if (window.__fuelSheet) window.__fuelSheet.close();
 }
+
+// On mobile the sheet is a draggable bottom sheet: typing pulls it to full height so
+// the box stays above the keyboard, and the map views shrink it to show the pins.
+function fuelSheetTo(snap) {
+  if (isMobileView() && window.__fuelSheet) window.__fuelSheet.snap(snap);
+}
+function fuelSheetVisible() {
+  return isMobileView() && window.__fuelSheet ? window.__fuelSheet.visibleAt(window.__fuelSheet.snapName()) : 0;
+}
+fuelInput.addEventListener('focus', function() { fuelSheetTo('full'); });
 
 function setFuelType(code) {
   fuelType = code;
@@ -1188,6 +1202,7 @@ async function lookupFuel(e) {
       throw new Error((d && d.error) || 'Couldn’t reach the fuel price service.');
     }
     renderFuelResults(d);
+    if (window.__fuelSheet && window.__fuelSheet.snapName() === 'full') fuelSheetTo('half');
     plotFuelResults([{ tool: 'cheapest_fuel_near', data: d }]);
   } catch (err) {
     fuelMessage('error', err.message || 'Something went wrong.');
@@ -1215,7 +1230,7 @@ function renderFuelResults(d) {
     btn.type = 'button';
     btn.className = 'fuel-map-btn';
     btn.textContent = 'Map';
-    btn.addEventListener('click', function() { if (isMobileView()) closeFuel(); fitFuelBounds(); });
+    btn.addEventListener('click', function() { fuelSheetTo('peek'); fitFuelBounds(); });
     head.appendChild(btn);
   }
   fuelResults.appendChild(head);
@@ -1253,8 +1268,9 @@ function renderFuelResults(d) {
     row.appendChild(main);
     row.appendChild(price);
     row.addEventListener('click', function() {
-      if (isMobileView()) closeFuel();
-      map.flyTo({ center: [s.longitude, s.latitude], zoom: 15 });
+      fuelSheetTo('compact');
+      // Centre the station in the map area above the sheet.
+      map.flyTo({ center: [s.longitude, s.latitude], zoom: 15, offset: [0, -fuelSheetVisible() / 2] });
       showFuelPopup(s.node_id, [s.longitude, s.latitude]);
     });
     li.appendChild(row);
@@ -1400,7 +1416,7 @@ function fitFuelBounds() {
   var b = new mapboxgl.LngLatBounds(coords[0], coords[0]);
   coords.forEach(function(c) { b.extend(c); });
   var pad = isMobileView()
-    ? { top: 80, right: 32, bottom: 96, left: 32 }
+    ? { top: 80, right: 32, bottom: fuelSheetVisible() + 24, left: 32 }   // keep pins above the sheet
     : { top: 60, right: 390, bottom: 60, left: 60 };   // keep pins clear of the fuel panel
   map.fitBounds(b, { padding: pad, maxZoom: 14 });
 }
@@ -1590,13 +1606,16 @@ whenStyleReady(function() { restoreFromPermalink(); });
 /* ===== end permalink ===== */
 
 /* ===== DRAGGABLE BOTTOM SHEET (mobile snap points) ===== */
-/* Apple/Google-Maps-style sheet: peek (grabber + title), half (~50%), full (~92%).
-   Mobile only (<=768px). On desktop the travel-card keeps its original CSS, so
-   we never touch inline transform there. */
-(function () {
-  var card, grabber, header, slots;
+/* Apple/Google-Maps-style sheet: peek (grabber + title), compact, half (~50%), full (~92%).
+   Mobile only (<=768px). On desktop the cards keep their original CSS, so we never
+   touch inline transform there. Used by the travel card and the fuel price panel. */
+function makeSnapSheet(opts) {
+  var card = document.getElementById(opts.card);
+  var grabber = document.getElementById(opts.grabber);
+  if (!card || !grabber) return null;
+  var header = card.querySelector(opts.header);
   var snaps = { full: 0, half: 0, compact: 0, peek: 0 };
-  var current = 'compact';
+  var current = opts.initial || 'compact';
   var curT = 0;                 // current translateY in px
   var dragging = false, startY = 0, startT = 0, moved = false, suppressClick = false;
 
@@ -1604,16 +1623,15 @@ whenStyleReady(function() { restoreFromPermalink(); });
   function vh() { return (window.visualViewport && window.visualViewport.height) || window.innerHeight; }
 
   function compute() {
-    if (!card) return;
     var H = card.offsetHeight;
-    var peekVisible = (header ? header.offsetHeight : 52) + (grabber ? grabber.offsetHeight : 22) + 8;
-    // Compact = show everything down through the time slots (title + mode + slots),
-    // hiding the stations list. Measured from the slots row so it's exact and
-    // independent of whether the stations list has loaded yet.
-    var compactVisible = slots ? (slots.offsetTop + slots.offsetHeight + 16) : (peekVisible + 110);
+    var peekVisible = (header ? header.offsetHeight : 52) + grabber.offsetHeight + 8;
+    // Compact = show everything down through opts.compact (measured, so it's exact
+    // and independent of whether the list below has loaded yet).
+    var compactEl = opts.compact ? card.querySelector(opts.compact) : null;
+    var compactVisible = compactEl ? (compactEl.offsetTop + compactEl.offsetHeight + 16) : (peekVisible + 110);
     snaps.full = 0;                                  // top of sheet near top of screen
     snaps.half = Math.max(0, H - vh() * 0.5);        // header sits at ~50%
-    snaps.compact = Math.max(0, H - compactVisible); // title + mode + time toggles only
+    snaps.compact = Math.max(0, H - compactVisible);
     snaps.peek = Math.max(0, H - peekVisible);       // only grabber + header visible
   }
 
@@ -1634,10 +1652,10 @@ whenStyleReady(function() { restoreFromPermalink(); });
     current = name;
     compute();
     setT(snaps[name], animate);
+    if (opts.onSnap) opts.onSnap(name);
   }
 
   function hide(animate) {
-    if (!card) return;
     setT(card.offsetHeight + 40, animate);           // fully below the viewport
   }
 
@@ -1679,52 +1697,58 @@ whenStyleReady(function() { restoreFromPermalink(); });
     applySnap(nearest(curT), true);
   }
 
-  function openSheet() {
-    if (!card) return;
-    if (!isMobile()) { card.style.transform = ''; return; }
-    compute();
-    applySnap('compact', true);   // open showing the time toggles, map dominant
+  var dragEls = [grabber, header];
+  for (var i = 0; i < dragEls.length; i++) {
+    if (!dragEls[i]) continue;
+    dragEls[i].addEventListener('touchstart', onStart, { passive: true });
+    dragEls[i].addEventListener('touchmove', onMove, { passive: false });
+    dragEls[i].addEventListener('touchend', onEnd);
+    dragEls[i].addEventListener('touchcancel', onEnd);
   }
-  function closeSheet() {
-    if (!card) return;
-    if (!isMobile()) { card.style.transform = ''; return; }
-    hide(true);
-  }
+  // Tap the grabber to step up through the snaps: peek -> compact -> half -> full.
+  // From full, wrap back to compact (a tap never collapses all the way to peek).
+  grabber.addEventListener('click', function () {
+    if (!isMobile() || suppressClick) return;
+    var order = ['peek', 'compact', 'half', 'full'];
+    var idx = order.indexOf(current);
+    var next = (idx < 0 || idx >= order.length - 1) ? 'compact' : order[idx + 1];
+    applySnap(next, true);
+  });
+  // Keep the active snap correct across rotation / viewport changes.
+  window.addEventListener('resize', function () {
+    if (isMobile() && opts.isOpen()) applySnap(current, false);
+    else if (!isMobile()) card.style.transform = '';
+  });
 
-  window.__sheet = { open: openSheet, close: closeSheet };
+  if (isMobile()) hide(false);                       // start parked below the viewport
 
-  function init() {
-    card = document.getElementById('travel-card');
-    grabber = document.getElementById('sheet-grabber');
-    header = card ? card.querySelector('.travel-card-header') : null;
-    slots = card ? card.querySelector('.travel-slots') : null;
-    if (!card || !grabber) return;
+  return {
+    open: function (snap) {
+      if (!isMobile()) { card.style.transform = ''; return; }
+      applySnap(snap || opts.initial || 'compact', true);
+    },
+    close: function () {
+      if (!isMobile()) { card.style.transform = ''; return; }
+      hide(true);
+    },
+    snap: function (name) { if (isMobile()) applySnap(name, true); },
+    snapName: function () { return current; },
+    // Pixels of the sheet showing above the bottom of the screen at a snap.
+    visibleAt: function (name) { compute(); return card.offsetHeight - snaps[name]; }
+  };
+}
 
-    var dragEls = [grabber, header];
-    for (var i = 0; i < dragEls.length; i++) {
-      if (!dragEls[i]) continue;
-      dragEls[i].addEventListener('touchstart', onStart, { passive: true });
-      dragEls[i].addEventListener('touchmove', onMove, { passive: false });
-      dragEls[i].addEventListener('touchend', onEnd);
-      dragEls[i].addEventListener('touchcancel', onEnd);
-    }
-    // Tap the grabber to step up through the snaps: peek -> compact -> half -> full.
-    // From full, wrap back to compact (a tap never collapses all the way to peek).
-    grabber.addEventListener('click', function () {
-      if (!isMobile() || suppressClick) return;
-      var order = ['peek', 'compact', 'half', 'full'];
-      var idx = order.indexOf(current);
-      var next = (idx < 0 || idx >= order.length - 1) ? 'compact' : order[idx + 1];
-      applySnap(next, true);
-    });
-    // Keep the active snap correct across rotation / viewport changes.
-    window.addEventListener('resize', function () {
-      if (isMobile() && document.body.dataset.state === 'travel') applySnap(current, false);
-      else if (!isMobile()) card.style.transform = '';
-    });
+// The travel card opens showing the time toggles, map dominant.
+window.__sheet = makeSnapSheet({
+  card: 'travel-card', grabber: 'sheet-grabber', header: '.travel-card-header',
+  compact: '.travel-slots', initial: 'compact',
+  isOpen: function () { return document.body.dataset.state === 'travel'; }
+});
 
-    if (isMobile()) hide(false);                     // start parked below the viewport
-  }
-  init();
-})();
+// The fuel panel opens at half height so the pins show above it.
+window.__fuelSheet = makeSnapSheet({
+  card: 'fuel-panel', grabber: 'fuel-grabber', header: '.fuel-header',
+  compact: '.fuel-types', initial: 'half',
+  isOpen: function () { return fuelPanel.classList.contains('open'); }
+});
 /* ===== END DRAGGABLE BOTTOM SHEET ===== */

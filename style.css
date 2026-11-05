@@ -450,18 +450,23 @@
   .fuel-pop-price { font-weight: 600; font-variant-numeric: tabular-nums; color: var(--text); }
   .fuel-pop-ago { font-size: 10px; color: var(--text-dim); min-width: 44px; text-align: right; }
 
-  /* Mobile: full-screen overlay, input at the top (same pattern as .search-overlay,
-     which avoids iOS keyboard / visualViewport arithmetic). */
   @media (max-width: 768px) {
+    /* Mobile: a draggable bottom sheet like the travel card. Its vertical position
+       (transform: translateY) is owned by makeSnapSheet() in app.js. */
     .fuel-panel {
-      position: fixed; inset: 0; z-index: 1200; width: auto; max-height: none;
-      border-radius: 0; border: none;
-      background: var(--glass-sheet-bg);
-      padding: max(14px, env(safe-area-inset-top, 14px)) 14px max(12px, env(safe-area-inset-bottom, 12px));
-      transform: translateY(100%);
-      transition: transform 0.36s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.28s ease;
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 1150; width: auto;
+      height: calc(var(--app-h, 100dvh) * 0.92); max-height: calc(var(--app-h, 100dvh) * 0.92);
+      border-radius: 20px 20px 0 0; border-bottom: none;
+      padding: 0 16px max(12px, env(safe-area-inset-bottom, 12px));
+      overflow: hidden; touch-action: none;
+      opacity: 1; transform: translateY(100%);
+      transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
     }
-    .fuel-panel.open { transform: translateY(0); }
+    .fuel-panel .fuel-header { touch-action: none; }
+    .fuel-panel .fuel-results { touch-action: pan-y; }
+    .fuel-panel.no-anim { transition: none !important; }
+    /* The sheet takes over from the postcode card while it is open. */
+    body.fuel-open .postcode-chip { opacity: 0; pointer-events: none; }
     .fuel-form .fuel-input { font-size: 16px; }
     .fuel-type { font-size: 13px; padding: 7px 13px; }
     .fuel-row { padding: 10px 12px; }
