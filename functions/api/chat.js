@@ -2,14 +2,14 @@
 //
 // A small chat proxy for the fuel-price assistant. The browser sends the
 // conversation as plain text; this function asks Claude, which calls the
-// uk-fuel-mcp server (hosted on Prefect Horizon) through the MCP connector.
+// uk-fuel-mcp server (a Cloudflare Worker) through the MCP connector.
 // It returns Claude's reply plus the parsed tool results so the map can plot
 // the stations.
 //
 // Secrets live in the Pages project's environment variables, never in code:
 //   ANTHROPIC_API_KEY   Claude API key
-//   FUEL_MCP_URL        Horizon MCP endpoint, e.g. https://<server>.fastmcp.app/mcp
-//   FUEL_MCP_TOKEN      Horizon API key (fmcp_...), sent as the MCP bearer token
+//   FUEL_MCP_URL        MCP endpoint, e.g. https://uk-fuel-mcp.<subdomain>.workers.dev/mcp
+//   FUEL_MCP_TOKEN      a key from the server's MCP_API_KEYS, sent as the MCP bearer token
 //   CHAT_ENABLED        "true" to switch the endpoint on (404 otherwise)
 
 import Anthropic from '@anthropic-ai/sdk';

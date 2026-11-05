@@ -42,7 +42,7 @@ Cloudflare Pages via GitHub Actions. Tokens are injected at build time from repo
 
 ## Fuel chat
 
-`POST /api/chat` asks Claude, which calls the [uk-fuel-mcp](https://github.com/morriswong/uk-fuel-mcp) server (hosted on Prefect Horizon) through the MCP connector, and returns the reply plus the station data the map plots. The chat button only shows when `GET /api/chat` reports the endpoint is enabled.
+`POST /api/chat` asks Claude, which calls the [uk-fuel-mcp](https://github.com/morriswong/uk-fuel-mcp) server (a Cloudflare Worker) through the MCP connector, and returns the reply plus the station data the map plots. The chat button only shows when `GET /api/chat` reports the endpoint is enabled.
 
 Set these in Cloudflare Pages → ldnmap → Settings → Variables and Secrets, per environment (Preview covers `dev`):
 
@@ -50,8 +50,8 @@ Set these in Cloudflare Pages → ldnmap → Settings → Variables and Secrets,
 |------|-------|
 | `CHAT_ENABLED` | `true` to switch the chat on (anything else → 404, button hidden) |
 | `ANTHROPIC_API_KEY` | Claude API key (secret) |
-| `FUEL_MCP_URL` | Horizon MCP endpoint of uk-fuel-mcp |
-| `FUEL_MCP_TOKEN` | Horizon API key, `fmcp_…` (secret) |
+| `FUEL_MCP_URL` | MCP endpoint of uk-fuel-mcp (`https://uk-fuel-mcp.<subdomain>.workers.dev/mcp`) |
+| `FUEL_MCP_TOKEN` | A key from the server's `MCP_API_KEYS` (secret) |
 
 The function caps questions at 500 characters, sends the last 10 turns, and rate-limits each IP to 10 requests a minute per isolate.
 
