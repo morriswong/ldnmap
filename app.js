@@ -474,6 +474,13 @@ function renderHelperContent() {
   overlaySugg.innerHTML = recent.length
     ? '<div class="search-helper"><p class="search-helper-hint">Recent searches</p></div>'
     : SEARCH_HELPER_HTML;
+  if (fuelEnabled) { // [fuel] shortcut above the helper / recents
+    var fuelItem = document.createElement('div');
+    fuelItem.className = 'sugg-item sugg-fuel';
+    fuelItem.innerHTML = '<div class="sugg-name">⛽ Fuel prices near me</div><div class="sugg-addr">Cheapest fuel around your location</div>';
+    fuelItem.addEventListener('click', function() { closeSearchOverlay(); fuelNearMe(); });
+    overlaySugg.insertBefore(fuelItem, overlaySugg.firstChild);
+  }
   recent.forEach(function(r, i) {
     var item = document.createElement('div');
     item.className = 'sugg-item';
@@ -1061,13 +1068,17 @@ function clearStations() {
 /* ===== FUEL PRICES ===== */
 // Postcode lookup (functions/api/fuel.js), which asks the uk-fuel MCP server for the
 // cheapest stations near a place. Results are listed in the panel and plotted as the
-// 'fuel' GeoJSON source. It opens from the postcode card's Fuel Prices button, which
-// only appears when GET /api/fuel says the endpoint is enabled, so production stays
-// clean until it is.
+// 'fuel' GeoJSON source. It opens from the postcode card's Fuel Prices button, the
+// travel card's fuel button, or "Fuel prices near me" on the search screen; these
+// only appear when GET /api/fuel says the endpoint is enabled. Places and your own
+// location are looked up by coordinates, which the function turns into the nearest
+// postcode.
 var FUEL_URL = '/api/fuel';
 var FUEL_LAST_KEY = 'ldnmap:fuelLast';  // { location, fuel } remembered per browser
 var fuelBusy = false;
 var fuelType = 'E10';
+var fuelEnabled = false;
+var fuelPoint = null;      // { lat, lng } when searching around a point; the input then shows its label
 var fuelData = null;       // GeoJSON FeatureCollection currently plotted (null when none)
 var fuelStations = {};     // node_id → station record, for popups
 var fuelPopup = null;
@@ -1083,7 +1094,12 @@ function isMobileView() { return window.matchMedia('(max-width: 768px)').matches
 function probeFuel() {
   fetch(FUEL_URL, { method: 'GET' })
     .then(function(r) { return r.ok ? r.json() : null; })
-    .then(function(d) { if (d && d.enabled) document.getElementById('postcode-fuel-btn').hidden = false; })
+    .then(function(d) {
+      if (!d || !d.enabled) return;
+      fuelEnabled = true;
+      document.getElementById('postcode-fuel-btn').hidden = false;
+      document.getElementById('travel-fuel-btn').hidden = false;
+    })
     .catch(function() {});
 }
 
@@ -1111,11 +1127,49 @@ function openFuel() {
 // Postcode card button: look up prices for the place the user just picked.
 function fuelFromPostcode() {
   if (!pendingPlace || !pendingPlace.postcode) return;
+  fuelPoint = null;
   fuelInput.value = pendingPlace.postcode;
   openFuel();
   if (isMobileView()) fuelInput.blur();
   lookupFuel();
 }
+
+// Search around a point (a place on the map, or the user's location), shown as `label`.
+function fuelNear(lat, lng, label) {
+  fuelPoint = { lat: lat, lng: lng };
+  fuelInput.value = label;
+  if (!fuelPanel.classList.contains('open')) openFuel();
+  if (isMobileView()) fuelInput.blur();
+  lookupFuel();
+}
+
+// Travel card button: prices around the place whose travel times are showing.
+function fuelFromTravel() {
+  if (!lastRunArgs) return;
+  fuelNear(lastRunArgs.lat, lastRunArgs.lng, lastRunArgs.label || 'This place');
+}
+
+// "Near me": ask the browser for the user's location.
+function fuelNearMe() {
+  if (!fuelPanel.classList.contains('open')) openFuel();
+  if (isMobileView()) fuelInput.blur();
+  if (!navigator.geolocation) { fuelMessage('error', 'Your browser can’t share your location. Enter a postcode instead.'); return; }
+  var btn = document.getElementById('fuel-locate');
+  btn.disabled = true;
+  fuelMessage('pending', 'Finding your location');
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    btn.disabled = false;
+    fuelNear(pos.coords.latitude, pos.coords.longitude, 'Your location');
+  }, function(err) {
+    btn.disabled = false;
+    fuelMessage('error', err.code === 1
+      ? 'Location access is off for this site. Allow it in your browser settings, or enter a postcode.'
+      : 'Couldn’t find your location. Enter a postcode instead.');
+  }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 5 * 60000 });
+}
+
+// Typing a new place replaces any point search.
+fuelInput.addEventListener('input', function() { fuelPoint = null; });
 
 function closeFuel() {
   fuelInput.blur();
@@ -1145,7 +1199,7 @@ document.getElementById('fuel-types').addEventListener('click', function(e) {
   var b = e.target.closest('.fuel-type');
   if (!b || b.dataset.fuel === fuelType) return;
   setFuelType(b.dataset.fuel);
-  if (fuelInput.value.trim()) lookupFuel();  // re-run the current search for the new fuel
+  if (fuelInput.value.trim() || fuelPoint) lookupFuel();  // re-run the current search for the new fuel
 });
 
 function renderFuelEmpty() {
@@ -1182,11 +1236,11 @@ function fuelMessage(kind, text) {
 async function lookupFuel(e) {
   if (e) e.preventDefault();
   var location = fuelInput.value.trim();
-  if (!location || fuelBusy) return false;
+  if ((!location && !fuelPoint) || fuelBusy) return false;
   fuelBusy = true;
   document.getElementById('fuel-send').disabled = true;
   if (isMobileView()) fuelInput.blur();               // drop the iOS keyboard so the results are visible
-  saveFuelLast(location);
+  if (!fuelPoint) saveFuelLast(location);             // a point's label isn't a searchable place
 
   var pending = fuelMessage('pending', 'Checking prices');
   var slowTimer = setTimeout(function() {
@@ -1194,7 +1248,9 @@ async function lookupFuel(e) {
   }, 4000);
 
   try {
-    var q = '?location=' + encodeURIComponent(location) + '&fuel=' + encodeURIComponent(fuelType);
+    var q = (fuelPoint
+      ? '?lat=' + fuelPoint.lat.toFixed(5) + '&lon=' + fuelPoint.lng.toFixed(5)
+      : '?location=' + encodeURIComponent(location)) + '&fuel=' + encodeURIComponent(fuelType);
     var r = await fetch(FUEL_URL + q);
     var d = null;
     try { d = await r.json(); } catch (err) {}
@@ -1203,7 +1259,11 @@ async function lookupFuel(e) {
     }
     renderFuelResults(d);
     if (window.__fuelSheet && window.__fuelSheet.snapName() === 'full') fuelSheetTo('half');
-    plotFuelResults([{ tool: 'cheapest_fuel_near', data: d }]);
+    // For a point search, put the origin pin on the point itself rather than its nearest postcode.
+    var plotted = fuelPoint
+      ? Object.assign({}, d, { location: Object.assign({}, d.location, { latitude: fuelPoint.lat, longitude: fuelPoint.lng }) })
+      : d;
+    plotFuelResults([{ tool: 'cheapest_fuel_near', data: plotted }]);
   } catch (err) {
     fuelMessage('error', err.message || 'Something went wrong.');
   } finally {
@@ -1220,7 +1280,8 @@ function renderFuelResults(d) {
   head.className = 'fuel-summary';
   var where = document.createElement('div');
   where.className = 'fuel-summary-text';
-  var place = (d.location && d.location.label) || fuelInput.value.trim();
+  // For a point search, name it as the user saw it (the server only knows the nearest postcode).
+  var place = fuelPoint ? fuelInput.value.trim() : ((d.location && d.location.label) || fuelInput.value.trim());
   where.textContent = d.stations.length
     ? (FUEL_NAMES[d.fuel] || d.fuel) + ' within ' + d.radius_miles + ' mi of ' + place
     : 'No stations selling ' + (FUEL_NAMES[d.fuel] || d.fuel) + ' within ' + d.radius_miles + ' mi of ' + place + '.';

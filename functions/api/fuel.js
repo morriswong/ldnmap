@@ -1,6 +1,7 @@
 // Cloudflare Pages Function: GET /api/fuel
 //
-// Postcode lookup for the fuel-price panel. The browser sends a location and a
+// Postcode lookup for the fuel-price panel. The browser sends a location (or map
+// coordinates, which are turned into the nearest postcode via postcodes.io) and a
 // fuel code; this function calls the uk-fuel-mcp server's cheapest_fuel_near tool
 // (one stateless MCP request) and returns the tool's JSON, which the map plots.
 // The server key stays here, never in the page.
@@ -15,6 +16,8 @@ const MAX_LOCATION_CHARS = 60;
 const DEFAULT_RADIUS = 5;
 const LIMIT = 10;
 const TIMEOUT_MS = 60000; // the first lookup after a quiet spell refetches the dataset
+const POSTCODES_URL = 'https://api.postcodes.io/postcodes';
+const NEAREST_POSTCODE_METRES = 2000; // postcodes.io's maximum search radius
 
 const RATE_LIMIT = 30;          // requests...
 const RATE_WINDOW_MS = 60000;   // ...per minute, per IP, per isolate
@@ -48,16 +51,40 @@ function rateLimited(ip, now) {
   return entry.count > RATE_LIMIT;
 }
 
-// Validate the query string. Returns { args } or { error }.
+// A lookup names a place (?location=) or a point (?lat=&lon=).
+function isLookup(params) {
+  return params.has('location') || params.has('lat') || params.has('lon');
+}
+
+// Validate the query string. Returns { args } (location filled in), { args, point }
+// (location still to be found from the point) or { error }.
 export function parseQuery(params) {
-  var location = (params.get('location') || '').trim();
-  if (!location) return { error: 'Enter a UK postcode or place.' };
-  if (location.length > MAX_LOCATION_CHARS) return { error: 'That location is too long.' };
   var fuel = (params.get('fuel') || 'E10').toUpperCase();
   if (FUELS.indexOf(fuel) === -1) return { error: 'Unknown fuel type.' };
   var radius = params.has('radius') ? Number(params.get('radius')) : DEFAULT_RADIUS;
   if (!(radius > 0 && radius <= 25)) return { error: 'Radius must be between 0 and 25 miles.' };
-  return { args: { location: location, fuel: fuel, radius_miles: radius, limit: LIMIT } };
+  var args = { location: '', fuel: fuel, radius_miles: radius, limit: LIMIT };
+
+  if (params.has('lat') || params.has('lon')) {
+    var lat = Number(params.get('lat')), lon = Number(params.get('lon'));
+    // Rough bounding box of the UK, so obviously wrong points fail fast.
+    if (!(lat >= 49 && lat <= 61.5 && lon >= -9 && lon <= 2.5)) return { error: 'That point is outside the UK.' };
+    return { args: args, point: { lat: lat, lon: lon } };
+  }
+  var location = (params.get('location') || '').trim();
+  if (!location) return { error: 'Enter a UK postcode or place.' };
+  if (location.length > MAX_LOCATION_CHARS) return { error: 'That location is too long.' };
+  args.location = location;
+  return { args: args };
+}
+
+// The nearest postcode to a point, or null when there is none within 2 km.
+export async function nearestPostcode(point, doFetch) {
+  var url = POSTCODES_URL + '?lon=' + point.lon + '&lat=' + point.lat + '&radius=' + NEAREST_POSTCODE_METRES + '&limit=1';
+  var r = await doFetch(url, { signal: AbortSignal.timeout(10000) });
+  if (!r.ok) throw new Error('postcodes.io HTTP ' + r.status);
+  var d = await r.json();
+  return d && d.result && d.result[0] ? d.result[0].postcode : null;
 }
 
 // The server answers a stateless tools/call as JSON or as a one-event SSE stream.
@@ -73,7 +100,7 @@ export async function handleFuel(request, env, deps) {
   if (!isEnabled(env)) return json({ error: 'Not found' }, 404);
   var params = new URL(request.url).searchParams;
   var missing = missingConfig(env);
-  if (!params.has('location')) return json({ enabled: true, configured: missing.length === 0 });
+  if (!isLookup(params)) return json({ enabled: true, configured: missing.length === 0 });
   if (missing.length) return json({ error: 'Fuel prices are not configured (missing ' + missing.join(', ') + ').' }, 503);
 
   var ip = request.headers.get('cf-connecting-ip') || 'local';
@@ -83,6 +110,16 @@ export async function handleFuel(request, env, deps) {
   if (parsed.error) return json({ error: parsed.error }, 400);
 
   var doFetch = (deps && deps.fetch) || fetch;
+  if (parsed.point) {
+    try {
+      parsed.args.location = await nearestPostcode(parsed.point, doFetch);
+    } catch (error) {
+      console.error('Nearest postcode lookup failed', error && error.message);
+      return json({ error: 'Couldn’t look up that point. Try a postcode instead.' }, 502);
+    }
+    if (!parsed.args.location) return json({ error: 'There’s no UK postcode near that point.' }, 400);
+  }
+
   var rpc;
   try {
     var r = await doFetch(env.FUEL_MCP_URL, {

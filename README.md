@@ -9,7 +9,7 @@ A travel-time visualisation tool for London. Pick a point on the map and instant
 - Isochrone overlays via the Mapbox Isochrone API (walking, cycling, driving)
 - Location search with Mapbox Search Box (suggest + retrieve flow)
 - Postcode boundary lookup via Ordnance Survey NGD API
-- Fuel prices (optional): pick a postcode or place, tap **Fuel Prices** next to Check Travel Time, and the cheapest stations appear in a list and on the map
+- Fuel prices (optional): from a postcode card, the travel card, or **Fuel prices near me** on the search screen; the cheapest stations appear in a list and on the map
 - Light / dark theme toggle
 - Responsive layout: side panel on desktop, bottom sheet on mobile
 
@@ -42,7 +42,7 @@ Cloudflare Pages via GitHub Actions. Tokens are injected at build time from repo
 
 ## Fuel prices
 
-`GET /api/fuel?location=E8%204QN&fuel=E10` calls the `cheapest_fuel_near` tool on the [uk-fuel-mcp](https://github.com/morriswong/uk-fuel-mcp) server (a Cloudflare Worker) with one MCP request and returns its JSON: the 10 cheapest stations within 5 miles, which the panel lists and the map plots. Fuel codes: `E10` (petrol), `E5` (super), `B7_STANDARD` (diesel), `B7_PREMIUM` (premium diesel). The Fuel Prices button on the postcode card only shows when `GET /api/fuel` reports the endpoint is enabled.
+`GET /api/fuel?location=E8%204QN&fuel=E10` (or `?lat=51.5&lon=-0.12&fuel=E10`, looked up as the nearest postcode via postcodes.io) calls the `cheapest_fuel_near` tool on the [uk-fuel-mcp](https://github.com/morriswong/uk-fuel-mcp) server (a Cloudflare Worker) with one MCP request and returns its JSON: the 10 cheapest stations within 5 miles, which the panel lists and the map plots. Fuel codes: `E10` (petrol), `E5` (super), `B7_STANDARD` (diesel), `B7_PREMIUM` (premium diesel). The Fuel Prices button on the postcode card only shows when `GET /api/fuel` reports the endpoint is enabled.
 
 Set these in Cloudflare Pages → ldnmap → Settings → Variables and Secrets, per environment (Preview covers `dev`, Production covers `main`; the deploy workflow sets them for the branch's environment from the repo secrets of the same name):
 

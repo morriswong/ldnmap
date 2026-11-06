@@ -414,6 +414,14 @@
     display: flex; align-items: center; justify-content: center; cursor: pointer;
   }
   .fuel-send:disabled { opacity: 0.4; cursor: default; }
+  .fuel-locate {
+    width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+    border: 1px solid var(--glass-border); background: var(--glass-tile-bg); color: var(--text);
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+  .fuel-locate:disabled { opacity: 0.4; cursor: default; }
+  .fuel-locate svg { width: 16px; height: 16px; }
+  #travel-fuel-btn[hidden] { display: none; }
   .fuel-send svg { width: 16px; height: 16px; }
   .fuel-types { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 8px; flex-shrink: 0; }
   .fuel-type {
@@ -488,8 +496,9 @@
     .fuel-panel .fuel-header { touch-action: none; }
     .fuel-panel .fuel-results { touch-action: pan-y; }
     .fuel-panel.no-anim { transition: none !important; }
-    /* The sheet takes over from the postcode card while it is open. */
-    body.fuel-open .postcode-chip { opacity: 0; pointer-events: none; }
+    /* The sheet takes over from the postcode / travel card while it is open. */
+    body.fuel-open .postcode-chip,
+    body.fuel-open .travel-card { opacity: 0 !important; pointer-events: none !important; }
     .fuel-form .fuel-input { font-size: 16px; }
     .fuel-type { font-size: 13px; padding: 7px 13px; }
     .fuel-row { padding: 10px 12px; }

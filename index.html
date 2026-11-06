@@ -35,6 +35,11 @@
   </div>
   <form class="fuel-form" id="fuel-form" onsubmit="lookupFuel(event); return false;">
     <input class="sinput fuel-input" id="fuel-input" maxlength="60" autocomplete="postal-code" autocapitalize="characters" spellcheck="false" enterkeyhint="search" placeholder="Postcode or area, e.g. E8 4QN" aria-label="Postcode or area">
+    <button class="fuel-locate" id="fuel-locate" type="button" onclick="fuelNearMe()" aria-label="Fuel prices near me" title="Near me">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
+      </svg>
+    </button>
     <button class="fuel-send" id="fuel-send" type="submit" aria-label="Find prices">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M5 12h14M13 6l6 6-6 6"/>
@@ -72,6 +77,12 @@
       </svg>
     </button>
     <div class="travel-card-title" id="st">Loading…</div>
+    <button class="travel-card-btn" id="travel-fuel-btn" onclick="fuelFromTravel()" aria-label="Fuel prices nearby" title="Fuel prices nearby" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 22h12M4 9h10M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"/>
+        <path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 4 0V9.8a2 2 0 0 0-.6-1.4L18 5"/>
+      </svg>
+    </button>
     <button class="travel-card-btn share-btn" id="share-btn" onclick="shareLink()" aria-label="Share link" title="Copy share link">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>

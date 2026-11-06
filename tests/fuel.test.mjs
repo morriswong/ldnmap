@@ -79,3 +79,31 @@ test('rate limits bursts per IP', async () => {
   for (let i = 0; i < 31; i++) last = await handleFuel(get('?location=E8', '10.9.9.9'), ENV, { fetch: ok });
   assert.equal(last.status, 429);
 });
+
+test('validates points', () => {
+  assert.ok(parseQuery(new URLSearchParams('lat=48.8&lon=2.35')).error);       // Paris
+  assert.ok(parseQuery(new URLSearchParams('lat=abc&lon=0')).error);
+  assert.deepEqual(parseQuery(new URLSearchParams('lat=51.5&lon=-0.14')).point, { lat: 51.5, lon: -0.14 });
+});
+
+test('a point is looked up as its nearest postcode', async () => {
+  const calls = [];
+  const fetch = async (url, init) => {
+    calls.push(url);
+    if (url.startsWith('https://api.postcodes.io/')) {
+      return new Response(JSON.stringify({ status: 200, result: [{ postcode: 'SW1A 1AA' }] }), { status: 200 });
+    }
+    return ok();
+  };
+  const r = await handleFuel(get('?lat=51.501&lon=-0.1416&fuel=E10'), ENV, { fetch });
+  assert.equal(r.status, 200);
+  assert.match(calls[0], /lon=-0\.1416&lat=51\.501&radius=2000&limit=1/);
+  assert.equal(calls[1], ENV.FUEL_MCP_URL);
+});
+
+test('a point with no postcode nearby is a clear error', async () => {
+  const fetch = async () => new Response(JSON.stringify({ status: 200, result: null }), { status: 200 });
+  const r = await handleFuel(get('?lat=50&lon=-5'), ENV, { fetch });
+  assert.equal(r.status, 400);
+  assert.match((await r.json()).error, /no UK postcode near/);
+});
