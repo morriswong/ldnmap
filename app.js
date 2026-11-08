@@ -1754,8 +1754,12 @@ function addParkingLayers() {
   if (!parkingData) return;
   whenStyleReady(function() {
     if (!parkingOn || map.getSource('parking-zones')) return;
-    // Area colours go under the base map's labels; street detail and letters on top.
-    var firstSymbol = (map.getStyle().layers.filter(function(l) { return l.type === 'symbol'; })[0] || {}).id;
+    // Zone tints go under the roads; outlines and street colours above the roads but under
+    // the road names; kerbs, machines and zone letters on top.
+    var styleLayers = map.getStyle().layers;
+    var underRoads = (styleLayers.filter(function(l) { return l.type === 'symbol'; })[0] || {}).id;
+    var underLabels = map.getLayer('road-label') ? 'road-label'
+      : (styleLayers.filter(function(l) { return l.type === 'symbol' && /label/.test(l.id); })[0] || {}).id;
     map.addSource('parking-zones', { type: 'geojson', data: parkingData.zones, attribution: PARKING_ATTRIB });
     map.addSource('parking-zone-labels', { type: 'geojson', data: parkingData.labels });
     map.addSource('parking-streets', { type: 'geojson', data: parkingData.streets });
@@ -1763,18 +1767,18 @@ function addParkingLayers() {
     map.addSource('parking-machines', { type: 'geojson', data: parkingData.machines });
     map.addLayer({ id: 'parking-zones-fill', type: 'fill', source: 'parking-zones',
       paint: { 'fill-color': parkingZoneColor(),
-        'fill-opacity': ['interpolate', ['linear'], ['zoom'], 12, 0.28, 15, 0.12, 17, 0.06] } }, firstSymbol);
+        'fill-opacity': ['interpolate', ['linear'], ['zoom'], 12, 0.28, 15, 0.12, 17, 0.06] } }, underRoads);
     map.addLayer({ id: 'parking-zones-line', type: 'line', source: 'parking-zones',
       paint: { 'line-color': parkingZoneColor(), 'line-width': ['interpolate', ['linear'], ['zoom'], 12, 1, 16, 2.5],
-        'line-opacity': 0.8 } }, firstSymbol);
+        'line-opacity': 0.8 } }, underLabels);
     map.addLayer({ id: 'parking-streets', type: 'line', source: 'parking-streets', minzoom: PARKING_STREET_ZOOM,
       layout: { 'line-cap': 'round', 'line-join': 'round' },
       paint: { 'line-color': parkingStreetColor(), 'line-opacity': 0.75,
-        'line-width': ['interpolate', ['linear'], ['zoom'], 15, 3, 18, 9] } }, firstSymbol);
+        'line-width': ['interpolate', ['linear'], ['zoom'], 15, 3, 18, 9] } }, underLabels);
     map.addLayer({ id: 'parking-streets-sel', type: 'line', source: 'parking-streets', minzoom: PARKING_STREET_ZOOM,
       filter: parkingSelFilter(), layout: { 'line-cap': 'round', 'line-join': 'round' },
       paint: { 'line-color': isDark ? '#ffffff' : '#111111', 'line-opacity': 0.9,
-        'line-width': ['interpolate', ['linear'], ['zoom'], 15, 1.5, 18, 3], 'line-gap-width': ['interpolate', ['linear'], ['zoom'], 15, 3, 18, 9] } }, firstSymbol);
+        'line-width': ['interpolate', ['linear'], ['zoom'], 15, 1.5, 18, 3], 'line-gap-width': ['interpolate', ['linear'], ['zoom'], 15, 3, 18, 9] } }, underLabels);
     var kerbOffset = ['interpolate', ['linear'], ['zoom'], 16, ['*', ['get', 'o'], 4], 19, ['*', ['get', 'o'], 12]];
     map.addLayer({ id: 'parking-kerb-bay', type: 'line', source: 'parking-kerb', minzoom: 16,
       filter: ['==', ['get', 'kind'], 'bay'],
