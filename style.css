@@ -508,3 +508,85 @@
     .fuel-panel { transition: none !important; }
   }
   /* ===== END FUEL PRICES ===== */
+
+  /* ===== PARKING ===== */
+  /* The panel reuses .fuel-panel for its position, glass and mobile sheet. */
+  .pk-sign {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 18px; height: 18px; border-radius: 4px; background: #1d4ed8; color: #fff;
+    font: 700 13px/1 'DM Sans', sans-serif;
+  }
+  .mapboxgl-ctrl-group .parking-ctrl { display: flex; align-items: center; justify-content: center; }
+  .mapboxgl-ctrl-group .parking-ctrl[aria-pressed="true"] { background: rgba(29,78,216,0.16); }
+  #postcode-parking-btn { flex: 0 0 44px; padding: 8px 0; }
+  #postcode-parking-btn .pk-sign { width: 20px; height: 20px; font-size: 14px; }
+  .parking-area { font-weight: 400; color: var(--text-dim); margin-left: 4px; }
+  .parking-when { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; flex-shrink: 0; }
+  .parking-day, .parking-time {
+    padding: 5px 8px; border-radius: 10px; border: 1px solid var(--glass-border);
+    background: var(--glass-tile-bg); color: var(--text); font: 500 13px 'DM Sans', sans-serif;
+  }
+  .parking-time { min-width: 0; }
+  #parking-now[aria-pressed="true"] { color: var(--text); border-color: rgba(91,141,238,0.6); background: rgba(91,141,238,0.22); font-weight: 600; }
+  .parking-event { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-soft); cursor: pointer; }
+  .parking-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 10px 0 8px; font-size: 11px; color: var(--text-dim); flex-shrink: 0; }
+  .parking-legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .pk-dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+  .pk-ctrl { background: #e74c3c; } .pk-free { background: #2ecc71; } .pk-permit { background: #8e44ad; } .pk-tfl { background: #7f1d1d; }
+  .parking-body p { margin: 0; }
+  .pk-hint { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--text); padding: 2px 0; }
+  .pk-small { font-size: 11px; line-height: 1.45; color: var(--text-dim); }
+  .pk-small a, .pk-yellow a { color: inherit; }
+  .pk-card {
+    display: flex; flex-direction: column; gap: 7px; padding: 12px; border-radius: 14px;
+    background: var(--glass-tile-bg); border: 1px solid var(--glass-border);
+  }
+  .pk-card-head { display: flex; align-items: flex-start; gap: 8px; }
+  .pk-card-titles { flex: 1; min-width: 0; }
+  .pk-card-title { font-size: 15px; font-weight: 700; color: var(--text); }
+  .pk-card-sub { font-size: 12px; color: var(--text-dim); margin-top: 1px; }
+  .pk-card-close {
+    width: 28px; height: 28px; border-radius: 14px; border: 1px solid var(--glass-border);
+    background: transparent; color: var(--text-dim); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .pk-card-close svg { width: 14px; height: 14px; }
+  .pk-pill { align-self: flex-start; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; color: #fff; }
+  .pk-pill--ctrl { background: #e74c3c; } .pk-pill--free { background: #16a34a; } .pk-pill--permit { background: #8e44ad; } .pk-pill--tfl { background: #7f1d1d; }
+  .pk-row { display: flex; gap: 10px; font-size: 12px; line-height: 1.4; }
+  .pk-row-label { flex: 0 0 96px; color: var(--text-dim); }
+  .pk-row-value { flex: 1; color: var(--text); }
+  .pk-note { font-size: 12px; line-height: 1.4; color: var(--text); padding: 6px 9px; border-radius: 10px; background: rgba(243,156,18,0.10); border: 1px solid rgba(243,156,18,0.3); }
+  .pk-yellow { display: flex; flex-direction: column; gap: 4px; font-size: 12px; line-height: 1.4; color: var(--text); padding-top: 6px; border-top: 1px solid var(--divider); }
+  .pk-section { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); padding-top: 6px; border-top: 1px solid var(--divider); }
+  .pk-machines { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+  .pk-machines li { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text); }
+  .pk-m-dot { width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,0.15); background: #6b7280; flex-shrink: 0; }
+  .pk-m-cardonly { background: #1f2937; } .pk-m-cardcash { background: #2563eb; }
+  .pk-m-id { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .pk-m-type { flex: 1; color: var(--text-dim); }
+  .pk-m-dist { font-variant-numeric: tabular-nums; color: var(--text-dim); }
+  .pk-pdf { font-size: 12px; font-weight: 600; color: #2563eb; }
+  body:not(.light) .pk-pdf { color: #93b4f5; }
+  .pk-signs { font-size: 12px; font-weight: 600; color: var(--text); }
+  .pk-charges { border-radius: 14px; border: 1px solid var(--glass-border); padding: 8px 12px; font-size: 12px; color: var(--text); flex-shrink: 0; }
+  .pk-charges summary { cursor: pointer; font-weight: 600; font-size: 13px; }
+  .pk-charges[open] { display: flex; flex-direction: column; gap: 8px; }
+  .pk-bands { width: 100%; border-collapse: collapse; margin-top: 6px; font-variant-numeric: tabular-nums; }
+  .pk-bands th { text-align: left; font-size: 11px; font-weight: 600; color: var(--text-dim); padding: 3px 4px; }
+  .pk-bands td { padding: 4px; border-top: 1px solid var(--divider); cursor: pointer; }
+  .pk-bands td:last-child, .pk-bands th:last-child { text-align: right; }
+  .pk-bands tr.is-on td { background: rgba(91,141,238,0.18); font-weight: 600; }
+  .pk-diesel { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+  .pk-calc { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .pk-cost { margin-left: auto; font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  @media (max-width: 768px) {
+    /* The parking sheet takes over from the postcode / travel card while it is open. */
+    body.parking-open .postcode-chip,
+    body.parking-open .travel-card { opacity: 0 !important; pointer-events: none !important; }
+    .parking-panel .parking-body { touch-action: pan-y; }
+    .parking-day, .parking-time { font-size: 16px; padding: 6px 9px; }
+    .parking-event { font-size: 14px; }
+    .pk-row, .pk-yellow, .pk-machines li, .pk-note, .pk-charges { font-size: 13px; }
+    .pk-small { font-size: 12px; }
+  }
+  /* ===== END PARKING ===== */

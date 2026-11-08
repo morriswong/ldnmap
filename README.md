@@ -10,6 +10,7 @@ A travel-time visualisation tool for London. Pick a point on the map and instant
 - Location search with Mapbox Search Box (suggest + retrieve flow)
 - Postcode boundary lookup via Ordnance Survey NGD API
 - Fuel prices (optional): from a postcode card, the travel card, or **Fuel prices near me** on the search screen; the cheapest stations appear in a list and on the map
+- Parking (Hammersmith & Fulham): the **P** button colours controlled parking zones and streets red (controlled), green (free) or purple (permit holders only) at any day and time, and tapping a street shows its hours, max stay, yellow-line rules, nearby ticket machines and charges
 - Light / dark theme toggle
 - Responsive layout: side panel on desktop, bottom sheet on mobile
 
@@ -22,6 +23,8 @@ Static site — no framework, no bundler, no build step for the page itself.
 | `index.html` | Structure + CDN links |
 | `style.css` | Layout, responsive rules, glass effects, theme variables |
 | `app.js` | Map init, isochrone logic, search, fuel prices, UI state |
+| `parking-rules.js` | Parking status logic (`isControlled`), loaded before `app.js` and unit-tested |
+| `data/parking/` | Static parking data for the parking layer (see its README) |
 | `functions/api/fuel.js` | Cloudflare Pages Function behind the fuel price lookup (no dependencies) |
 
 Built on **Mapbox GL JS** for the map, tiles, isochrones, and geocoding.

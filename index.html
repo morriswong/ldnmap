@@ -56,6 +56,36 @@
   <div class="fuel-attrib">Prices from the UK Fuel Finder service · Open Government Licence v3.0</div>
 </div>
 
+<!-- [parking] opened from the P map button or the postcode card's P button -->
+<div id="parking-panel" class="fuel-panel parking-panel" role="dialog" aria-label="Parking">
+  <div class="sheet-grabber" id="parking-grabber"><span></span></div>
+  <div class="fuel-header">
+    <button class="travel-card-btn" onclick="toggleParking(false)" aria-label="Turn parking off">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 6L6 18M6 6l12 12"/>
+      </svg>
+    </button>
+    <div class="fuel-title">Parking <span class="parking-area">Hammersmith &amp; Fulham</span></div>
+  </div>
+  <div class="parking-when">
+    <select id="parking-day" class="parking-day" aria-label="Day">
+      <option value="1">Mon</option><option value="2">Tue</option><option value="3">Wed</option>
+      <option value="4">Thu</option><option value="5">Fri</option><option value="6">Sat</option><option value="0">Sun</option>
+    </select>
+    <input id="parking-time" class="parking-time" type="time" step="900" aria-label="Time">
+    <button type="button" id="parking-now" class="fuel-type" aria-pressed="true">Now</button>
+    <label class="parking-event"><input type="checkbox" id="parking-event"> Event day</label>
+  </div>
+  <div class="parking-legend" id="parking-legend">
+    <span><i class="pk-dot pk-ctrl"></i>Controlled</span>
+    <span><i class="pk-dot pk-free"></i>Free</span>
+    <span><i class="pk-dot pk-permit"></i>Permit only</span>
+    <span><i class="pk-dot pk-tfl"></i>Red route</span>
+  </div>
+  <div class="fuel-results parking-body" id="parking-body" aria-live="polite"></div>
+  <div class="fuel-attrib">Parking data: LBHF; streets © OpenStreetMap contributors</div>
+</div>
+
 <div id="search-overlay" class="search-overlay">
   <div class="search-overlay-header">
     <button class="search-overlay-back" id="search-back-btn">
@@ -151,12 +181,16 @@
         </svg>
         Fuel Prices
       </button>
+      <button class="travel-mode-btn" id="postcode-parking-btn" onclick="parkingFromPostcode()" aria-label="Parking here" title="Parking here">
+        <span class="pk-sign" aria-hidden="true">P</span>
+      </button>
     </div>
   </div>
   <div class="postcode-chip-attrib">© OS data © Crown copyright 2025</div>
 </div>
 
 <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+<script src="parking-rules.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
