@@ -1534,36 +1534,47 @@ probeFuel();
 /* ===== END FUEL PRICES ===== */
 
 /* ===== PARKING ===== */
-// Controlled parking zones (Hammersmith & Fulham for now), coloured by whether parking is
-// controlled, free or permit-only at a chosen London day and time. Data is static
-// (data/parking/, see its README) and fetched once, the first time the layer goes on.
-// The status logic lives in parking-rules.js (isControlled), so it can be unit-tested.
-// The P map button and the postcode card's P button turn it on; the panel's close button
-// turns it off. Below street level a tap zooms in; at street level it opens a card.
+// Controlled parking zones across London's boroughs, coloured by whether parking is
+// controlled, free or permit-only at a chosen London day and time, or grey when the
+// council's hours aren't in a form the map can read (never guessed). Zone outlines and
+// rules (data/parking/, see its README) are fetched once, the first time the layer goes
+// on; each borough's streets, kerbs and ticket machines are fetched when the map is over
+// it at street level. The status logic lives in parking-rules.js (isControlled), so it
+// can be unit-tested. The P map button and the postcode card's P button turn it on; the
+// panel's close button turns it off. Below street level a tap zooms in; at street level
+// it opens a card.
 var PARKING_URL = '/data/parking/';
-var PARKING_ATTRIB = 'Parking data: LBHF; streets © OpenStreetMap contributors';
-var PARKING_COVER = [[-0.2551, 51.4639], [-0.1810, 51.5326]];   // H&F zones, SW and NE corners
+var PARKING_ATTRIB = 'Parking data: London borough councils; streets © OpenStreetMap contributors';
+var PARKING_COVER = [[-0.52, 51.28], [0.34, 51.70]];   // Greater London, SW and NE corners
 var PARKING_STREET_ZOOM = 15;
-var PARKING_COLORS = { ctrl: '#e74c3c', free: '#2ecc71', permit: '#8e44ad', tfl: '#7f1d1d' };
-var PARKING_PILLS = { ctrl: 'Controlled', free: 'Free', permit: 'Permit only' };
+var PARKING_DETAIL_ZOOM = 14.5;                        // start loading a borough's streets a little early
+var PARKING_COLORS = { ctrl: '#e74c3c', free: '#2ecc71', permit: '#8e44ad', unknown: '#9ca3af', tfl: '#7f1d1d' };
+var PARKING_PILLS = { ctrl: 'Controlled', free: 'Free', permit: 'Permit only', unknown: 'Hours unknown' };
 var PARKING_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 var PARKING_STAYS = [30, 60, 90, 120, 180, 240];
+var PARKING_YELLOW = {   // used when a borough's own wording isn't in the data
+  single: 'No waiting during the times on nearby signs. With no sign, the zone’s controlled hours usually apply.',
+  double: 'No waiting at any time.',
+  loading: 'You can usually stop briefly to pick up or drop off passengers on either, unless kerb marks or signs ban loading.'
+};
 var parkingOn = false;
-var parkingData = null;        // { zones, labels, streets, machines, kerb } once loaded
+var parkingData = null;        // { zones, labels } once loaded; borough detail is in parkingDetail
 var parkingLoading = null;     // the in-flight load, so double taps share it
+var parkingDetail = {};        // borough id → 'loading' | { streets, kerb, machines }
 var parkingNow = true;         // follow the clock, or a day/time picked in the panel
 var parkingWhen = londonDayTime(new Date());
 var parkingEvent = false;
-var parkingSel = null;         // the open card: { kind: 'zone'|'street', zone, rule, name, tfl, lngLat }
+var parkingSel = null;         // the open card: { kind: 'zone'|'street', b, zone, rule, name, tfl, lngLat }
 var parkingTimer = null;
 
 var parkingPanel = document.getElementById('parking-panel');
 var parkingBody = document.getElementById('parking-body');
+var parkingArea = document.getElementById('parking-area');
 var parkingDay = document.getElementById('parking-day');
 var parkingTime = document.getElementById('parking-time');
 var parkingNowBtn = document.getElementById('parking-now');
 var parkingEventBox = document.getElementById('parking-event');
-var parkingCalc = { band: 3, minutes: 60, diesel: false };
+var parkingCalc = { band: null, minutes: 60, surcharge: false };
 
 // The P button under the zoom buttons.
 map.addControl({
@@ -1585,30 +1596,74 @@ map.addControl({
   onRemove: function() {}
 }, 'top-right');
 
+function parkingGet(name) {
+  return fetch(PARKING_URL + name).then(function(r) {
+    if (!r.ok) throw new Error(name + ' HTTP ' + r.status);
+    return r.json();
+  });
+}
+
 function loadParkingData() {
   if (parkingData) return Promise.resolve(parkingData);
   if (parkingLoading) return parkingLoading;
-  function get(name) {
-    return fetch(PARKING_URL + name).then(function(r) {
-      if (!r.ok) throw new Error(name + ' HTTP ' + r.status);
-      return r.json();
-    });
-  }
-  parkingLoading = Promise.all(['rules.json', 'zones.geojson', 'streets.geojson', 'machines.geojson', 'kerb.geojson'].map(get))
+  parkingLoading = Promise.all([parkingGet('rules.json'), parkingGet('zones.geojson')])
     .then(function(d) {
       setParkingRules(d[0]);
       parkingData = {
-        zones: d[1], streets: d[2], machines: d[3],
+        zones: d[1],
         labels: { type: 'FeatureCollection', features: d[1].features.map(function(f) {
-          return { type: 'Feature', properties: { zone: f.properties.zone },
+          return { type: 'Feature', properties: { zone: f.properties.zone, rule: f.properties.rule },
             geometry: { type: 'Point', coordinates: [f.properties.lx, f.properties.ly] } };
-        }) },
-        kerb: { type: 'FeatureCollection', features: splitKerbSides(d[4].features) }
+        }) }
       };
       return parkingData;
     })
     .catch(function(e) { parkingLoading = null; throw e; });
   return parkingLoading;
+}
+
+// Boroughs whose zones overlap the current view.
+function parkingBoroughsInView() {
+  if (!parkingRules) return [];
+  var v = map.getBounds();
+  return Object.keys(parkingRules.boroughs).filter(function(id) {
+    var bb = parkingRules.boroughs[id].bbox;
+    return bb[0] <= v.getEast() && bb[2] >= v.getWest() && bb[1] <= v.getNorth() && bb[3] >= v.getSouth();
+  });
+}
+
+// Fetch the streets, kerbs and machines of each borough in view once the map is at street level.
+function loadParkingDetail() {
+  if (!parkingOn || !parkingRules || map.getZoom() < PARKING_DETAIL_ZOOM) return;
+  parkingBoroughsInView().forEach(function(id) {
+    if (parkingDetail[id] || !parkingRules.boroughs[id].detail) return;
+    parkingDetail[id] = 'loading';
+    Promise.all(['streets', 'kerb', 'machines'].map(function(n) { return parkingGet(id + '/' + n + '.geojson'); }))
+      .then(function(d) {
+        parkingDetail[id] = { streets: d[0], kerb: d[1], machines: d[2] };
+        refreshParkingDetailSources();
+      })
+      .catch(function() { delete parkingDetail[id]; });
+  });
+}
+
+// The detail sources hold every loaded borough together.
+function parkingDetailCollection(name) {
+  var features = [];
+  Object.keys(parkingDetail).forEach(function(id) {
+    var d = parkingDetail[id];
+    if (d === 'loading') return;
+    if (name === 'kerb') features = features.concat(splitKerbSides(d.kerb.features));
+    else features = features.concat(d[name].features);
+  });
+  return { type: 'FeatureCollection', features: features };
+}
+
+function refreshParkingDetailSources() {
+  ['streets', 'kerb', 'machines'].forEach(function(n) {
+    var src = map.getSource('parking-' + n);
+    if (src) src.setData(parkingDetailCollection(n));
+  });
 }
 
 // Kerb lines are drawn beside the street: 'both' becomes a left and a right copy,
@@ -1643,6 +1698,7 @@ function toggleParking(on) {
     if (parkingNow) parkingWhen = londonDayTime(new Date());
     syncParkingWhen();
     addParkingLayers();
+    loadParkingDetail();
     renderParkingBody();
     clearInterval(parkingTimer);
     parkingTimer = setInterval(function() {
@@ -1670,22 +1726,28 @@ function closeParkingPanel() {
   if (window.__parkingSheet) window.__parkingSheet.close();
 }
 
-function parkingInCover(lng, lat) {
-  return lng >= PARKING_COVER[0][0] && lng <= PARKING_COVER[1][0] && lat >= PARKING_COVER[0][1] && lat <= PARKING_COVER[1][1];
+// The borough whose zones' bounding box holds a point, or null.
+function parkingBoroughAt(lng, lat) {
+  if (!parkingRules) return null;
+  var ids = Object.keys(parkingRules.boroughs).filter(function(id) {
+    var bb = parkingRules.boroughs[id].bbox;
+    return lng >= bb[0] && lng <= bb[2] && lat >= bb[1] && lat <= bb[3];
+  });
+  return ids[0] || null;
 }
 
 // Postcode card button: parking around the place the user just picked.
 function parkingFromPostcode() {
   var p = pendingPlace;
   toggleParking(true);
-  if (p && p.lat && parkingInCover(p.lng, p.lat)) {
-    map.flyTo({ center: [p.lng, p.lat], zoom: 16, padding: parkingMapPadding() });
-  } else {
-    map.fitBounds(PARKING_COVER, { padding: parkingMapPadding() });
-    (parkingLoading || Promise.resolve()).then(function() {
-      parkingNotice('Parking information covers Hammersmith & Fulham only, so far.');
-    });
-  }
+  (parkingLoading || Promise.resolve()).then(function() {
+    if (p && p.lat && parkingBoroughAt(p.lng, p.lat)) {
+      map.flyTo({ center: [p.lng, p.lat], zoom: 16, padding: parkingMapPadding() });
+    } else {
+      map.fitBounds(PARKING_COVER, { padding: parkingMapPadding() });
+      parkingNotice('No parking data for that place yet. The coloured areas are the boroughs covered.');
+    }
+  });
 }
 
 // Keep the place clear of the panel (desktop) or the sheet (mobile).
@@ -1737,17 +1799,15 @@ function parkingWhenLabel() {
 }
 
 /* --- map layers --- */
-// A paint expression colouring each zone or rule by its status at the chosen time.
-function parkingColorExpr(prop, keys) {
-  var expr = ['match', ['get', prop]];
-  keys.forEach(function(k) { expr.push(k, PARKING_COLORS[parkingStatus(k)]); });
-  expr.push(PARKING_COLORS.free);
+// A paint expression colouring each feature by its rule's status at the chosen time.
+function parkingRuleColor() {
+  var expr = ['match', ['get', 'rule']];
+  Object.keys(parkingRules.rules).forEach(function(k) { expr.push(k, PARKING_COLORS[parkingStatus(k)]); });
+  expr.push(PARKING_COLORS.unknown);
   return expr;
 }
-function parkingZoneColor() { return parkingColorExpr('zone', Object.keys(parkingRules.zones)); }
 function parkingStreetColor() {
-  var keys = Object.keys(parkingRules.zones).concat(Object.keys(parkingRules.specialStreets));
-  return ['case', ['has', 'tfl'], PARKING_COLORS.tfl, parkingColorExpr('rule', keys)];
+  return ['case', ['has', 'tfl'], PARKING_COLORS.tfl, parkingRuleColor()];
 }
 
 function addParkingLayers() {
@@ -1760,16 +1820,17 @@ function addParkingLayers() {
     var underRoads = (styleLayers.filter(function(l) { return l.type === 'symbol'; })[0] || {}).id;
     var underLabels = map.getLayer('road-label') ? 'road-label'
       : (styleLayers.filter(function(l) { return l.type === 'symbol' && /label/.test(l.id); })[0] || {}).id;
+    var ruleColor = parkingRuleColor();
     map.addSource('parking-zones', { type: 'geojson', data: parkingData.zones, attribution: PARKING_ATTRIB });
     map.addSource('parking-zone-labels', { type: 'geojson', data: parkingData.labels });
-    map.addSource('parking-streets', { type: 'geojson', data: parkingData.streets });
-    map.addSource('parking-kerb', { type: 'geojson', data: parkingData.kerb });
-    map.addSource('parking-machines', { type: 'geojson', data: parkingData.machines });
+    map.addSource('parking-streets', { type: 'geojson', data: parkingDetailCollection('streets') });
+    map.addSource('parking-kerb', { type: 'geojson', data: parkingDetailCollection('kerb') });
+    map.addSource('parking-machines', { type: 'geojson', data: parkingDetailCollection('machines') });
     map.addLayer({ id: 'parking-zones-fill', type: 'fill', source: 'parking-zones',
-      paint: { 'fill-color': parkingZoneColor(),
-        'fill-opacity': ['interpolate', ['linear'], ['zoom'], 12, 0.28, 15, 0.12, 17, 0.06] } }, underRoads);
+      paint: { 'fill-color': ruleColor,
+        'fill-opacity': ['interpolate', ['linear'], ['zoom'], 9, 0.35, 12, 0.28, 15, 0.12, 17, 0.06] } }, underRoads);
     map.addLayer({ id: 'parking-zones-line', type: 'line', source: 'parking-zones',
-      paint: { 'line-color': parkingZoneColor(), 'line-width': ['interpolate', ['linear'], ['zoom'], 12, 1, 16, 2.5],
+      paint: { 'line-color': ruleColor, 'line-width': ['interpolate', ['linear'], ['zoom'], 9, 0.5, 12, 1, 16, 2.5],
         'line-opacity': 0.8 } }, underLabels);
     map.addLayer({ id: 'parking-streets', type: 'line', source: 'parking-streets', minzoom: PARKING_STREET_ZOOM,
       layout: { 'line-cap': 'round', 'line-join': 'round' },
@@ -1793,10 +1854,10 @@ function addParkingLayers() {
       paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 15, 4, 18, 7],
         'circle-color': ['match', ['get', 'type'], 'Card only', '#1f2937', 'Card & cash', '#2563eb', '#6b7280'],
         'circle-stroke-width': 1.5, 'circle-stroke-color': '#ffffff' } });
-    map.addLayer({ id: 'parking-zones-label', type: 'symbol', source: 'parking-zone-labels', maxzoom: 17,
+    map.addLayer({ id: 'parking-zones-label', type: 'symbol', source: 'parking-zone-labels', minzoom: 11, maxzoom: 17,
       layout: { 'text-field': ['get', 'zone'], 'text-font': ['DIN Pro Bold', 'Arial Unicode MS Bold'],
-        'text-size': ['interpolate', ['linear'], ['zoom'], 12, 13, 16, 20], 'text-allow-overlap': true },
-      paint: { 'text-color': parkingZoneColor(), 'text-halo-color': isDark ? 'rgba(10,10,10,0.9)' : 'rgba(255,255,255,0.95)',
+        'text-size': ['interpolate', ['linear'], ['zoom'], 11, 10, 13, 13, 16, 20], 'text-allow-overlap': false },
+      paint: { 'text-color': ruleColor, 'text-halo-color': isDark ? 'rgba(10,10,10,0.9)' : 'rgba(255,255,255,0.95)',
         'text-halo-width': 2 } });
   });
 }
@@ -1812,10 +1873,10 @@ function removeParkingLayers() {
 
 function recolourParking() {
   if (!parkingOn || !parkingData || !map.getLayer('parking-zones-fill')) return;
-  var zc = parkingZoneColor();
-  map.setPaintProperty('parking-zones-fill', 'fill-color', zc);
-  map.setPaintProperty('parking-zones-line', 'line-color', zc);
-  map.setPaintProperty('parking-zones-label', 'text-color', zc);
+  var rc = parkingRuleColor();
+  map.setPaintProperty('parking-zones-fill', 'fill-color', rc);
+  map.setPaintProperty('parking-zones-line', 'line-color', rc);
+  map.setPaintProperty('parking-zones-label', 'text-color', rc);
   map.setPaintProperty('parking-streets', 'line-color', parkingStreetColor());
   renderParkingBody();
 }
@@ -1823,7 +1884,8 @@ function recolourParking() {
 // The selected street is outlined: all pieces with its name in its zone.
 function parkingSelFilter() {
   if (!parkingSel || parkingSel.kind !== 'street' || !parkingSel.name) return ['==', ['get', 'name'], '\u0000'];
-  return ['all', ['==', ['get', 'name'], parkingSel.name], ['==', ['get', 'zone'], parkingSel.zone]];
+  return ['all', ['==', ['get', 'name'], parkingSel.name], ['==', ['get', 'zone'], parkingSel.zone],
+    ['in', ['get', 'rule'], ['literal', Object.keys(parkingRules.rules).filter(function(k) { return k.indexOf(parkingSel.b + ':') === 0; })]]];
 }
 
 /* --- taps --- */
@@ -1841,9 +1903,9 @@ map.on('click', function(e) {
   var street = nearestRendered(streets, e.lngLat);
   if (street) {
     var p = street.properties;
-    parkingSel = { kind: 'street', zone: p.zone, rule: p.rule, name: p.name, tfl: !!p.tfl, lngLat: e.lngLat };
+    parkingSel = { kind: 'street', b: p.rule.split(':')[0], zone: p.zone, rule: p.rule, name: p.name, tfl: !!p.tfl, lngLat: e.lngLat };
   } else if (zone) {
-    parkingSel = { kind: 'zone', zone: zone.properties.zone, rule: zone.properties.zone, lngLat: e.lngLat };
+    parkingSel = { kind: 'zone', b: zone.properties.b, zone: zone.properties.zone, rule: zone.properties.rule, lngLat: e.lngLat };
   } else {
     return;
   }
@@ -1889,9 +1951,14 @@ function metresBetween(a, b) {
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
-function nearestMachines(lngLat, max, within) {
+function parkingMachines(b) {
+  var d = parkingDetail[b];
+  return d && d !== 'loading' ? d.machines.features : [];
+}
+
+function nearestMachines(b, lngLat, max, within) {
   var here = [lngLat.lng, lngLat.lat];
-  return parkingData.machines.features
+  return parkingMachines(b)
     .map(function(f) { return { p: f.properties, d: metresBetween(here, f.geometry.coordinates) }; })
     .filter(function(m) { return m.d <= within; })
     .sort(function(a, b) { return a.d - b.d; })
@@ -1906,6 +1973,12 @@ function pkEl(tag, cls, text) {
   return e;
 }
 
+function pkLink(text, href) {
+  var a = pkEl('a', '', text);
+  a.href = href; a.target = '_blank'; a.rel = 'noopener';
+  return a;
+}
+
 function parkingMessage(kind, text) {
   parkingBody.innerHTML = '';
   parkingBody.appendChild(pkEl('div', 'fuel-msg fuel-msg--' + kind, text));
@@ -1916,8 +1989,18 @@ function parkingNotice(text) {
   parkingBody.insertBefore(n, parkingBody.firstChild);
 }
 
+// The borough the panel is about: the open card's, else the one under the map centre.
+function parkingCurrentBorough() {
+  if (parkingSel) return parkingSel.b;
+  var c = map.getCenter();
+  return parkingBoroughAt(c.lng, c.lat);
+}
+
 function renderParkingBody() {
   if (!parkingRules) return;
+  var bid = parkingCurrentBorough();
+  var borough = bid && parkingRules.boroughs[bid];
+  parkingArea.textContent = borough ? borough.name : 'London';
   parkingBody.innerHTML = '';
   if (parkingSel) parkingBody.appendChild(renderParkingCard(parkingSel));
   else {
@@ -1925,11 +2008,16 @@ function renderParkingBody() {
     hint.appendChild(pkEl('p', '', map.getZoom() < PARKING_STREET_ZOOM
       ? 'Tap a zone to zoom in, then tap a street to see its rules.'
       : 'Tap a street to see its rules, or tap inside a zone for the zone’s.'));
+    var ids = Object.keys(parkingRules.boroughs);
+    var known = ids.reduce(function(n, id) { return n + parkingRules.boroughs[id].knownHours; }, 0);
+    var total = ids.reduce(function(n, id) { return n + parkingRules.boroughs[id].zoneCount; }, 0);
+    hint.appendChild(pkEl('p', 'pk-small', 'Covers ' + ids.length + ' borough' + (ids.length === 1 ? '' : 's') + ' and ' + total +
+      ' zones; ' + known + ' have hours this map can read. Grey zones show their council’s wording instead of a colour.'));
     hint.appendChild(pkEl('p', 'pk-small', 'Yellow lines and bays show only where OpenStreetMap has them (a few percent of streets). A blank kerb doesn’t mean parking is allowed.'));
     hint.appendChild(pkEl('p', 'pk-small', 'Street signs always override the map.'));
     parkingBody.appendChild(hint);
   }
-  parkingBody.appendChild(renderParkingCharges());
+  if (borough && borough.charges) parkingBody.appendChild(renderParkingCharges(borough));
 }
 
 function parkingRow(parent, label, value) {
@@ -1941,15 +2029,17 @@ function parkingRow(parent, label, value) {
 }
 
 function renderParkingCard(sel) {
+  var borough = parkingRules.boroughs[sel.b] || {};
   var rule = parkingRule(sel.rule) || {};
-  var zoneRule = parkingRules.zones[sel.zone] || {};
-  var special = parkingRules.specialStreets[sel.rule];
+  var zoneRule = parkingRule(sel.b + ':' + sel.zone) || {};
+  var special = rule.streets ? rule : null;
   var card = pkEl('div', 'pk-card');
 
   var head = pkEl('div', 'pk-card-head');
   var titles = pkEl('div', 'pk-card-titles');
   titles.appendChild(pkEl('div', 'pk-card-title', sel.kind === 'zone' ? 'Zone ' + sel.zone : (sel.name || 'Unnamed street')));
-  var sub = sel.kind === 'zone' ? 'Controlled parking zone' : 'Zone ' + sel.zone + (special ? ' · ' + special.name : '');
+  var sub = (sel.kind === 'zone' ? 'Controlled parking zone' : 'Zone ' + sel.zone + (special ? ' · ' + special.name : ''))
+    + (borough.name ? ' · ' + borough.name : '');
   titles.appendChild(pkEl('div', 'pk-card-sub', sub));
   head.appendChild(titles);
   var close = pkEl('button', 'pk-card-close');
@@ -1971,42 +2061,47 @@ function renderParkingCard(sel) {
     var status = parkingStatus(sel.rule);
     card.appendChild(pkEl('div', 'pk-pill pk-pill--' + status, PARKING_PILLS[status] + ' ' + parkingWhenLabel()));
     var usingEvent = parkingEvent && rule.event;
-    parkingRow(card, 'Hours', usingEvent ? rule.event.hours : rule.hours);
+    parkingRow(card, usingEvent ? 'Event-day hours' : 'Hours', usingEvent ? rule.event.hours : rule.hours);
     if (rule.event && !usingEvent) parkingRow(card, 'Event days', rule.event.hours.replace(/^Event days: /, ''));
     if (rule.event && usingEvent) parkingRow(card, 'Other days', rule.hours);
-    parkingRow(card, 'Max stay', (usingEvent ? rule.event.maxStay : rule.maxStay) || 'No limit listed');
+    if (status === 'unknown') {
+      var u = pkEl('p', 'pk-note');
+      u.appendChild(document.createTextNode('This map couldn’t turn the council’s hours into a colour, so check the signs' + (borough.hoursUrl ? ' or ' : '.')));
+      if (borough.hoursUrl) { u.appendChild(pkLink('the council’s parking page', borough.hoursUrl)); u.appendChild(document.createTextNode('.')); }
+      card.appendChild(u);
+    }
+    parkingRow(card, 'Max stay', (usingEvent ? rule.event.maxStay : rule.maxStay) || (rule.periods ? 'No limit listed' : ''));
     if (special) parkingRow(card, 'Rest of zone ' + sel.zone, zoneRule.hours);
     if (rule.note) card.appendChild(pkEl('p', 'pk-note', rule.note));
-    if (rule.event) {
+    if (rule.event && borough.eventDaysUrl) {
       var ev = pkEl('p', 'pk-small');
-      ev.appendChild(document.createTextNode('Event days are Fulham FC home matches and other events at Craven Cottage. '));
-      var a = pkEl('a', '', 'List of event days');
-      a.href = parkingRules.eventDaysUrl; a.target = '_blank'; a.rel = 'noopener';
-      ev.appendChild(a);
+      ev.appendChild(document.createTextNode('Event days are set by the council. '));
+      ev.appendChild(pkLink('List of event days', borough.eventDaysUrl));
       card.appendChild(ev);
     }
     if (sel.kind === 'zone') {
-      var others = Object.keys(parkingRules.specialStreets).filter(function(k) { return parkingRules.specialStreets[k].zone === sel.zone; });
-      others.forEach(function(k) {
-        var s = parkingRules.specialStreets[k];
-        parkingRow(card, s.name, s.hours);
+      Object.keys(parkingRules.rules).forEach(function(k) {
+        var r = parkingRules.rules[k];
+        if (r.borough === sel.b && r.zone === sel.zone && r.streets) parkingRow(card, r.name, r.hours);
       });
     }
+    var yellow = borough.yellowLines || PARKING_YELLOW;
     var yl = pkEl('div', 'pk-yellow');
     var single = pkEl('p', '');
     single.appendChild(pkEl('b', '', 'Single yellow: '));
-    single.appendChild(document.createTextNode(parkingRules.yellowLines.single + (rule.hours ? ' Here: ' + rule.hours.split('. ')[0].split(': ')[0].replace(/\.$/, '') + '.' : '')));
+    single.appendChild(document.createTextNode(yellow.single + (rule.periods && rule.hours ? ' Here: ' + rule.hours.split('. ')[0].split(': ')[0].replace(/\.$/, '') + '.' : '')));
     var dbl = pkEl('p', '');
     dbl.appendChild(pkEl('b', '', 'Double yellow: '));
-    dbl.appendChild(document.createTextNode(parkingRules.yellowLines.double));
+    dbl.appendChild(document.createTextNode(yellow.double));
     yl.appendChild(single);
     yl.appendChild(dbl);
-    yl.appendChild(pkEl('p', 'pk-small', parkingRules.yellowLines.loading));
+    if (yellow.loading) yl.appendChild(pkEl('p', 'pk-small', yellow.loading));
     card.appendChild(yl);
   }
 
   card.appendChild(pkEl('div', 'pk-section', 'Ticket machines within 150 m'));
-  var near = nearestMachines(sel.lngLat, 5, 150);
+  var detail = parkingDetail[sel.b];
+  var near = nearestMachines(sel.b, sel.lngLat, 5, 150);
   if (near.length) {
     var list = pkEl('ul', 'pk-machines');
     near.forEach(function(m) {
@@ -2019,11 +2114,11 @@ function renderParkingCard(sel) {
     });
     card.appendChild(list);
   } else {
-    card.appendChild(pkEl('p', 'pk-small', 'None mapped nearby. You can pay by phone with RingGo.'));
+    card.appendChild(pkEl('p', 'pk-small', detail === 'loading' ? 'Loading…' : 'None mapped nearby. Most councils also take payment by phone.'));
   }
   if (sel.kind === 'zone') {
     var counts = {};
-    parkingData.machines.features.forEach(function(f) {
+    parkingMachines(sel.b).forEach(function(f) {
       if (f.properties.zone === sel.zone) counts[f.properties.type] = (counts[f.properties.type] || 0) + 1;
     });
     var total = Object.keys(counts).reduce(function(n, k) { return n + counts[k]; }, 0);
@@ -2031,50 +2126,57 @@ function renderParkingCard(sel) {
       ? Object.keys(counts).sort().map(function(k) { return counts[k] + ' ' + (k === 'Unknown' ? 'payment type unknown' : k.toLowerCase()); }).join(', ')
       : 'None');
   }
-  card.appendChild(pkEl('p', 'pk-small', 'The map shows only the machines in OpenStreetMap. The council’s zone map shows all of them.'));
+  card.appendChild(pkEl('p', 'pk-small', 'The map shows only the machines in OpenStreetMap, so most are missing.'));
 
   var pdf = zoneRule.pdf || rule.pdf;
-  if (pdf) {
-    var link = pkEl('a', 'pk-pdf', 'Zone ' + sel.zone + ' map and ticket machines (council PDF)');
-    link.href = pdf; link.target = '_blank'; link.rel = 'noopener';
-    card.appendChild(link);
-  }
+  if (pdf) card.appendChild(pkLink('Zone ' + sel.zone + ' map (council PDF)', pdf)).className = 'pk-pdf';
+  else if (zoneRule.url || rule.url) card.appendChild(pkLink('Zone ' + sel.zone + ' on the council site', zoneRule.url || rule.url)).className = 'pk-pdf';
+  else if (borough.hoursUrl) card.appendChild(pkLink(borough.name + ' parking zones (council site)', borough.hoursUrl)).className = 'pk-pdf';
+  if (borough.checked) card.appendChild(pkEl('p', 'pk-small', 'Hours checked against the council on ' + borough.checked + '.'));
   card.appendChild(pkEl('p', 'pk-signs', 'Street signs always override the map.'));
   return card;
 }
 
-function renderParkingCharges() {
-  var c = parkingRules.charges;
+function renderParkingCharges(borough) {
+  var c = borough.charges;
   var box = pkEl('details', 'pk-charges');
   if (parkingCalc.open) box.open = true;
   box.addEventListener('toggle', function() { parkingCalc.open = box.open; });
-  box.appendChild(pkEl('summary', '', 'Charges'));
-
+  box.appendChild(pkEl('summary', '', 'Charges · ' + borough.name));
+  if (!c.bands || !c.bands.length) {
+    if (c.note) box.appendChild(pkEl('p', 'pk-small', c.note));
+    if (c.url) box.appendChild(pkLink('Council parking charges', c.url)).className = 'pk-pdf';
+    return box;
+  }
+  var band = c.bands.filter(function(b) { return b.band === parkingCalc.band; })[0] || c.bands[Math.min(2, c.bands.length - 1)];
+  var surchargeName = c.surchargeName || 'Diesel';
   var table = pkEl('table', 'pk-bands');
   var thead = pkEl('tr', '');
-  ['Band', 'CO2', 'Per hour'].forEach(function(h) { thead.appendChild(pkEl('th', '', h)); });
+  ['Band', c.bandLabel || 'CO2', 'Per hour'].forEach(function(h) { thead.appendChild(pkEl('th', '', h)); });
   table.appendChild(thead);
   c.bands.forEach(function(b) {
-    var tr = pkEl('tr', b.band === parkingCalc.band ? 'is-on' : '');
+    var tr = pkEl('tr', b === band ? 'is-on' : '');
     tr.appendChild(pkEl('td', '', String(b.band)));
-    tr.appendChild(pkEl('td', '', b.co2));
-    tr.appendChild(pkEl('td', '', '£' + (b.perHour + (parkingCalc.diesel ? c.dieselPerHour : 0)).toFixed(2)));
+    tr.appendChild(pkEl('td', '', b.co2 || b.label || ''));
+    tr.appendChild(pkEl('td', '', '£' + (b.perHour + (parkingCalc.surcharge && c.dieselPerHour ? c.dieselPerHour : 0)).toFixed(2)));
     tr.addEventListener('click', function() { parkingCalc.band = b.band; renderParkingBody(); });
     table.appendChild(tr);
   });
   box.appendChild(table);
 
-  var diesel = pkEl('label', 'pk-diesel');
-  var cb = pkEl('input', '');
-  cb.type = 'checkbox';
-  cb.checked = parkingCalc.diesel;
-  cb.addEventListener('change', function() { parkingCalc.diesel = cb.checked; renderParkingBody(); });
-  diesel.appendChild(cb);
-  diesel.appendChild(document.createTextNode(' Diesel (+£' + c.dieselPerHour.toFixed(2) + ' an hour)'));
-  box.appendChild(diesel);
+  if (c.dieselPerHour) {
+    var surcharge = pkEl('label', 'pk-diesel');
+    var cb = pkEl('input', '');
+    cb.type = 'checkbox';
+    cb.checked = parkingCalc.surcharge;
+    cb.addEventListener('change', function() { parkingCalc.surcharge = cb.checked; renderParkingBody(); });
+    surcharge.appendChild(cb);
+    surcharge.appendChild(document.createTextNode(' ' + surchargeName + ' (+£' + c.dieselPerHour.toFixed(2) + ' an hour)'));
+    box.appendChild(surcharge);
+  }
 
   var calc = pkEl('div', 'pk-calc');
-  calc.appendChild(pkEl('span', '', 'Band ' + parkingCalc.band + ' for'));
+  calc.appendChild(pkEl('span', '', 'Band ' + band.band + ' for'));
   var stay = pkEl('select', 'parking-day');
   stay.setAttribute('aria-label', 'How long');
   PARKING_STAYS.forEach(function(m) {
@@ -2085,23 +2187,26 @@ function renderParkingCharges() {
   });
   stay.addEventListener('change', function() { parkingCalc.minutes = Number(stay.value); renderParkingBody(); });
   calc.appendChild(stay);
-  var band = c.bands.filter(function(b) { return b.band === parkingCalc.band; })[0];
-  calc.appendChild(pkEl('span', 'pk-cost', '£' + parkingCost(band.perHour, parkingCalc.minutes, parkingCalc.diesel, c.dieselPerHour).toFixed(2)));
+  calc.appendChild(pkEl('span', 'pk-cost', '£' + parkingCost(band.perHour, parkingCalc.minutes, parkingCalc.surcharge, c.dieselPerHour || 0).toFixed(2)));
   box.appendChild(calc);
   var max = parkingSel && !parkingSel.tfl && (parkingRule(parkingSel.rule) || {}).maxStay;
   if (max) box.appendChild(pkEl('p', 'pk-small', 'Max stay here: ' + max + '.'));
-  box.appendChild(pkEl('p', 'pk-small', c.note + ' Tap a band to use it.'));
-  var bh = pkEl('p', 'pk-small');
-  var a = pkEl('a', '', 'Bank holidays');
-  a.href = parkingRules.bankHolidayUrl; a.target = '_blank'; a.rel = 'noopener';
-  bh.appendChild(a);
-  bh.appendChild(document.createTextNode(': most zones are free, with some exceptions.'));
-  box.appendChild(bh);
+  if (c.note) box.appendChild(pkEl('p', 'pk-small', c.note + ' Tap a band to use it.'));
+  if (borough.bankHolidayUrl) {
+    var bh = pkEl('p', 'pk-small');
+    bh.appendChild(pkLink('Bank holidays', borough.bankHolidayUrl));
+    bh.appendChild(document.createTextNode(': see the council’s rules.'));
+    box.appendChild(bh);
+  }
   return box;
 }
 
-// The hint below street level changes with the zoom.
-map.on('zoomend', function() { if (parkingOn && parkingRules && !parkingSel) renderParkingBody(); });
+// Load borough detail as the map moves; the hint and borough name follow the view.
+map.on('moveend', function() {
+  if (!parkingOn || !parkingRules) return;
+  loadParkingDetail();
+  if (!parkingSel) renderParkingBody();
+});
 /* ===== END PARKING ===== */
 
 function setStatus(msg, isError) {

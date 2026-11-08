@@ -1,15 +1,15 @@
 // Parking rules for the parking layer: pure functions, no DOM or map.
 // Loaded with a plain <script> before app.js, and by tests/parking.test.mjs in Node.
 // Rules come from data/parking/rules.json; see data/parking/README.md for the format.
+// Rule keys are "<borough id>:<zone>" (e.g. "hf:E") or "<borough id>:<street rule>" ("hf:K-Richford").
 
 var parkingRules = null;
 
 function setParkingRules(rules) { parkingRules = rules; }
 
-// A zone (e.g. 'E') or a special street rule (e.g. 'K-Richford'), or null.
+// The rule for a key, or null.
 function parkingRule(key) {
-  if (!parkingRules) return null;
-  return parkingRules.zones[key] || parkingRules.specialStreets[key] || null;
+  return (parkingRules && parkingRules.rules[key]) || null;
 }
 
 function hhmmToMinutes(s) {
@@ -26,12 +26,14 @@ function inPeriods(periods, day, minutes) {
   });
 }
 
-// Status of a rule at a London day and time: 'ctrl' (pay or permit), 'free', or
-// 'permit' (permit holders only). Unknown rules count as free.
+// Status of a rule at a London day and time: 'ctrl' (pay or permit), 'free', 'permit'
+// (permit holders only), or 'unknown' when the council's hours could not be read into
+// periods (the card then shows the council's own text instead). Unknown keys are 'unknown'.
 function isControlled(ruleKey, day, minutes, eventDay) {
   var rule = parkingRule(ruleKey);
-  if (!rule) return 'free';
+  if (!rule) return 'unknown';
   var periods = eventDay && rule.event ? rule.event.periods : rule.periods;
+  if (!periods) return 'unknown';
   if (inPeriods(rule.permit, day, minutes)) return 'permit';
   if (!inPeriods(periods, day, minutes)) return 'free';
   return rule.permitOnly ? 'permit' : 'ctrl';
@@ -47,8 +49,8 @@ function londonDayTime(date) {
   return { day: day, minutes: Number(get('hour')) * 60 + Number(get('minute')) };
 }
 
-// Pay-to-park cost in pounds for a stay, at a band's hourly rate plus the diesel surcharge.
-function parkingCost(perHour, minutes, diesel, dieselPerHour) {
-  var rate = perHour + (diesel ? dieselPerHour : 0);
+// Pay-to-park cost in pounds for a stay, at an hourly rate plus any per-hour surcharge.
+function parkingCost(perHour, minutes, surcharge, surchargePerHour) {
+  var rate = perHour + (surcharge ? surchargePerHour : 0);
   return Math.round(rate * minutes / 60 * 100) / 100;
 }
