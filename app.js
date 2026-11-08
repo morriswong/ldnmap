@@ -1995,7 +1995,7 @@ function renderParkingCard(sel) {
     var yl = pkEl('div', 'pk-yellow');
     var single = pkEl('p', '');
     single.appendChild(pkEl('b', '', 'Single yellow: '));
-    single.appendChild(document.createTextNode(parkingRules.yellowLines.single + (zoneRule.hours ? ' Here: ' + zoneRule.hours.split('.')[0] + '.' : '')));
+    single.appendChild(document.createTextNode(parkingRules.yellowLines.single + (rule.hours ? ' Here: ' + rule.hours.split('. ')[0].split(': ')[0].replace(/\.$/, '') + '.' : '')));
     var dbl = pkEl('p', '');
     dbl.appendChild(pkEl('b', '', 'Double yellow: '));
     dbl.appendChild(document.createTextNode(parkingRules.yellowLines.double));

@@ -576,7 +576,7 @@
   .pk-bands td { padding: 4px; border-top: 1px solid var(--divider); cursor: pointer; }
   .pk-bands td:last-child, .pk-bands th:last-child { text-align: right; }
   .pk-bands tr.is-on td { background: rgba(91,141,238,0.18); font-weight: 600; }
-  .pk-diesel { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+  .pk-diesel { display: flex; align-items: center; gap: 6px; cursor: pointer; margin-top: 4px; }
   .pk-calc { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .pk-cost { margin-left: auto; font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
   @media (max-width: 768px) {
