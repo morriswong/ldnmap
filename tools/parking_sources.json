@@ -807,6 +807,2547 @@
    },
    "streetHook": "hf_river",
    "licence": "Zones: LBHF. Streets, kerbs and machines: © OpenStreetMap contributors (ODbL)."
+  },
+  "enfield": {
+   "name": "Enfield",
+   "short": "Enfield",
+   "polygons": {
+    "type": "file",
+    "path": "enfield.geojson",
+    "zoneField": "name",
+    "nameField": "name"
+   },
+   "hoursUrl": "https://www.enfield.gov.uk/services/parking/controlled-parking-zones",
+   "checked": "2026-11-08",
+   "licence": "Zones: Enfield Council CPZ map data (licence not stated). Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
+   "hoursFromData": {
+    "fields": [
+     "days",
+     "times"
+    ]
+   },
+   "notes": "Zone boundaries and hours come from the council’s own CPZ map data (KML). “Excluded area” polygons refer to traffic orders and have no hours.",
+   "bankHolidayUrl": "https://www.enfield.gov.uk/services/parking/controlled-parking-zones"
+  },
+  "greenwich": {
+   "name": "Royal Greenwich",
+   "short": "Greenwich",
+   "polygons": {
+    "type": "drupal-settings",
+    "url": "https://www.royalgreenwich.gov.uk/parking-transport-and-streets/check-if-you-need-parking-permit-or-update-your-details/check-if-you/map",
+    "path": "cpzMap.polygons",
+    "zoneField": "CPZ_elig_1",
+    "zonePattern": "^([A-Z]+)\\*?$",
+    "nameField": "CPZ_eligbi",
+    "nameReplace": [
+     [
+      "^LB[BL]_",
+      ""
+     ]
+    ]
+   },
+   "hoursUrl": "https://www.royalgreenwich.gov.uk/directory/71/controlled_parking_zones_cpz",
+   "checked": "2026-11-08",
+   "licence": "Zones: Royal Borough of Greenwich CPZ map data (licence not stated). Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
+   "hoursFromData": {
+    "fields": [
+     "CPZ_elig_2"
+    ],
+    "replace": [
+     [
+      "_",
+      " "
+     ]
+    ]
+   },
+   "notes": "The council says its map is a guide only and may not be up to date. Zones marked * are run by a neighbouring borough. Most zones don’t apply on bank holidays; see each zone’s council page."
+  },
+  "hackney": {
+   "name": "Hackney",
+   "short": "Hackney",
+   "polygons": {
+    "type": "geojson",
+    "url": "https://map2.hackney.gov.uk/geoserver/wfs?service=WFS&version=2.0.0&request=GetFeature&typeNames=parking:controlled_parking_zone&outputFormat=application/json&srsName=EPSG:4326",
+    "zoneField": "zone",
+    "zonePattern": "^Zone\\s+(.+)$"
+   },
+   "hoursUrl": "https://hackney.gov.uk/parking-zones/",
+   "checked": "2026-11-08",
+   "licence": "Zones: Hackney Council, Open Government Licence v3.0. Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
+   "hoursFromData": {
+    "fields": [
+     "controlled_hours"
+    ],
+    "noteAfter": "<br>"
+   },
+   "notes": "Outside the controlled hours you don’t need a permit, but yellow lines and disabled bays still apply. Some streets have different restrictions; match-day and bank holiday rules differ. Check the sign on the street.",
+   "eventDaysUrl": "https://hackney.gov.uk/parking-zones/"
+  },
+  "haringey": {
+   "name": "Haringey",
+   "short": "Haringey",
+   "polygons": {
+    "type": "gml",
+    "url": "https://my.haringey.gov.uk/getows.ashx?mapsource=mapsources/AllMaps&service=WFS&version=2.0.0&request=GetFeature&typeNames=ms:Controlled_Parking_Zones",
+    "zoneField": "cpz_name",
+    "urlField": "weblink"
+   },
+   "hoursUrl": "https://www.haringey.gov.uk/parking/cpzs/all-cpz-hours",
+   "checked": "2026-11-08",
+   "licence": "Zones: Haringey Council map data (licence not stated). Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
+   "hoursFromData": {
+    "fields": [
+     "op_times"
+    ],
+    "noteRegex": ",?\\s+(and|or)\\s+(on|for|in)\\s.*$"
+   },
+   "charges": {
+    "bands": [],
+    "note": "On-street pay-and-display parking is £2.60 an hour in Haringey CPZs, per the council’s CPZ hours page. Parking is free outside CPZ hours and on bank holidays (except event-day zones).",
+    "url": "https://www.haringey.gov.uk/parking/cpzs/all-cpz-hours"
+   },
+   "eventDaysUrl": "https://www.haringey.gov.uk/parking/where-you-can-park-haringey/tottenham-hotspur-stadium-event-day-parking-restrictions",
+   "notes": "Zones near Tottenham Hotspur Stadium and Finsbury Park have extra restrictions on event days."
+  },
+  "harrow": {
+   "name": "Harrow",
+   "short": "Harrow",
+   "polygons": {
+    "type": "arcgis",
+    "url": "https://mapping.harrow.gov.uk/server/rest/services/Public/Transport_and_Streets_2/MapServer/1",
+    "zoneField": "TRANSPORTATION_USER.CPZ_ZONE_BOUNDARIES.CPZ",
+    "nameField": "TRANSPORTATION_USER.CPZ_ZONE_BOUNDARIES.TRANSPORTATION_USER_CPZ_ZONE_B"
+   },
+   "hoursUrl": "https://www.harrow.gov.uk/parking-permits/controlled-parking-zones",
+   "checked": "2026-11-08",
+   "licence": "Zones: Harrow Council; © Crown copyright and database rights 2021 Ordnance Survey 100019206. Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
+   "hoursFromData": {
+    "fields": [
+     "TRANSPORTATION_USER.CPZ_ZONE_BOUNDARIES.TIMES"
+    ]
+   },
+   "notes": "Harrow: normal parking and CPZ rules apply on bank holidays. The exact hours are on the entry signs of each zone."
+  },
+  "lambeth": {
+   "name": "Lambeth",
+   "short": "Lambeth",
+   "polygons": {
+    "type": "arcgis",
+    "url": "https://gis.lambeth.gov.uk/arcgis/rest/services/LambethControlledParkingZones/MapServer/1",
+    "zoneField": "CODE_1",
+    "nameField": "NAME",
+    "nameReplace": [
+     [
+      "\\s*\\([A-Z0-9]+\\)$",
+      ""
+     ]
+    ]
+   },
+   "hoursUrl": "https://www.lambeth.gov.uk/parking/parking-restrictions/where-you-can-park/controlled-parking-zones-cpzs",
+   "checked": "2026-11-08",
+   "licence": "Zones: Lambeth Council map data (licence not stated). Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
+   "hoursFromData": {
+    "fields": [
+     "HOURS"
+    ]
+   }
+  },
+  "merton": {
+   "name": "Merton",
+   "short": "Merton",
+   "polygons": {
+    "type": "arcgis",
+    "url": "https://services-eu1.arcgis.com/lDzXrGJF6LKIhYUB/arcgis/rest/services/Controlled_Parking_Zone_Boundaries/FeatureServer/5",
+    "zoneField": "Zone_ID",
+    "nameField": "Zone_Area"
+   },
+   "hoursUrl": "https://www.merton.gov.uk/streets-parking-transport/parking/cpz/cpz-list",
+   "checked": "2026-11-08",
+   "licence": "Zones: Merton Council map data (licence not stated). Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
+   "hoursFromData": {
+    "fields": [
+     "Operation_Summary"
+    ],
+    "noteFields": [
+     "Exemptions",
+     "Summary_Notice"
+    ]
+   },
+   "notes": "Pay-and-display-only areas without a zone code are not shown."
+  },
+  "newham": {
+   "name": "Newham",
+   "short": "Newham",
+   "polygons": {
+    "type": "arcgis",
+    "url": "https://services1.arcgis.com/trOdpHvvP7HrTfdb/arcgis/rest/services/Controlled_Parking_Zones/FeatureServer/0",
+    "zoneField": "PREFIX",
+    "nameField": "NAME"
+   },
+   "hoursUrl": "https://www.newham.gov.uk/parking-permits/resident-parking-zones",
+   "checked": "2026-11-08",
+   "licence": "Zones: Newham Council map data; contains Ordnance Survey data © Crown copyright. Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
+   "hoursFromData": {
+    "fields": [
+     "TIMES"
+    ],
+    "replace": [
+     [
+      "[()]",
+      " "
+     ]
+    ],
+    "noteFields": [
+     "CPZ_Status"
+    ]
+   },
+   "notes": "Zones marked “Event Day Parking Zone” have extra restrictions on event days at the London Stadium."
+  },
+  "redbridge": {
+   "name": "Redbridge",
+   "short": "Redbridge",
+   "polygons": {
+    "type": "redbridge",
+    "url": "https://my.redbridge.gov.uk/map/ajaxmap/GetFeatures?layerId=5&layerName=Permit%20parking%20zones",
+    "zoneField": "description",
+    "zonePattern": "^[^\\r\\n]*\\(([A-Z0-9]+)\\)",
+    "nameField": "title"
+   },
+   "hoursUrl": "https://my.redbridge.gov.uk/map/permit-parking-zones",
+   "checked": "2026-11-08",
+   "licence": "Zones: Redbridge Council “My Redbridge” map data (licence not stated). Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
+   "hoursFromData": {
+    "fields": [
+     "description"
+    ],
+    "replace": [
+     [
+      "^[^\\r\\n]*\\r?\\n",
+      ""
+     ],
+     [
+      "<.*$",
+      ""
+     ],
+     [
+      "\\r?\\n+Display times:.*$",
+      ""
+     ]
+    ]
+   },
+   "notes": "Permit parking doesn’t apply on bank holidays in Redbridge, but waiting restrictions and pay-and-display do. Check the signs: operating times change."
+  },
+  "sutton": {
+   "name": "Sutton",
+   "short": "Sutton",
+   "polygons": {
+    "type": "geojson",
+    "epsg": 27700,
+    "url": "https://sutton.statmap.co.uk/map/wfs.svc/open_data_lbs_wfs?service=WFS&version=1.1.0&request=GetFeature&typeName=statmap:controlled_parking_zones&outputFormat=application/json",
+    "zoneField": "name",
+    "zonePattern": "\\(([A-Z0-9]+)\\)",
+    "nameField": "name",
+    "nameReplace": [
+     [
+      "\\s*\\([A-Z0-9]+\\).*$",
+      ""
+     ]
+    ]
+   },
+   "hoursUrl": "https://www.sutton.gov.uk/w/controlled-parking-zones",
+   "checked": "2026-11-08",
+   "licence": "Zones: Sutton Council open data (WFS). Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
+   "hoursFromData": {
+    "fields": [
+     "name"
+    ],
+    "replace": [
+     [
+      "^.*?\\([A-Z0-9]+\\)\\s*",
+      ""
+     ]
+    ]
+   },
+   "notes": "Only Sutton’s controlled parking zones are shown; its permit parking areas (permit holders only, street by street) are not."
+  },
+  "towerhamlets": {
+   "name": "Tower Hamlets",
+   "short": "Tower Hamlets",
+   "polygons": {
+    "type": "arcgis",
+    "url": "https://services1.arcgis.com/KZuCGRSe2K5BiG1Z/arcgis/rest/services/Parking_Permit_Mini_Zones_view/FeatureServer/159",
+    "zoneField": "ZONE_CODE"
+   },
+   "hoursUrl": "https://www.towerhamlets.gov.uk/lgnl/transport_and_streets/parking/parking_zones_and_charges.aspx",
+   "checked": "2026-11-08",
+   "licence": "Zones: © Crown copyright and database rights 2025 Ordnance Survey, London Borough of Tower Hamlets AC0000820594. Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
+   "zones": {
+    "A1": {
+     "hours": "Monday to Friday, 8.30am to 5.30pm; Sunday, 8.30am to 2pm.",
+     "name": "Zone A (Bethnal Green area)"
+    },
+    "A2": {
+     "hours": "Monday to Friday, 8.30am to 5.30pm; Sunday, 8.30am to 2pm.",
+     "name": "Zone A (Bethnal Green area)"
+    },
+    "A3": {
+     "hours": "Monday to Saturday, 8.30am to 5.30pm.",
+     "name": "Zone A"
+    },
+    "A4": {
+     "hours": "Monday to Friday, 8.30am to 5.30pm.",
+     "name": "Zone A"
+    },
+    "A5": {
+     "hours": "Monday from midnight to 7pm, Tuesday and Wednesday from 8.30am to 7pm, Thursday from 8.30am to midnight and all-day Friday, Saturday, and Sunday.",
+     "name": "Zone A"
+    },
+    "A6": {
+     "hours": "Monday to Sunday, 8.30am to 10pm in RESIDENT permit holders parking bays only in streets to the west of Brick Lane, otherwise restrictions apply Monday to Friday, 8.30am to 7pm; Sunday, 8.30am to 2pm.",
+     "name": "Zone A"
+    },
+    "B1": {
+     "hours": "Monday to Saturday, 8.30am to 5.30pm.",
+     "name": "Zone B (Bow area)"
+    },
+    "B3": {
+     "hours": "Monday to Friday, 8.30am to 5.30pm.",
+     "name": "Zone B"
+    },
+    "B2": {
+     "hours": "Monday to Friday, 8.30am to 5.30pm.",
+     "name": "Zone B"
+    },
+    "B4": {
+     "hours": "Monday to Saturday, 8.30am to 7.30pm. Event days only sun 8.30am to 7.30pm. Event days only sun 8.30am to 7.30pm",
+     "name": "Zone B (Fish Island)"
+    },
+    "C1": {
+     "hours": "Monday to Friday, 8.30am to 5.30pm",
+     "name": "Zone C (Shadwell and Stepney)"
+    },
+    "C2": {
+     "hours": "Monday to Saturday, 8.30am to 5.30pm; Sunday, 8.30am to 2pm.",
+     "name": "Zone C"
+    },
+    "C3": {
+     "hours": "Monday to Friday, 8.30am to 5.30pm",
+     "name": "Zone C (Shadwell and Stepney)"
+    },
+    "C4": {
+     "hours": "Monday to Friday, 8.30am to 5.30pm",
+     "name": "Zone C (Shadwell and Stepney)"
+    },
+    "D1": {
+     "hours": "Monday to Friday, 8.30am to 5.30pm.",
+     "name": "Zone D (Poplar and Crossharbour)"
+    },
+    "D2": {
+     "hours": "Monday to Friday, 8.30am to 5.30pm.",
+     "name": "Zone D (Poplar and Crossharbour)"
+    }
+   },
+   "notes": "Hours are from the council’s parking zones page; the map data itself has none."
+  },
+  "city": {
+   "name": "City of London",
+   "short": "City",
+   "polygons": {
+    "type": "arcgis",
+    "url": "https://www.mapping.cityoflondon.gov.uk/arcgis/rest/services/COMPASS_Boundary/FeatureServer/0",
+    "zoneConst": "City"
+   },
+   "hoursUrl": "https://www.cityoflondon.gov.uk/services/parking/parking-restrictions",
+   "checked": "2026-11-08",
+   "licence": "Boundary: City of London Corporation; © Crown copyright and database rights 2022 OS 100023243. Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
+   "zones": {
+    "City": {
+     "hours": "Monday to Friday 7am - 7pm; Saturday 7am - 11am",
+     "name": "City of London CPZ",
+     "note": "At some locations different times apply. A wall or post mounted time plate will display the restricted hours for that specific location."
+    }
+   },
+   "notes": "The whole City of London is one controlled parking zone."
+  },
+  "rbkc": {
+   "name": "Kensington & Chelsea",
+   "short": "RBKC",
+   "polygons": {
+    "type": "file",
+    "path": "rbkc.geojson",
+    "zoneField": "control",
+    "zonePattern": "(\\d+)",
+    "nameField": "name"
+   },
+   "hoursUrl": "https://www.rbkc.gov.uk/parking-transport-and-streets/parking/parking-zones",
+   "checked": "2026-11-08",
+   "licence": "Zones: Royal Borough of Kensington and Chelsea (CC-BY per data.gov.uk). Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
+   "hoursFromData": {
+    "template": "{c1}; {c2}; {c3}"
+   },
+   "notes": "These are the borough’s resident parking control areas (Control 1 to 8). Single yellow lines follow the borough’s two larger CPZ areas instead; check the signs."
+  },
+  "camden": {
+   "name": "Camden",
+   "short": "Camden",
+   "polygons": {
+    "type": "arcgis",
+    "url": "https://services-eu1.arcgis.com/qVAu4gow1D4Ooh57/arcgis/rest/services/CPZAllZones26_27/FeatureServer/0",
+    "zoneField": "Code",
+    "nameField": "Zone_Name"
+   },
+   "hoursUrl": "https://www.camden.gov.uk/controlled-parking-zones",
+   "checked": "2026-11-08",
+   "licence": "Zones: Camden Council (the council gives no warranty as to accuracy). Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
+   "hoursFromData": {
+    "template": "Mon-Fri {control_Mo}; Sat {control_Sa}; Sun {control_Su}",
+    "noteFields": [
+     "control_no"
+    ]
+   },
+   "notes": "Hours come from the council’s CPZ map data, last edited October 2026."
+  },
+  "brent": {
+   "name": "Brent",
+   "short": "Brent",
+   "polygons": {
+    "type": "geojson",
+    "url": "https://www.brent.gov.uk/-/media/maps/external/cpz.json",
+    "zoneField": "CPZ",
+    "nameField": "Ringgo des"
+   },
+   "hoursUrl": "https://www.brent.gov.uk/parking-roads-and-travel/parking/where-you-can-park/controlled-parking-zones",
+   "checked": "2026-11-08",
+   "licence": "Zones: Brent Council CPZ map data (licence not stated). Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
+   "hoursFromData": {
+    "fields": [
+     "operational_days",
+     "operational_times"
+    ],
+    "noteFields": [
+     "bank_holiday",
+     "status",
+     "August ban"
+    ]
+   },
+   "eventDaysUrl": "https://www.brent.gov.uk/parking-roads-and-travel/parking/where-you-can-park/controlled-parking-zones",
+   "notes": "Zones near Wembley Stadium have extra event-day restrictions."
+  },
+  "bd": {
+   "name": "Barking & Dagenham",
+   "short": "B&D",
+   "polygons": {
+    "type": "arcgis",
+    "url": "https://lbbdgis.lbbd.gov.uk/arcgis/rest/services/ArcGIS_Online/Parking_Zones_101022/MapServer/1",
+    "zoneField": "ZoneCode",
+    "nameField": "polyname",
+    "nameReplace": [
+     [
+      "\\s+-\\s+(Mon|Tue|Wed|Thu|Fri|Sat|Sun|Every|At|Daily).*$",
+      ""
+     ]
+    ]
+   },
+   "hoursUrl": "https://www.lbbd.gov.uk/parking-roads-and-travel/parking/controlled-parking-zones",
+   "checked": "2026-11-08",
+   "licence": "Zones: London Borough of Barking and Dagenham map data (licence not stated). Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
+   "hoursFromData": {
+    "fields": [
+     "polyname"
+    ],
+    "replace": [
+     [
+      "^.*?\\s+-\\s+(?=(Mon|Tue|Wed|Thu|Fri|Sat|Sun|Every|At|Daily))",
+      ""
+     ]
+    ]
+   },
+   "notes": "Hours come from the council’s map data; there is no hours list on its website. School zones have no hours in the data."
+  },
+  "islington": {
+   "name": "Islington",
+   "short": "Islington",
+   "boundaryOnly": "Islington",
+   "hoursUrl": "https://www.islington.gov.uk/parking/parking-restrictions/controlled-parking-zones",
+   "checked": "2026-11-08",
+   "licence": "Zone hours: Islington council. Borough outline: Office for National Statistics / London Datastore (OGL v3).",
+   "zones": {
+    "A": {
+     "hours": "Mon-Fri 8.30am to 6.30pm; Saturday 8.30am to 1.30pm"
+    },
+    "B": {
+     "hours": "Mon-Fri 8.30am to 6.30pm; Saturday 8.30am to 1.30pm"
+    },
+    "C": {
+     "hours": "Mon-Fri 24 hours a day; Saturday and Sunday All Saturday, until 6am Sunday"
+    },
+    "D": {
+     "hours": "Mon-Fri 9.30am to 4.30pm"
+    },
+    "E": {
+     "hours": "Mon-Fri 8.30am to 6.30pm; Saturday 8.30am to 1.30pm",
+     "note": "Different restrictions on Emirates Stadium match days: see the council page."
+    },
+    "F": {
+     "hours": "Mon-Fri 8.30am to 6.30pm; Saturday 8.30am to 1.30pm",
+     "note": "Different restrictions on Emirates Stadium match days: see the council page."
+    },
+    "G": {
+     "hours": "Mon-Fri 10am to 2pm; Only on match days Only on match days",
+     "note": "Different restrictions on Emirates Stadium match days: see the council page."
+    },
+    "H": {
+     "hours": "Mon-Fri 8.30am to 6.30pm; Saturday 8.30am to 6.30pm",
+     "note": "Different restrictions on Emirates Stadium match days: see the council page."
+    },
+    "HE": {
+     "hours": "Mon-Fri 10am to 2pm"
+    },
+    "J": {
+     "hours": "Mon-Fri 8.30am to 6.30pm; Saturday 8.30am to 6.30pm",
+     "note": "Different restrictions on Emirates Stadium match days: see the council page."
+    },
+    "K": {
+     "hours": "Mon-Fri 24 hours a day; Saturday and Sunday Any time"
+    },
+    "L": {
+     "hours": "Mon-Fri 8.30am to 6.30pm; Saturday 8.30am to 1.30pm",
+     "note": "Different restrictions on Emirates Stadium match days: see the council page."
+    },
+    "N": {
+     "hours": "Mon-Fri 8.30am to 6.30pm; Saturday 8.30am to 1.30pm",
+     "note": "Different restrictions on Emirates Stadium match days: see the council page."
+    },
+    "P": {
+     "hours": "Mon-Fri 8.30am to 6.30pm; Saturday 8.30am to 1.30pm"
+    },
+    "Q": {
+     "hours": "Mon-Fri 8.30am to 6.30pm; Only on match days Only on match days",
+     "note": "Different restrictions on Emirates Stadium match days: see the council page."
+    },
+    "R": {
+     "hours": "Mon-Fri 8.30am to 6.30pm"
+    },
+    "S": {
+     "hours": "Mon-Fri 8.30am to 6.30pm; Saturday 8.30am to 1.30pm"
+    },
+    "T": {
+     "hours": "Mon-Fri 8.30am to 6.30pm; Saturday 8.30am to 1.30pm"
+    },
+    "TW": {
+     "hours": "Mon-Fri 10am to 2pm"
+    },
+    "U": {
+     "hours": "Mon-Fri 10am to 12pm (noon)"
+    },
+    "V": {
+     "hours": "Mon-Fri 8.30am to 6.30pm; Saturday 8.30am to 1.30pm",
+     "note": "Different restrictions on Emirates Stadium match days: see the council page."
+    },
+    "W": {
+     "hours": "Mon-Fri 8.30am to 6.30pm"
+    },
+    "Y": {
+     "hours": "Mon-Fri 8.30am to 6.30pm; Saturday 8.30am to 1.30pm",
+     "note": "Different restrictions on Emirates Stadium match days: see the council page."
+    },
+    "Z": {
+     "hours": "Mon-Fri 10am to 2pm"
+    }
+   },
+   "notes": "This borough doesn’t publish zone boundaries in a form this map can use, so only the borough outline is shown. Tap inside it for the council’s zone list. Nine zones have extra match-day restrictions.",
+   "eventDaysUrl": "https://www.islington.gov.uk/parking/parking-restrictions/controlled-parking-zones"
+  },
+  "lewisham": {
+   "name": "Lewisham",
+   "short": "Lewisham",
+   "boundaryOnly": "Lewisham",
+   "hoursUrl": "https://lewisham.gov.uk/myservices/parking/permits/controlled-parking-zones-and-operating-times",
+   "checked": "2026-11-08",
+   "licence": "Zone hours: Lewisham council. Borough outline: Office for National Statistics / London Datastore (OGL v3).",
+   "zones": {
+    "BHA": {
+     "hours": "Mon–Sat 9am-7pm",
+     "name": "Blackheath"
+    },
+    "B1": {
+     "hours": "Mon–Sat 9am-7pm",
+     "name": "Lewisham Central"
+    },
+    "B2": {
+     "hours": "Mon-Sat 9am-7pm; Sun 9am-1.30pm",
+     "name": "Lewisham Central Southern",
+     "note": "cells read 'Mon-Sat Sun' / '9am-7pm 9am-1.30pm' (two lines each)"
+    },
+    "C": {
+     "hours": "Mon–Sat 8am-6.30pm",
+     "name": "Hindsley Place"
+    },
+    "D": {
+     "hours": "Mon–Fri 9am-5.30pm",
+     "name": "Grove Park"
+    },
+    "DP": {
+     "hours": "Mon–Fri 9am-5pm",
+     "name": "Deptford"
+    },
+    "DS": {
+     "hours": "Mon–Fri 9am-5pm",
+     "name": "Deptford South"
+    },
+    "E": {
+     "hours": "Mon–Fri 9am-7pm",
+     "name": "Rushey Green West"
+    },
+    "EN": {
+     "hours": "Mon-Fri 9am-5pm",
+     "name": "Evelyn"
+    },
+    "F": {
+     "hours": "Mon–Fri 9am-7pm",
+     "name": "Murillo Road"
+    },
+    "G": {
+     "hours": "Mon–Fri 9am-7pm",
+     "name": "Elverson"
+    },
+    "H": {
+     "hours": "Mon–Fri 9am-7pm",
+     "name": "Hither Green West"
+    },
+    "HO": {
+     "hours": "Mon–Fri 9am-5pm",
+     "name": "Honor Oak"
+    },
+    "J": {
+     "hours": "Mon–Fri 9am-7pm",
+     "name": "Canadian Avenue"
+    },
+    "K": {
+     "hours": "Mon–Fri 9am-7pm",
+     "name": "Catford West"
+    },
+    "L": {
+     "hours": "Mon–Fri 9am-7pm",
+     "name": "Rushey Green East"
+    },
+    "LG": {
+     "hours": "Mon–Fri 10am-12 noon",
+     "name": "Lee Green"
+    },
+    "LW": {
+     "hours": "Mon–Fri 10am-12 noon",
+     "name": "Ladywell West"
+    },
+    "M": {
+     "hours": "Mon–Fri 9am-7pm",
+     "name": "Barmeston Road"
+    },
+    "MH": {
+     "hours": "Mon–Fri 10am-12 noon",
+     "name": "Manor House"
+    },
+    "MT/E": {
+     "hours": "Mon–Fri 9am-7pm",
+     "name": "Milford Towers and Rushey Green West"
+    },
+    "N": {
+     "hours": "Mon–Fri 9am-5pm",
+     "name": "Davids Road"
+    },
+    "OB": {
+     "hours": "Mon-Sat 9am-7pm",
+     "name": "Old Road/Bankwell"
+    },
+    "P": {
+     "hours": "Mon–Fri 10am-12 noon",
+     "name": "Hither Green East"
+    },
+    "R": {
+     "hours": "Mon–Fri 9am-7pm",
+     "name": "Rushey Green South"
+    },
+    "RP": {
+     "hours": "Mon–Fri 9am-5pm",
+     "name": "Ravensbourne Park"
+    },
+    "S": {
+     "hours": "Mon–Fri 9am-6pm; Sat 9am-1.30pm",
+     "name": "Deptford Central",
+     "note": "cells read 'Mon–Fri Sat' / '9am-6pm 9am-1.30pm'"
+    },
+    "T": {
+     "hours": "Mon–Fri 9am-7pm",
+     "name": "Ladywell"
+    },
+    "V": {
+     "hours": "Mon–Fri 10am-12 noon",
+     "name": "Lee"
+    },
+    "W": {
+     "hours": "Mon–Fri 9am-7pm",
+     "name": "Mountsfield Park"
+    }
+   },
+   "notes": "This borough doesn’t publish zone boundaries in a form this map can use, so only the borough outline is shown. Tap inside it for the council’s zone list. Hours from the council’s table published 15 January 2026."
+  },
+  "southwark": {
+   "name": "Southwark",
+   "short": "Southwark",
+   "boundaryOnly": "Southwark",
+   "hoursUrl": "https://www.southwark.gov.uk/parking/find-somewhere-to-park/parking-zones",
+   "checked": "2026-11-08",
+   "licence": "Zone hours: Southwark council. Borough outline: Office for National Statistics / London Datastore (OGL v3).",
+   "zones": {
+    "B": {
+     "hours": "Monday to Saturday, 8:30am to 6:30pm",
+     "name": "Peckham"
+    },
+    "C1": {
+     "hours": "every day from 8am to 11pm",
+     "name": "Bankside"
+    },
+    "C2": {
+     "hours": "Monday to Friday, 8:30am and 6:30pm",
+     "name": "Borough",
+     "note": "sic ('and')"
+    },
+    "D": {
+     "hours": "Monday to Friday, 8:30am to 6:30pm",
+     "name": "Newington"
+    },
+    "DV": {
+     "hours": "Monday to Friday, 8am to 9.30am and 3pm to 5pm",
+     "name": "Dulwich Village"
+    },
+    "E": {
+     "hours": "Monday to Friday, 8:30am to 6:30pm",
+     "name": "West Walworth"
+    },
+    "EC": {
+     "hours": "Monday to Friday, 8:30am to 6:30pm",
+     "name": "East Camberwell"
+    },
+    "ED": {
+     "hours": "Monday to Friday, 8:30am to 6:30pm",
+     "name": "East Dulwich"
+    },
+    "F": {
+     "hours": "Monday to Saturday, 8am to 6.30pm",
+     "name": "London Bridge"
+    },
+    "G": {
+     "hours": "Monday to Sunday, 8:30am to 11pm",
+     "name": "Bermondsey"
+    },
+    "GR": {
+     "hours": "Monday to Friday, 8am and 6:30pm",
+     "name": "Grange",
+     "note": "sic ('and')"
+    },
+    "H": {
+     "hours": "Monday to Friday, 8am to 6:30pm",
+     "name": "Rotherhithe"
+    },
+    "HH": {
+     "hours": "Monday to Friday, noon to 2pm",
+     "name": "Herne Hill"
+    },
+    "J": {
+     "hours": "Monday to Friday, 8:30am to 6:30pm",
+     "name": "South Walworth"
+    },
+    "K": {
+     "hours": "Monday to Friday, 8:30am to 6:30pm",
+     "name": "Camberwell"
+    },
+    "L": {
+     "hours": "Monday to Friday, 8:30am to 6:30pm",
+     "name": "South Camberwell"
+    },
+    "LG": {
+     "hours": "Monday to Friday, 8:30am to 6:30pm",
+     "name": "Lucas Gardens"
+    },
+    "M1": {
+     "hours": "Monday to Friday, 8:30am to 6:30pm",
+     "name": "Walworth"
+    },
+    "M2": {
+     "hours": "Monday to Friday, 8:30am to 6:30pm",
+     "name": "South East Walworth"
+    },
+    "N": {
+     "hours": "Monday to Friday, 8am to 6:30pm",
+     "name": "South Rotherhithe"
+    },
+    "NC": {
+     "hours": "Monday to Friday, 8:30am to 6:30pm",
+     "name": "North Camberwell"
+    },
+    "OKR": {
+     "hours": "Monday to Friday, 8.30am to 6.30pm",
+     "name": "Old Kent Road"
+    },
+    "P": {
+     "hours": "Monday to Friday, noon to 2pm",
+     "name": "North Dulwich and Denmark Hill"
+    },
+    "PR": {
+     "hours": "Monday to Friday, 8:30am to 6:30pm",
+     "name": "Peckham Road South"
+    },
+    "PW": {
+     "hours": "Monday to Friday, 9am to 11am",
+     "name": "Peckham West"
+    },
+    "Q": {
+     "hours": "Monday to Friday, 11am to 1pm",
+     "name": "Dog Kennel Hill"
+    },
+    "QR": {
+     "hours": "Monday to Friday, 1pm to 3pm",
+     "name": "Queens Road"
+    },
+    "R": {
+     "hours": "Monday to Friday, 8:30am to 6:30pm",
+     "name": "North Peckham"
+    },
+    "S": {
+     "hours": "Monday to Friday, 8:30am to 6:30pm",
+     "name": "Rotherhithe and Surrey Docks"
+    },
+    "SB": {
+     "hours": "Monday to Friday, 8am to 6:30pm",
+     "name": "South Bermondsey"
+    },
+    "SEB": {
+     "hours": "Monday to Friday, 8:30am to 6:30pm",
+     "name": "South East Bermondsey"
+    },
+    "T": {
+     "hours": "Monday to Friday, 8am to 6:30pm",
+     "name": "Trafalgar"
+    },
+    "TS": {
+     "hours": "Monday to Friday, 8:30am to 6:30pm",
+     "name": "Thorburn Square"
+    }
+   },
+   "notes": "This borough doesn’t publish zone boundaries in a form this map can use, so only the borough outline is shown. Tap inside it for the council’s zone list."
+  },
+  "richmond": {
+   "name": "Richmond upon Thames",
+   "short": "Richmond",
+   "boundaryOnly": "Richmond upon Thames",
+   "hoursUrl": "https://www.richmond.gov.uk/services/parking/cpz/cpz_times",
+   "checked": "2026-11-08",
+   "licence": "Zone hours: Richmond upon Thames council. Borough outline: Office for National Statistics / London Datastore (OGL v3).",
+   "zones": {
+    "A1": {
+     "periods": null,
+     "hours": "Monday to Saturday 8.30am to 6.30pm (Bank and Public Holidays free); Monday to Saturday 8.30am to 6.30pm and Sundays and Bank Holidays 11am to 5pm; Monday to Sundays (Including Bank and Public Holidays) 8.30am to midnight (Richmond Green Resident Permit Holder Bays)",
+     "name": "Richmond Town",
+     "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
+    },
+    "A2": {
+     "hours": "Monday to Saturday 8.30am to 6.30pm (Bank and Public Holidays free)",
+     "name": "Richmond Hill",
+     "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
+    },
+    "A3": {
+     "hours": "Monday to Saturday 8.30am to 6.30pm (Bank and Public Holidays free)",
+     "name": "South East Richmond",
+     "note": "Bay types: Permit"
+    },
+    "B": {
+     "hours": "Monday to Friday 10am to 6.30pm (Bank and Public Holidays free)",
+     "name": "Hammersmith Bridge",
+     "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
+    },
+    "B1": {
+     "periods": null,
+     "hours": "All roads except part Station Road: Monday to Friday 10am to 12 noon (Bank and Public Holidays are free); Part Station Road: Monday to Saturday 8am to 6.30pm (Bank and Public Holidays free)",
+     "name": "Barnes",
+     "note": "Bay types: Permit; Free (time limited); RingGo"
+    },
+    "B2": {
+     "hours": "Monday to Friday 10am to noon (Bank and Public Holidays free)",
+     "name": "White Hart Lane South",
+     "note": "Bay types: Permit; RingGo"
+    },
+    "C": {
+     "hours": "Monday to Friday 8.30am to 6.30pm (Bank and Public Holidays free)",
+     "name": "Cole Park",
+     "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
+    },
+    "CB": {
+     "periods": null,
+     "hours": "All roads in zone excluding Byfeld Gardens: Monday to Saturday 8am to 6.30pm (Bank and Public Holidays free); Byfeld Gardens only: Monday to Sunday 8am to 9.30pm (including Bank and Public Holidays)",
+     "name": "Central Barnes",
+     "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
+    },
+    "CR": {
+     "hours": "Monday to Friday 10am to 4.30pm (Bank and Public Holidays free)",
+     "name": "South-West Twickenham",
+     "note": "Bay types: Permit; RingGo"
+    },
+    "D": {
+     "hours": "Monday to Saturday 8.30am to 6.30pm (Bank and Public Holidays free)",
+     "name": "Central Twickenham",
+     "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
+    },
+    "E": {
+     "periods": null,
+     "hours": "All roads in zone: Monday to Friday 8.30am to 10.30am (Bank and Public Holidays free) except:; Popes Grove (between Popes Avenue and the railway bridge): Monday to Friday 10am to 4.30pm; Waldegrave Gardens (between Tower Road and Waldegrave Road): Monday to Friday 10.30am to 2.30pm",
+     "name": "South Twickenham",
+     "note": "No roads in this zone operate on Bank and Public Holidays so parking is free in the zone on these days. Please refer to signs on street. Bay types: Permit; Free (time limited)"
+    },
+    "ES": {
+     "hours": "Monday to Friday 10am to noon (Bank and Public Holidays free)",
+     "name": "East Sheen",
+     "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
+    },
+    "ES1": {
+     "hours": "Monday to Friday 10am to noon (Bank and Public Holidays free)",
+     "name": "Parkside",
+     "note": "Bay types: Permit; RingGo"
+    },
+    "F": {
+     "hours": "Monday to Friday 10am to 4.30pm (Bank and Public Holidays free)",
+     "name": "East Twickenham",
+     "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
+    },
+    "FW": {
+     "hours": "Monday to Friday 8.30am to 6.30pm (Bank and Public Holidays free)",
+     "name": "Fulwell",
+     "note": "Bay types: Permit; RingGo"
+    },
+    "G": {
+     "hours": "Monday to Friday 10am to 4.30pm (Bank and Public Holidays free)",
+     "name": "The Alberts",
+     "note": "Bay types: Permit; RingGo"
+    },
+    "H": {
+     "periods": null,
+     "hours": "Monday to Sunday 8.30am to 6.30pm, including Bank and Public Holidays (shared-use Permit/Pay and Display Bays); Monday to Sunday 8.30am to 8pm, including Bank and Public Holidays (shared-use Permit Bays)",
+     "name": "Hampton Court",
+     "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
+    },
+    "HM": {
+     "hours": "Monday to Saturday 9am to 6.30pm (Bank and Public Holidays free)",
+     "name": "Heatham Area",
+     "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
+    },
+    "J": {
+     "hours": "Monday to Friday 10am to 2pm (Bank and Public Holidays free)",
+     "name": "Townshend",
+     "note": "Bay types: Permit; RingGo"
+    },
+    "KA": {
+     "periods": null,
+     "hours": "All roads except part Kew Road and Kew Gardens Road: Monday to Friday 10am to 12 noon (Bank and Public Holidays are free); Part Kew Road and Kew Gardens Road: Monday to Friday 10am to 4.30pm including Bank Holidays; Part Kew Road: Monday to Friday 10am to 10pm including Bank Holidays",
+     "name": "Kew",
+     "note": "Bay types: Permit; Free (time limited); Pay and Display; RingGo in P&D"
+    },
+    "KB": {
+     "hours": "Monday to Friday 10am to noon (Bank and Public Holidays free)",
+     "name": "South Kew",
+     "note": "Bay types: Permit; Free (time limited)"
+    },
+    "KC": {
+     "hours": "Monday to Sunday 10am to 4.30pm (including Bank and Public Holidays) and during major events in the area 10am to 11pm",
+     "name": "North Kew",
+     "note": "Bay types: Permit; RingGo"
+    },
+    "KS": {
+     "hours": "Monday to Sunday 8am to 10pm (Bank and Public Holidays free)",
+     "name": "Kingsway",
+     "note": "Bay types: Permit; RingGo"
+    },
+    "L": {
+     "hours": "Monday to Friday 10am to 4.30pm (Bank and Public Holidays free)",
+     "name": "Leeson Estate",
+     "note": "Bay types: Permit; RingGo"
+    },
+    "M": {
+     "hours": "Monday to Friday 9am to 11am (Bank and Public Holidays free)",
+     "name": "Mortlake",
+     "note": "Bay types: Permit; Free (time limited)"
+    },
+    "M1": {
+     "hours": "Monday to Sunday 8.30am to 10pm (including Bank and Public Holidays)",
+     "name": "Vicarage Road, Teddington",
+     "note": "Bay types: Permit"
+    },
+    "M3": {
+     "hours": "Monday to Saturday 8am to 6.30pm (Bank and Public Holidays free)",
+     "name": "High Street, Barnes",
+     "note": "Bay types: RingGo in P&D"
+    },
+    "M4": {
+     "hours": "Monday to Saturday 9am to 5pm (Bank and Public Holidays free)",
+     "name": "High Street, Teddington",
+     "note": "Bay types: Pay and Display; RingGo in P&D"
+    },
+    "M5": {
+     "hours": "Monday to Saturday 8.30am to 6.30pm (Bank and Public Holidays free)",
+     "name": "Broad Street and The Causeway, Teddington",
+     "note": "Bay types: Pay and Display; RingGo in P&D"
+    },
+    "M8": {
+     "hours": "Monday to Saturday 9am to 5pm (Bank and Public Holidays free)",
+     "name": "Station Parade and Approach, Kew",
+     "note": "Bay types: Pay and Display (bays around station); RingGo in P&D"
+    },
+    "M9": {
+     "hours": "Monday to Saturday 10am to 4.30pm (Bank and Public Holidays free)",
+     "name": "Ham Parade",
+     "note": "Bay types: Pay and Display; RingGo in P&D"
+    },
+    "N": {
+     "hours": "Monday to Saturday 10am to 4.30pm (Bank and Public Holidays free)",
+     "name": "North-East Richmond",
+     "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
+    },
+    "R": {
+     "hours": "Variable - refer to zone entry signs or the Twickenham Event day timetable page (restrictions include Bank Holidays when signed)",
+     "name": "Twickenham Event Zone",
+     "note": "Bay types: Permit"
+    },
+    "S": {
+     "hours": "Monday to Friday 10am to 4.30pm (Bank and Public Holidays free)",
+     "name": "St Margarets South",
+     "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
+    },
+    "S1": {
+     "periods": null,
+     "hours": "Monday to Sunday 10am to 4.30pm between 1 April and 31 October (Bank and Public Holidays free);; Monday to Friday 10am to 4.30pm between 1 November and 31 March (Bank and Public Holidays free)",
+     "name": "Orleans",
+     "note": "Bay types: Permit; RingGo in P&D"
+    },
+    "S2": {
+     "hours": "Monday to Friday 10am to 4.30pm (Bank and Public Holidays free)",
+     "name": "St Margarets North",
+     "note": "Bay types: Permit"
+    },
+    "S3": {
+     "hours": "Monday to Friday 10am to noon (Bank and Public Holidays free)",
+     "name": "St Margarets Riverside",
+     "note": "Bay types: Permit; Free (time limited)"
+    },
+    "SH": {
+     "hours": "Monday to Friday 10am to 4.30pm (Bank and Public Holidays free)",
+     "name": "Strawberry Hill",
+     "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
+    },
+    "T": {
+     "periods": null,
+     "hours": "Monday to Friday, 8.30am to 10.30am (Bank and Public Holidays free) excluding Bridgeman Road , Cedar Road, Christchurch Avenue, Station Road; Monday to Saturday, 8.30am to 10pm - (Bank and Public Holidays free) - Bridgeman Road , Cedar Road, Christchurch Avenue, Station Road only",
+     "name": "Teddington",
+     "note": "Bay types: Permit; Free (time limited); Pay and Display; RingGo in P&D"
+    },
+    "T1": {
+     "hours": "Monday to Friday, 10am to 4.30pm (Bank and Public Holidays free)",
+     "name": "Teddington",
+     "note": "Bay types: Permit; RingGo"
+    },
+    "T2": {
+     "hours": "Monday to Friday, 10am to 12 noon (Bank and Public Holidays free)",
+     "name": "Teddington",
+     "note": "Bay types: Permit; RingGo"
+    },
+    "T3": {
+     "hours": "Monday to Friday, 10am to 12 noon (Bank and Public Holidays free)",
+     "name": "Teddington",
+     "note": "Bay types: Permit; RingGo"
+    },
+    "T4": {
+     "hours": "Monday to Friday, 10am to 12 noon (Bank and Public Holidays free)",
+     "name": "Teddington",
+     "note": "Bay types: Permit; RingGo"
+    },
+    "T5": {
+     "hours": "Monday to Friday, 10am to 4.30pm (Bank and Public Holidays free)",
+     "name": "Teddington",
+     "note": "Bay types: Permit; Pay by Phone"
+    },
+    "T6": {
+     "hours": "Monday to Friday, 10am to 12 noon (Bank and Public Holidays free)",
+     "name": "Teddington",
+     "note": "Bay types: Permit; Pay by Phone"
+    },
+    "WC": {
+     "periods": null,
+     "hours": "Monday to Friday, 10am to 2pm (Bank and Public Holidays free); Event days, 11am to 11pm",
+     "name": "Whitton Central"
+    },
+    "WR": {
+     "periods": null,
+     "hours": "Monday to Saturday, 8.30am to 6.30pm (Bank and Public Holidays free); Event days, 11am to 11pm",
+     "name": "Whitton Road"
+    },
+    "WS": {
+     "periods": null,
+     "hours": "Monday to Friday, 10am to 2pm (Bank and Public Holidays free); Event days, 11am to 11pm",
+     "name": "Whitton South"
+    },
+    "WT": {
+     "hours": "Monday to Saturday 8.30am to 6.30pm (Bank and Public Holidays free)",
+     "name": "West Twickenham",
+     "note": "Bay types: Permit, Pay and Display, RingGo in P&D, RingGo in Permit bays on Andover Road"
+    },
+    "X": {
+     "hours": "Monday to Saturday 8.30am to 6.30pm (Bank and Public Holidays free)",
+     "name": "Hampton Wick",
+     "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
+    },
+    "X1": {
+     "hours": "Monday to Saturday 8.30am to 12.30pm (Bank and Public Holidays free)",
+     "name": "Broom Park",
+     "note": "Bay types: Permit"
+    },
+    "Z1": {
+     "hours": "Monday to Sunday 8.30am to 10pm (including Bank and Public Holidays)",
+     "name": "Elleray Road, Teddington",
+     "note": "Bay types: Permit"
+    },
+    "Z2": {
+     "hours": "Monday to Sunday 8.30am to 10pm (including Bank and Public Holidays)",
+     "name": "Ferry Road, Teddington",
+     "note": "Bay types: Permit"
+    },
+    "Z3": {
+     "hours": "Monday to Sunday 8am to 9.30pm (including Bank and Public Holidays)",
+     "name": "Bracken Gardens, Barnes",
+     "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
+    },
+    "Z4": {
+     "hours": "Monday to Friday 10.30am to 2.30pm (Bank and Public Holidays free). Applies 1 September to 30 June",
+     "name": "Southfield Gardens, Twickenham",
+     "note": "Bay types: Permit; Free (time limited)"
+    },
+    "Z5": {
+     "hours": "Monday to Sunday 8.30am to 6.30pm (Bank and Public Holidays free)",
+     "name": "First Cross Road, Twickenham",
+     "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
+    }
+   },
+   "notes": "This borough doesn’t publish zone boundaries in a form this map can use, so only the borough outline is shown. Tap inside it for the council’s zone list. Zones with several hour regimes are shown grey: check the signs."
+  },
+  "wandsworth": {
+   "name": "Wandsworth",
+   "short": "Wandsworth",
+   "boundaryOnly": "Wandsworth",
+   "hoursUrl": "https://www.wandsworth.gov.uk/find-parking-zones",
+   "checked": "2026-11-08",
+   "licence": "Zone hours: Wandsworth council. Borough outline: Office for National Statistics / London Datastore (OGL v3).",
+   "zones": {
+    "B1": {
+     "hours": "9.30am to 4.30pm Monday to Friday",
+     "name": "Battersea",
+     "maxStay": "Maximum stay for visitors - 4 hours",
+     "note": "page: battersea-parking-zones"
+    },
+    "B2": {
+     "hours": "9.30am to 4.30pm Monday to Friday",
+     "name": "Battersea",
+     "maxStay": "Maximum stay for visitors - 4 hours"
+    },
+    "B2 (2)": {
+     "hours": "Battersea Church Road and Sunbury Lane - 9am to 5pm Monday to Saturday",
+     "name": "Battersea",
+     "maxStay": "Maximum stay for visitors - 4 hours"
+    },
+    "B3": {
+     "hours": "9.30am to 5.30pm Monday to Friday",
+     "name": "Battersea",
+     "maxStay": "Maximum stay for visitors - 4 hours"
+    },
+    "B4": {
+     "hours": "- 9am to 5pm Monday to Friday",
+     "name": "Battersea",
+     "maxStay": "Maximum stay for visitors - 4 hours"
+    },
+    "B5": {
+     "hours": "- 11am to 12pm Monday to Friday",
+     "name": "Battersea",
+     "note": "Permit holders only"
+    },
+    "B6": {
+     "hours": "- 9.30am to 4.30pm Monday to Friday",
+     "name": "Battersea",
+     "maxStay": "Maximum stay for visitors - 4 hours"
+    },
+    "B7": {
+     "hours": "- 9am to 5pm Monday to Friday",
+     "name": "Battersea",
+     "maxStay": "Maximum stay for visitors - 4 hours"
+    },
+    "B8": {
+     "hours": "- 8.30am to 6.30pm Monday to Saturday",
+     "name": "Battersea",
+     "maxStay": "Maximum stay for visitors - 4 hours"
+    },
+    "B8a": {
+     "hours": "- 8.30am to 10pm Monday to Sunday",
+     "name": "Battersea",
+     "maxStay": "Maximum stay for visitors - 4 hours"
+    },
+    "B9": {
+     "hours": "- 10 to 11am Monday to Friday",
+     "name": "Battersea",
+     "note": "Permit holders only"
+    },
+    "Battersea Park CPZ": {
+     "hours": "9am to 8pm Monday to Sunday (including Public and Bank Holidays)",
+     "name": "Battersea Park area",
+     "maxStay": "Maximum stay for visitors - 4 hours",
+     "note": "Permits for Battersea Park Area CPZ are NOT valid in Battersea Park. BK Permit Holders only may park in Kersley Mews. page: battersea-park-area-parking-zones"
+    },
+    "C1": {
+     "hours": "8.30am to 6.30pm, Monday to Saturday.",
+     "name": "Clapham Junction - The central area",
+     "maxStay": "Max stay - 2 hours",
+     "note": "page: clapham-junction-parking-zones"
+    },
+    "C2": {
+     "hours": "9.30am to 5.30pm, Monday to Saturday.",
+     "name": "Clapham Junction - Northcote area",
+     "maxStay": "Max stay - 4 hours"
+    },
+    "C3": {
+     "hours": "8.30am to 6.30pm, Monday to Saturday.",
+     "name": "Clapham Junction - Lavender Hill area",
+     "maxStay": "Max stay - 2 hours"
+    },
+    "C3 (2)": {
+     "hours": "9.30am to 5.30pm Monday to Friday.",
+     "name": "Clapham Junction - Lavender Hill area",
+     "maxStay": "Max stay - 2 hours",
+     "note": "this hours/max-stay combination appears twice on the page"
+    },
+    "C3 (3)": {
+     "hours": "9.30am to 5.30pm Monday to Friday.",
+     "name": "Clapham Junction - Lavender Hill area",
+     "maxStay": "Max stay - 4 hours",
+     "note": "NOTE: Residents of Elspeth Road are eligible for C3e resident permits. A C3e permit allows the holder to park in Lavender Gardens and in the part of the C3 sub-zone nearest to Elspeth Road (bordered by the dotted blue line in the above plan). The signs in these street show both C3 and C3e sub-zone permits are valid."
+    },
+    "C4": {
+     "hours": "9.30am to 5.30pm, Monday to Friday.",
+     "name": "Clapham Junction - Thurleigh Road area",
+     "maxStay": "Max stay for visitors - 4 hours."
+    },
+    "H1": {
+     "hours": "9.30am to 5.30pm Monday to Friday.",
+     "name": "Clapham South",
+     "maxStay": "Max stay for visitor - 4 hours",
+     "note": "Nightingale Walk only Max stay for visitor - 8 hours. Cavendish Road and Hazelbourne Road - Boundary Road Agreement. H1 and H3 permit holders and vehicles displaying a pay and display ticket from Wandsworth's side of the road, may park in bays on the Lambeth side, and vice versa. page: clapham-south-parking-zones"
+    },
+    "H2": {
+     "hours": "10.30am to 11.30am Monday to Friday",
+     "name": "Clapham South",
+     "note": "Permit holder only parking."
+    },
+    "H2 (2)": {
+     "hours": "9.30am to 5.30pm Monday to Friday.",
+     "name": "Clapham South",
+     "maxStay": "Max stay for visitor - 4 hours"
+    },
+    "H3": {
+     "hours": "9.30am to 5.30pm Monday to Saturday.",
+     "name": "Balham",
+     "maxStay": "Max stay for visitor - 4 hours",
+     "note": "Note: Some parking bays in Bedford Hill are NOT available to Permit holders... The maximum stay in these bays is 1 hour. Cavendish Road and Hazelbourne Road - Boundary Road Agreement."
+    },
+    "H3 (2)": {
+     "hours": "9.30am to 5.30pm Monday to Friday.",
+     "name": "Balham",
+     "maxStay": "Max stay for visitor - 4 hours"
+    },
+    "L1": {
+     "hours": "9.30am to 4.30pm Monday to Friday",
+     "name": "Earlsfield",
+     "maxStay": "(Maximum stay 4 hours)",
+     "note": "page: earlsfield-parking-zones"
+    },
+    "L2": {
+     "hours": "9.30am to 4.30pm, Monday to Friday",
+     "name": "Earlsfield",
+     "maxStay": "(Maximum stay 4 hours)"
+    },
+    "L2 (2)": {
+     "hours": "10.30am to 11.30am, Monday to Friday",
+     "name": "Earlsfield",
+     "note": "(Permit holders only). Important Note: In Garratt Lane all parking bays operate Monday to Saturday between 10am and 4pm. Most of the bays are pay and display only with a maximum stay of one hour... some of them have yellow line waiting restrictions that operate outside these hours."
+    },
+    "F1": {
+     "hours": "11am to 12pm Monday to Friday",
+     "name": "Furzedown",
+     "note": "Permit holders only. page: furzedown-parking-zones"
+    },
+    "G1": {
+     "hours": "9.30am to 4.30pm, Monday to Friday",
+     "name": "Garratt Green",
+     "maxStay": "Maximum stay: 4 hours",
+     "note": "page: garratt-green-parking-zones"
+    },
+    "A1": {
+     "hours": "8.30am to 6.30pm, Monday to Saturday",
+     "name": "Putney",
+     "maxStay": "Maximum stay: 1 or 2 hours",
+     "note": "page: putney-parking-zones"
+    },
+    "A2": {
+     "hours": "8.30am to 6.30pm, Monday to Saturday",
+     "name": "Putney",
+     "maxStay": "Maximum stay: 4 or 10 hours"
+    },
+    "A3": {
+     "hours": "9.30am to 4.30pm, Monday to Friday (with the exception of Balmuir Gardens, which has controls operating from 8.30am to 6.30pm Monday to Saturday)",
+     "name": "Putney",
+     "maxStay": "Maximum stay: 4 or 7 hours"
+    },
+    "A4": {
+     "hours": "9.30am to 10.30am Monday to Friday only",
+     "name": "Putney",
+     "note": "Permit holders only"
+    },
+    "A5": {
+     "hours": "9.30am to 4.30pm Monday to Saturday.",
+     "name": "Putney",
+     "maxStay": "Maximum stay: 4 hours"
+    },
+    "A5 (2)": {
+     "hours": "9.30am to 4.30pm Monday to Friday.",
+     "name": "Putney",
+     "maxStay": "Maximum stay: 4 hours"
+    },
+    "A5 (3)": {
+     "hours": "9.30am to 10.30am Monday to Friday.",
+     "name": "Putney 1 hour",
+     "note": "Permit holders only."
+    },
+    "A6": {
+     "hours": "9.30am to 4.30pm Monday to Friday.",
+     "name": "Putney",
+     "maxStay": "Maximum stay: 4 hours"
+    },
+    "A6 (2)": {
+     "hours": "2pm to 3pm Monday to Friday.",
+     "name": "Putney",
+     "note": "Permit holders only"
+    },
+    "A1/A2": {
+     "hours": "8.30am to 6.30pm Monday to Saturday",
+     "name": "Roads accepting A1 and A2 permits"
+    },
+    "A1/A3": {
+     "hours": "9.30am to 4.30pm Monday to Saturday",
+     "name": "Roads accepting A1 and A3 permits"
+    },
+    "A1/A5": {
+     "hours": "times vary between the two zones, please check signs",
+     "name": "Roads accepting A1 and A5 permits"
+    },
+    "AO": {
+     "hours": "9.30am to 4.30pm Monday to Friday",
+     "name": "Roads accepting Putney outer area business permit AO"
+    },
+    "P1": {
+     "hours": "(Operational 11am - 12 noon Monday-Friday)",
+     "name": "Putney Heath",
+     "note": "page: putney-heath-parking-zones"
+    },
+    "R1": {
+     "hours": "(Operational 10am - 11am Monday-Friday)",
+     "name": "Roehampton",
+     "note": "page: roehampton-parking-zones"
+    },
+    "R2": {
+     "hours": "(Operational 11am - 12noon Monday-Friday)",
+     "name": "Roehampton"
+    },
+    "S1": {
+     "hours": "9.30am to 4.30pm Monday to Friday",
+     "name": "Southfields",
+     "maxStay": "(Maximum stay 4 hours)",
+     "note": "page: southfields-parking-zones"
+    },
+    "S2": {
+     "hours": "1.30pm to 2.30pm, Monday to Friday",
+     "name": "Southfields",
+     "note": "Except Replingham Road - Operational 9:30am to 4.30pm Monday to Friday (Maximum stay 4 hours)"
+    },
+    "S3": {
+     "hours": "1.30pm to 2.30pm, Monday to Friday",
+     "name": "Southfields"
+    },
+    "S4": {
+     "hours": "1.30pm to 2.30pm, Monday to Friday, permit holders only",
+     "name": "Southfields"
+    },
+    "S5": {
+     "hours": "2pm to 3pm, Monday to Friday",
+     "name": "Southfields"
+    },
+    "J": {
+     "hours": "Hours of control 9.30am to 4.30pm Monday to Friday",
+     "name": "St John's Hill",
+     "maxStay": "maximum stay 4 hours",
+     "note": "Note: Most parking bays in this zone are shared use... Some parking bays in St John's Hill are NOT available to Permit holders... The maximum stay in these bays is 2 hours. page: st-johns-hill-parking-zones"
+    },
+    "E1": {
+     "hours": "9.30am to 5.30pm Monday to Saturday.",
+     "name": "Tooting Broadway",
+     "maxStay": "Max stay per visitors - 4 hours.",
+     "note": "In some roads near St George's hospital there are 8 hour maximum stay bays. Please check the signs when you park. page: tooting-broadway-parking-zones"
+    },
+    "E2": {
+     "hours": "9.30am to 5.30pm Monday to Saturday.",
+     "name": "Tooting Broadway",
+     "maxStay": "Max stay per visitor - 4 hours."
+    },
+    "E2 (2)": {
+     "hours": "10am to 11am Monday to Friday.",
+     "name": "Tooting Broadway",
+     "note": "Permit holders only."
+    },
+    "D1": {
+     "hours": "9.30am to 4.30pm Monday to Saturday.",
+     "name": "Wandsworth Common Area",
+     "maxStay": "Maximum stay for visitors: Bellevue Road - 1 hour; Althorp Road and Wiseton Road - 2 hours; St. James Drive, Nottingham Road and Brodrick Road - 4 hours",
+     "note": "page: wandsworth-common-and-tooting-bec-parking-zones"
+    },
+    "D2": {
+     "hours": "11.30am to 12.30pm Monday to Friday.",
+     "name": "Wandsworth Common",
+     "note": "Permit holders only."
+    },
+    "D2 (2)": {
+     "hours": "9.30am to 4.30pm Monday to Friday",
+     "name": "Wandsworth Common",
+     "maxStay": "Crockerton Rd maximum stay for visitors - 4 hours"
+    },
+    "D3": {
+     "hours": "9.30am to 4.30pm Monday to Friday",
+     "name": "Tooting Bec",
+     "maxStay": "maximum stay for visitors - 4 hours"
+    },
+    "D3 (2)": {
+     "hours": "9.30am to 6.30pm Monday to Saturday",
+     "name": "Tooting Bec",
+     "maxStay": "maximum stay for visitors - 2 hours"
+    },
+    "D4": {
+     "hours": "11am to 12 Midday Monday to Saturday.",
+     "name": "Wandsworth Common and Tooting Bec",
+     "note": "Permit holders only."
+    },
+    "D5": {
+     "hours": "9.30am and 4pm Monday to Saturday",
+     "name": "Alma Terrace",
+     "maxStay": "maximum stay for visitors - 2 hours",
+     "note": "sic ('and')"
+    },
+    "D5 (2)": {
+     "hours": "10am to 11am, Monday to Friday",
+     "name": "Wandsworth Common and Tooting Bec",
+     "note": "Permit holders only"
+    },
+    "W1": {
+     "hours": "9.30am to 4.30pm Monday to Friday",
+     "name": "Wandsworth Town",
+     "maxStay": "(Maximum stay 2 or 4 hours)",
+     "note": "page: wandsworth-town-parking-zones"
+    },
+    "W1 (2)": {
+     "hours": "8.30am to 6.30pm, Monday to Saturday.",
+     "name": "Wandsworth Town"
+    },
+    "W1 (3)": {
+     "hours": "9.30am to 8pm, Monday to Sunday - Permit holders only",
+     "name": "Wandsworth Town"
+    },
+    "W2": {
+     "hours": "9.30am to 4.30pm, Monday to Friday",
+     "name": "Wandsworth Town",
+     "maxStay": "(Maximum stay 2 or 4 hours)"
+    },
+    "W2 (2)": {
+     "hours": "10.30am to 11.30am, Monday to Friday - Permit holders only",
+     "name": "Wandsworth Town"
+    },
+    "W3": {
+     "hours": "10.30am to 11.30am Monday to Friday - Permit holders only",
+     "name": "Wandsworth Town",
+     "note": "Important Note: In Barmouth Road near the junction with Killarney Road there are some pay and display only bays which operate from 9.30am to 4.30pm Monday to Friday. The maximum stay allowed in these bays is 2 hours."
+    },
+    "W3 (2)": {
+     "hours": "9.30am to 4.30pm Monday to Friday",
+     "name": "Wandsworth Town",
+     "maxStay": "(Maximum stay 4 hours)",
+     "note": "Important Note: In Garratt Lane most bays are pay and display only with a maximum stay of one hour. Some bays are available only between 10am to 4pm."
+    },
+    "W4": {
+     "hours": "9.30am-6.30pm, Monday to Friday (Maximum stay 4 hours) and 3pm-4pm, Saturday and Sunday (Permit holders only)",
+     "name": "Wandsworth Town",
+     "maxStay": "(Maximum stay 4 hours)"
+    },
+    "Q1": {
+     "hours": "10am to 4pm, Monday to Friday.",
+     "name": "Westhill",
+     "maxStay": "Maximum stay for visitors: 4 hours.",
+     "note": "page: westhill-parking-zones"
+    },
+    "Q2": {
+     "hours": "10am to 11am, Monday to Friday (permit holders only).",
+     "name": "Westhill"
+    }
+   },
+   "notes": "This borough doesn’t publish zone boundaries in a form this map can use, so only the borough outline is shown. Tap inside it for the council’s zone list. Sub-zones listed more than once have different hours on different streets."
+  },
+  "westminster": {
+   "name": "Westminster",
+   "short": "Westminster",
+   "boundaryOnly": "Westminster",
+   "hoursUrl": "https://www.westminster.gov.uk/parking/parking-zones-and-prices",
+   "checked": "2026-11-08",
+   "licence": "Zone hours: Westminster council. Borough outline: Office for National Statistics / London Datastore (OGL v3).",
+   "zones": {
+    "A1": {
+     "periods": null,
+     "hours": "Paid-for bays & single yellow lines: 0830 - 1830 Mon - Fri; Resident bays: 0830 - 1830 Mon - Fri",
+     "name": "Zone A - Knightsbridge, Belgravia and Pimlico"
+    },
+    "A2": {
+     "periods": null,
+     "hours": "Paid-for bays & SYL: 0830 - 1830 Mon - Fri and 0830 - 1330 Sat; Resident bays: 0830 - 2200 Mon - Sat",
+     "name": "Zone A"
+    },
+    "A3": {
+     "name": "Zone A",
+     "note": "row present in PDF but its cells merged with A2/A4 in text extraction - unverified"
+    },
+    "A4": {
+     "periods": null,
+     "hours": "Paid-for bays & SYL: 0830 - 1830 Mon - Sat; Resident bays: 24 hours everyday (incl. Bank/Public Holidays)",
+     "name": "Zone A"
+    },
+    "BC1": {
+     "hours": "0830 - 1830 Mon - Fri",
+     "name": "Zone B - Bayswater and Maida Vale (South)",
+     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+    },
+    "B2": {
+     "hours": "0830 - 1830 Mon - Fri and 0830 - 1330 Sat",
+     "name": "Zone B",
+     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+    },
+    "B3": {
+     "hours": "0830 - 2200 everyday (incl. Bank/Public Holidays)",
+     "name": "Zone B",
+     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+    },
+    "B4": {
+     "hours": "0830 - 1830 Mon - Fri",
+     "name": "Zone B",
+     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+    },
+    "B5": {
+     "periods": null,
+     "hours": "Paid-for bays & SYL: 0830 - 1830 Mon - Sat; Resident bays: 0830 - 2030 everyday (incl. Bank/Public Holidays)",
+     "name": "Zone B"
+    },
+    "B6": {
+     "hours": "0830 - 1830 Mon - Fri and 0830 - 1330 Sat",
+     "name": "Zone B",
+     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+    },
+    "B7": {
+     "periods": null,
+     "hours": "Paid-for bays & SYL: 0830 - 1830 Mon - Sat; Resident bays: 24 hours everyday (incl. Bank/Public Holidays)",
+     "name": "Zone B"
+    },
+    "B10": {
+     "hours": "0830 - 1830 Mon - Fri",
+     "name": "Zone B",
+     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+    },
+    "B11": {
+     "hours": "0830 - 2200 Mon - Sat",
+     "name": "Zone B",
+     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+    },
+    "B8 Taxi": {
+     "hours": "0830 - 1830 Mon - Fri",
+     "name": "Zone B",
+     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+    },
+    "B9 Coach": {
+     "hours": "0830 - midnight everyday (incl. Bank/Public Holidays)",
+     "name": "Zone B",
+     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+    },
+    "CB1, C1, C2": {
+     "periods": null,
+     "hours": "Paid-for bays & SYL: 0830 - 1830 Mon - Fri; Resident bays: 0830 - 1830 Mon - Fri (except Kilburn Pk Rd area* 0800 - 1830 Mon - Sat)",
+     "name": "Zone C - Harrow Road, Queen's Park and Maida Vale (North)"
+    },
+    "D1": {
+     "hours": "0830 - 1830 Mon - Fri",
+     "name": "Zone D - Victoria, Westminster and Millbank",
+     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+    },
+    "D4": {
+     "hours": "0830 - 1830 Mon - Sat (except Maunsel St 0830 - 2230 Mon - Sat)",
+     "name": "Zone D",
+     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+    },
+    "D8 Taxi": {
+     "hours": "0830 - 1830 Mon - Fri",
+     "name": "Zone D",
+     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+    },
+    "D9 Coach": {
+     "hours": "0830 - midnight everyday (incl. Bank/Public Holidays)",
+     "name": "Zone D",
+     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+    },
+    "E1": {
+     "periods": null,
+     "hours": "Paid-for bays & SYL: 0830 - 1830 Mon - Sat; Resident bays: 24 hours everyday (incl. Bank/Public Holidays)",
+     "name": "Zone E - Mayfair & St. James'"
+    },
+    "E9 Coach": {
+     "hours": "0830 - midnight everyday (incl. Bank/Public Holidays)",
+     "name": "Zone E",
+     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+    },
+    "F1": {
+     "periods": null,
+     "hours": "Paid-for bays & SYL: 0830 - 1830 Mon - Sat; Resident bays: 24 hours everyday (incl. Bank/Public Holidays)",
+     "name": "Zone F - Hyde Park, Marylebone and Fitzrovia"
+    },
+    "F2, F3": {
+     "hours": "0830 - 2030 everyday (incl. Bank/Public Holidays)",
+     "name": "Zone F",
+     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+    },
+    "F4, F5, F6": {
+     "hours": "24 hours everyday (incl. Bank/Public Holidays)",
+     "name": "Zone F",
+     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+    },
+    "F8 Taxi": {
+     "hours": "0830 - 1830 Mon - Sat",
+     "name": "Zone F",
+     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+    },
+    "G1": {
+     "periods": null,
+     "hours": "Paid-for bays & SYL: 0830 - 1830 Mon - Sat; Resident bays: 24 hours everyday (incl. Bank/Public Holidays)",
+     "name": "Zone G - Soho, West End and Covent Garden"
+    },
+    "G2": {
+     "hours": "n/a",
+     "name": "Zone G",
+     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+    },
+    "G9 Coach": {
+     "hours": "0830 - midnight everyday (incl. Bank/Public Holidays)",
+     "name": "Zone G",
+     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+    }
+   },
+   "notes": "This borough doesn’t publish zone boundaries in a form this map can use, so only the borough outline is shown. Tap inside it for the council’s zone list. Hours are from the council’s tariffs and controlled hours PDF (March 2026)."
+  },
+  "kingston": {
+   "name": "Kingston upon Thames",
+   "short": "Kingston",
+   "boundaryOnly": "Kingston upon Thames",
+   "hoursUrl": "https://www.kingston.gov.uk/parking/find-street-parking",
+   "checked": "2026-11-08",
+   "licence": "Zone hours: Kingston upon Thames council. Borough outline: Office for National Statistics / London Datastore (OGL v3).",
+   "zones": {
+    "DB": {
+     "hours": "Monday to Saturday, 8am to 6.30pm; Sunday, 11am to 5pm",
+     "name": "Parking permit area DB",
+     "note": "Covers: Dunbar Road, Beresford Road."
+    },
+    "DC": {
+     "hours": "Monday to Saturday, 8am to 6.30pm; Sunday 11am to 5pm",
+     "name": "Parking permit area DC",
+     "note": "Covers: Brook Road."
+    },
+    "DD": {
+     "hours": "Monday to Sunday, 8.30am to 8.30pm",
+     "name": "Parking permit area DD",
+     "note": "Covers: Queen's Road, George Road, Albert Road."
+    },
+    "DE": {
+     "hours": "Monday to Saturday, 11am to 2pm",
+     "name": "Parking permit area DE",
+     "note": "Covers: Albany Mews."
+    },
+    "DF": {
+     "hours": "Monday to Saturday, 11am to 2pm; Latchmere Lane only: Monday to Friday, 11am to 2pm",
+     "name": "Parking permit area DF",
+     "note": "Covers: Durlston Road, Earle Gardens, Latchmere Road (between Richmond Road and Latchmere Lane), St.Alban's Road, Studland Road."
+    },
+    "DG": {
+     "name": "Parking Permit Area DG",
+     "note": "Page https://www.kingston.gov.uk/parking-zones/parking-permit-area-dg lists streets only (Brown's Road, Warwick Grove, South Place, Mayberry Place, King Charles Crescent, Alpha Road, Britannia Road, Middle Green Close, Hobill Walk (68 - 86), Ewell Road (...), Richmond Grove (35 - 43), King Charles Road (...), Lysander Gardens (Cyrus Cottage)); no hours on page"
+    },
+    "DI": {
+     "name": "Parking Permit Area DI",
+     "note": "Page lists street: Toby Way; no hours"
+    },
+    "DJ": {
+     "name": "Parking Permit Area DJ",
+     "note": "Page lists: California Road odd Numbers 1 to 15; White Gables even numbers 2 to 26 and 246a, 246b, 248, 248a, 248b, 248c and rear of 248.; Kingston Road odd numbers 187 to 201; no hours"
+    },
+    "DK": {
+     "name": "Parking Permit Area DK",
+     "note": "Page lists: Dickerage Lane, Stafford Road, Warwick Road, Lincoln Road, Kingston Road; no hours"
+    },
+    "A": {
+     "hours": "Monday to Saturday, 8.30am to 6.30pm, including bank holidays",
+     "name": "Zone A (outer area)",
+     "note": "Covers: Avenue Road, Milner Road, Woodbines Avenue, part of The Bittoms."
+    },
+    "A1": {
+     "hours": "Monday to Saturday, 8.30am to 10.30pm; Sunday, 11am to 10.30pm; Sunday, 12pm to 5pm (Thames Street and Bishops Hall only)",
+     "name": "Zone A1 (central Kingston town centre)"
+    },
+    "B": {
+     "hours": "Monday to Saturday, 8.30am to 10.30pm; Sunday, 11am to 10.30pm",
+     "name": "Zone B (Canbury) - Town centre area",
+     "note": "Covers: part of Acre Road, part of Canbury Park Road, Cowleaze Road, East Road, Elm Crescent, Elm Grove."
+    },
+    "B (2)": {
+     "hours": "Monday to Saturday, 8.30am to 6.30pm; Sunday, 11am to 5pm",
+     "name": "Zone B (Canbury) - Inner area",
+     "note": "Covers: part of Acre Road, Burton Road, Gibbon Road, Richmond Park Road."
+    },
+    "B (3)": {
+     "hours": "Monday to Saturday, 8.30am to 6.30pm",
+     "name": "Zone B (Canbury) - Canbury main area"
+    },
+    "B (4)": {
+     "hours": "Monday to Friday, 10am to 3pm",
+     "name": "Zone B (Canbury) - Outer area 1",
+     "note": "Covers: Dinton Road, Wyndham Road, Bockhampton Road and part of Park Road."
+    },
+    "B (5)": {
+     "hours": "Monday to Friday, 10am to 3.30pm",
+     "name": "Zone B (Canbury) - Outer area 2",
+     "note": "Covers: Boyd Close, Crescent Road, Deer Park Close, Dutch Gardens, Heatherdale Close, Liverpool Road, Queens Road, Windmill Rise."
+    },
+    "C": {
+     "hours": "Monday to Saturday, 8.30am to 6.30pm",
+     "name": "Zone C (Canbury Gardens) - Main area"
+    },
+    "C (2)": {
+     "hours": "Monday to Saturday, 8.30am to 6.30pm; Monday to Saturday, 11am to 2pm (Lower Ham Road from junction of Bank Lane to Richmond Road)",
+     "name": "Zone C (Canbury Gardens) - Albany Park Road, Bank Lane, part of Lower Ham Road"
+    },
+    "G": {
+     "hours": "Monday to Friday, 8.30am to 6.30pm",
+     "name": "Zone G (Grove area)"
+    },
+    "G1": {
+     "hours": "Monday to Saturday, 8.30am to 6.30pm",
+     "name": "Zone G1 (Grove area)"
+    },
+    "H": {
+     "hours": "Monday to Saturday, 8.30am to 6.30pm",
+     "name": "Zone H (Kingston Hill)"
+    },
+    "N": {
+     "hours": "Monday to Saturday, 8.30am to 6.30pm",
+     "name": "Zone N (Norbiton) - Norbiton central area"
+    },
+    "N (2)": {
+     "hours": "Monday to Friday, 8.30am to 6.30pm",
+     "name": "Zone N (Norbiton) - Coombe Road shopping area"
+    },
+    "N (3)": {
+     "hours": "Monday to Saturday, 8.30pm to 6.30pm",
+     "name": "Zone N (Norbiton) - Outer area A",
+     "note": "sic: page says '8.30pm to 6.30pm' (likely typo for 8.30am; copied verbatim)"
+    },
+    "N (4)": {
+     "hours": "Monday to Friday, 10am to 3pm",
+     "name": "Zone N (Norbiton) - Outer area B"
+    },
+    "R": {
+     "hours": "Monday to Friday, 10am to 4pm",
+     "name": "Zone R (Riverside)"
+    },
+    "S": {
+     "hours": "Monday to Saturday, 8am to 6.30pm",
+     "name": "Zone S (Surbiton) - Surbiton central area"
+    },
+    "S (2)": {
+     "hours": "Monday to Sunday, 8am to 10.30pm (resident permit holders only)",
+     "name": "Zone S (Surbiton) - Cottage Grove"
+    },
+    "S (3)": {
+     "hours": "Monday to Friday, 8am to 6.30pm",
+     "name": "Zone S (Surbiton) - Outer area"
+    },
+    "S (4)": {
+     "hours": "Monday to Friday, 10am to 4pm (resident permit holders only)",
+     "name": "Zone S (Surbiton) - Selsdon Close"
+    },
+    "T": {
+     "hours": "Monday to Saturday, 8am to 6.30pm",
+     "name": "Zone T (Oakhill) - Oakhill main area"
+    },
+    "T (2)": {
+     "hours": "Monday to Friday, 10am to 3pm",
+     "name": "Zone T (Oakhill) - Kingsdowne Road"
+    },
+    "V": {
+     "hours": "Monday to Friday, 8.30am to 6.30pm",
+     "name": "Zone V (Villiers) - Villiers main area"
+    },
+    "V (2)": {
+     "hours": "Monday to Friday, 10am to 3pm",
+     "name": "Zone V (Villiers) - Hill Crescent, Hillside Road and Minstrel Gardens"
+    }
+   },
+   "notes": "This borough doesn’t publish zone boundaries in a form this map can use, so only the borough outline is shown. Tap inside it for the council’s zone list. The council’s GIS layer exists but is access-denied."
+  },
+  "bexley": {
+   "name": "Bexley",
+   "short": "Bexley",
+   "boundaryOnly": "Bexley",
+   "hoursUrl": "https://www.bexley.gov.uk/services/parking-transport-and-streets/parking-permits/residents-parking-permits",
+   "checked": "2026-11-08",
+   "licence": "Zone hours: Bexley council. Borough outline: Office for National Statistics / London Datastore (OGL v3).",
+   "zones": {
+    "AW": {
+     "hours": "Monday to Friday 11am to 1pm",
+     "name": "Abbey Wood"
+    },
+    "AW1": {
+     "hours": "Monday to Friday 10am to 4pm",
+     "name": "Abbey Wood 1"
+    },
+    "J": {
+     "hours": "Monday to Friday 11am to 12 noon",
+     "name": "Albany Park"
+    },
+    "K": {
+     "hours": "Monday to Friday 10am to 12 noon",
+     "name": "Barnehurst"
+    },
+    "G": {
+     "hours": "Monday to Friday 10am to 12 noon",
+     "name": "Bexleyheath Station"
+    },
+    "A": {
+     "hours": "Monday to Saturday 8.30am to 5.30pm",
+     "name": "Bexleyheath Town Centre**"
+    },
+    "H": {
+     "hours": "Monday to Friday 10am to 11am",
+     "name": "Bexley Village"
+    },
+    "E": {
+     "hours": "Monday to Friday 9am to 11am",
+     "name": "Crayford"
+    },
+    "ER": {
+     "hours": "Monday to Friday 10am to 12 noon",
+     "name": "Erith**"
+    },
+    "F": {
+     "hours": "Monday to Friday 10am to 11am",
+     "name": "Falcon Wood Station"
+    },
+    "N": {
+     "hours": "Monday to Friday 9.30am to 11am",
+     "name": "New Eltham"
+    },
+    "P": {
+     "hours": "Monday to Friday 2pm to 3pm",
+     "name": "Pinnacle Hill"
+    },
+    "B": {
+     "hours": "Monday to Friday 1pm to 3pm",
+     "name": "Sidcup Station"
+    },
+    "S": {
+     "hours": "Monday to Saturday 9am to 5.30pm",
+     "name": "Sidcup Town Centre"
+    },
+    "D": {
+     "hours": "Monday to Friday 1pm to 3pm",
+     "name": "Welling Station"
+    },
+    "W": {
+     "hours": "Monday to Saturday 9am to 5.30pm",
+     "name": "Welling Town Centre"
+    },
+    "WH": {
+     "hours": "Monday to Friday 10am to 4pm",
+     "name": "West Heath"
+    },
+    "WS": {
+     "hours": "Monday to Friday 1pm to 3pm",
+     "name": "West Sidcup"
+    }
+   },
+   "notes": "This borough doesn’t publish zone boundaries in a form this map can use, so only the borough outline is shown. Tap inside it for the council’s zone list. Hours are from the residents’ permit charges table."
+  },
+  "bromley": {
+   "name": "Bromley",
+   "short": "Bromley",
+   "boundaryOnly": "Bromley",
+   "hoursUrl": "https://www.bromley.gov.uk/homepage/195/parking-permit-information-and-charges",
+   "checked": "2026-11-08",
+   "licence": "Zone hours: Bromley council. Borough outline: Office for National Statistics / London Datastore (OGL v3).",
+   "zones": {
+    "BAR": {
+     "hours": "10am to 12noon Monday to Friday",
+     "name": "Barnmead Road"
+    },
+    "BEC": {
+     "hours": "8.30am to 8pm Monday to Sunday",
+     "name": "Beckenham"
+    },
+    "F": {
+     "hours": "8.30am to 8pm Monday to Sunday",
+     "name": "Beckenham"
+    },
+    "BB": {
+     "hours": "12noon to 2pm Monday to Saturday",
+     "name": "Beckenham Lane"
+    },
+    "B": {
+     "hours": "12noon to 2pm Monday to Saturday",
+     "name": "Bromley North"
+    },
+    "C": {
+     "hours": "12noon to 2pm Monday to Saturday",
+     "name": "Bromley South"
+    },
+    "A and B***": {
+     "hours": "See below See below",
+     "name": "Bromley Town Centre"
+    },
+    "A and C***": {
+     "hours": "See below See below",
+     "name": "Bromley Town Centre"
+    },
+    "G": {
+     "hours": "8.30am to 6.30pm Monday to Saturday",
+     "name": "Burnt Ash Lane"
+    },
+    "J": {
+     "hours": "11am to 1pm Monday to Friday",
+     "name": "Burnt Ash Lane (North)"
+    },
+    "N": {
+     "hours": "8am to 8pm Monday to Sunday",
+     "name": "Camden Grove"
+    },
+    "W": {
+     "hours": "12noon to 2pm Monday to Friday",
+     "name": "Chatterton Village"
+    },
+    "CH": {
+     "hours": "12noon to 2pm Monday to Friday",
+     "name": "Chelsfield"
+    },
+    "U": {
+     "hours": "8.30am to 6.30pm Monday to Saturday",
+     "name": "Chislehurst"
+    },
+    "Z1": {
+     "hours": "8am to 6.30pm Monday to Friday",
+     "name": "Clock House"
+    },
+    "Z2/3/4": {
+     "hours": "10am to 12noon Monday to Friday",
+     "name": "Clock House"
+    },
+    "Z5": {
+     "hours": "8am to 6.30pm Monday to Friday",
+     "name": "Clock House"
+    },
+    "R": {
+     "hours": "8am to 9.30am 8am to 2.30pm Monday to Friday Saturday to Sunday R3 only",
+     "name": "Copers Cope"
+    },
+    "ELM": {
+     "hours": "1pm to 2pm Monday to Friday",
+     "name": "Elms Estate"
+    },
+    "FV": {
+     "hours": "8.30am to 6.30pm Monday to Saturday",
+     "name": "Farnborough"
+    },
+    "WR": {
+     "hours": "9am to 5pm Monday to Friday",
+     "name": "Farnborough"
+    },
+    "T": {
+     "hours": "8.30am to 6.30pm Monday to Sunday",
+     "name": "Kent Road"
+    },
+    "LIN": {
+     "hours": "12noon to 2pm Monday to Friday",
+     "name": "Linden Grove"
+    },
+    "E": {
+     "hours": "8.30am to 6pm Monday to Saturday",
+     "name": "Locksbottom"
+    },
+    "LB*": {
+     "hours": "24 hours Monday to Sunday",
+     "name": "Locksbottom"
+    },
+    "D": {
+     "hours": "8.30am to 6.30pm Monday to Saturday",
+     "name": "Ledrington Road"
+    },
+    "MAP": {
+     "hours": "8.30am to 6.30pm Monday to Saturday",
+     "name": "Maple Road"
+    },
+    "H": {
+     "hours": "10am to 12noon Monday to Saturday",
+     "name": "Orpington"
+    },
+    "I": {
+     "hours": "8am to 8pm Monday to Saturday",
+     "name": "Orpington"
+    },
+    "K": {
+     "hours": "8.30am to 6.30pm Monday to Saturday",
+     "name": "Orpington"
+    },
+    "M": {
+     "hours": "11am to 2pm Monday to Friday",
+     "name": "Orpington"
+    },
+    "PGE": {
+     "hours": "12noon to 2pm Monday to Saturday",
+     "name": "Penge"
+    },
+    "S": {
+     "hours": "8.30am to 6pm Monday to Saturday",
+     "name": "Petts Wood"
+    },
+    "PLD": {
+     "hours": "10am to 12noon Monday to Saturday",
+     "name": "Pleydell Avenue"
+    },
+    "WAL": {
+     "hours": "9am to 5pm Monday to Saturday",
+     "name": "Walnuts Estate"
+    },
+    "WG": {
+     "hours": "7.30am to 9.30am 2.30pm to 6pm Monday to Saturday",
+     "name": "Westgate Road"
+    },
+    "WMR": {
+     "hours": "8.30am to 6.30pm Monday to Saturday",
+     "name": "Westmoreland Road"
+    }
+   },
+   "notes": "This borough doesn’t publish zone boundaries in a form this map can use, so only the borough outline is shown. Tap inside it for the council’s zone list. Hours are from the permit information table, which may not list every zone."
+  },
+  "ealing": {
+   "name": "Ealing",
+   "short": "Ealing",
+   "boundaryOnly": "Ealing",
+   "hoursUrl": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz",
+   "checked": "2026-11-08",
+   "licence": "Zone hours: Ealing council. Borough outline: Office for National Statistics / London Datastore (OGL v3).",
+   "zones": {
+    "A": {
+     "hours": "Monday to Thursday from 8:30am to 7:30pm Friday and Saturday from 8:30am to 11pm Sunday from 10am to 4pm",
+     "name": "Central Ealing",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_a_central_ealing"
+    },
+    "AA": {
+     "hours": "Monday to Friday from 10am to 11am and 3pm to 4pm.",
+     "name": "Sudbury Hill",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_aa_sudbury_hill"
+    },
+    "AS": {
+     "hours": "Monday to Friday from 9am to 11am and 2pm to 4pm.",
+     "name": "All Saints",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_as_all_saints"
+    },
+    "B": {
+     "hours": "Monday to Friday from 9am to 6pm.",
+     "name": "Bedford Park",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_b_bedford_park"
+    },
+    "BB": {
+     "hours": "Monday to Friday from 10am to 11am and 3pm to 4pm.",
+     "name": "Sudbury Town",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_bb_sudbury_town"
+    },
+    "C and D": {
+     "hours": "Monday to Friday from 10am to 7:30pm in Zones C and D Saturday from 10am to 4pm in Zone C",
+     "name": "University of West London",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_c_and_d_university_of_west_london"
+    },
+    "CC": {
+     "hours": "Monday to Friday from 10am to 11am and 3pm to 4pm.",
+     "name": "Gypsy Corner",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_cc_gypsy_corner"
+    },
+    "CHB": {
+     "hours": "Monday to Sunday from 8am to 10pm",
+     "name": "Corfe, Harlech and Beaumaris",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_chb_corfe_harlech_and_beaumaris"
+    },
+    "DD": {
+     "hours": "Monday to Friday from 9:30am to 5:30pm.",
+     "name": "Bollo Bridge",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_dd_bollo_bridge"
+    },
+    "E": {
+     "hours": "Monday to Friday from 9am to10am and 2pm to 3pm.",
+     "name": "East Acton",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_e_east_acton"
+    },
+    "EE": {
+     "hours": "Monday to Saturday from 9:30am to 5:30pm.",
+     "name": "Brentvale",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_ee_brentvale"
+    },
+    "FF": {
+     "hours": "Monday to Friday from 9am to 10am and 3pm to 4pm.",
+     "name": "Buxton Gardens",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_ff_buxton_gardens"
+    },
+    "GG": {
+     "hours": "Monday to Friday from 10am to 11am and 2pm to 3pm.",
+     "name": "Boston Manor",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_gg_boston_manor"
+    },
+    "GP": {
+     "hours": "Monday to Friday from 9am to 10am and 2pm to 3pm.",
+     "name": "Gunnersbury Park",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_gp_gunnersbury_park"
+    },
+    "GS1": {
+     "hours": "Monday to Sunday from 9am to 9pm.",
+     "name": "George Street and Wilmot Place",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_gs1_george_street_and_wilmot_place"
+    },
+    "H1": {
+     "hours": "Monday to Friday from 9am to10am, 3pm to 4pm and 6pm to 7pm.",
+     "name": "Hanwell Station",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_h1_hanwell_station"
+    },
+    "H2": {
+     "hours": "Monday to Friday from 9am to 10am and 3pm to 4pm Monday to Sunday from 9am to 5pm Church Road, W7 and Oakley Close only",
+     "name": "Hanwell Station (Hanwell Zoo)",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_h2_hanwell_station_hanwell_zoo"
+    },
+    "H": {
+     "hours": "Monday to Friday from 9:30am to 5:30pm.",
+     "name": "West Ealing",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_h_west_ealing"
+    },
+    "HH": {
+     "hours": "Monday to Friday from 9am to 10am and 3pm to 4pm.",
+     "name": "West Ealing",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_hh_west_ealing"
+    },
+    "HTC": {
+     "hours": "Monday to Saturday from 9am to 6pm.",
+     "name": "Hanwell Town Centre",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_htc_hanwell_town_centre"
+    },
+    "J": {
+     "hours": "Monday to Friday from 9am to 10am and 3pm to 4pm.",
+     "name": "Acton Town",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_j_acton_town"
+    },
+    "JJ": {
+     "hours": "Monday to Friday from 10am to 11am and 3pm to 4pm.",
+     "name": "Ealing Dean",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_jj_ealing_dean"
+    },
+    "K1": {
+     "hours": "Monday to Friday from 9am to 10am and 3pm to 4pm.",
+     "name": "Acton Central",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_k1_acton_central"
+    },
+    "K": {
+     "hours": "Monday to Friday from 9:30am to 5:30pm.",
+     "name": "Acton Central",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_k_acton_central"
+    },
+    "KK": {
+     "hours": "Monday to Saturday from 9am to 7pm.",
+     "name": "The Vale Estate",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_kk_the_vale_estate"
+    },
+    "L": {
+     "hours": "Monday to Saturday from 10am to 8pm Sunday from 2pm to 8pm",
+     "name": "Southall",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_l_southall"
+    },
+    "LL": {
+     "hours": "Monday to Saturday from 8.30am to 6pm Sunday from 2pm to 6pm",
+     "name": "Southall 5",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_ll_southall_5"
+    },
+    "M": {
+     "hours": "Monday to Friday from 9:30am to 5:30pm.",
+     "name": "Acton Green",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_m_acton_green"
+    },
+    "MM1": {
+     "hours": "Monday to Saturday from 8am to 6pm.",
+     "name": "Friars Green (The Drive)",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_mm1_friars_green_the_drive"
+    },
+    "MM": {
+     "hours": "Monday to Friday from 10am to 11am and 4pm to 5pm.",
+     "name": "Friars Green",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_mm_friars_green"
+    },
+    "N": {
+     "hours": "Monday to Saturday from 9am to 10am and 3pm to 4pm.",
+     "name": "Northfields",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_n_northfields"
+    },
+    "NN": {
+     "hours": "Monday to Saturday from 10am to 11am and 2pm to 3pm.",
+     "name": "Drayton Green",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_nn_drayton_green"
+    },
+    "NS": {
+     "hours": "Monday to Friday from 9am to 10am and 2pm to 3pm.",
+     "name": "Northolt Station",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_ns_northolt_station"
+    },
+    "O": {
+     "hours": "Monday to Friday from 9am to 10am and 3pm to 4pm.",
+     "name": "Hanger Hill",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_o_hanger_hill"
+    },
+    "OH": {
+     "hours": "Monday to Friday from 8am to 10am, 1pm to 3pm and 6pm to 8pm.",
+     "name": "Old Hanwell",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_oh_old_hanwell"
+    },
+    "P": {
+     "hours": "Monday to Friday from 9am to 10am and 2pm to 3pm.",
+     "name": "Perivale",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_p_perivale"
+    },
+    "PC": {
+     "hours": "Monday to Friday from 11am to 2pm Saturday and Sunday from 11am to 2pm for Littlejohn Road only",
+     "name": "Poets Corner",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_pc_poets_corner"
+    },
+    "PL": {
+     "hours": "Monday to Friday from 10am to 11am and 3pm to 4pm.",
+     "name": "Perivale Lane",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_pl_perivale_lane"
+    },
+    "PP": {
+     "hours": "Monday to Sunday from 8am to 8pm.",
+     "name": "Old Oak",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_pp_old_oak"
+    },
+    "PR-I": {
+     "hours": "Monday to Friday from 10am to 11am and 3pm to 4pm.",
+     "name": "Park Royal",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_pr-i_park_royal"
+    },
+    "Q": {
+     "hours": "Monday to Friday from 10am to 11am and 2pm to 3pm.",
+     "name": "Greenford Station",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_q_greenford_station"
+    },
+    "QQ": {
+     "hours": "Monday to Sunday from 9am to 9pm.",
+     "name": "Northolt",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_qq_northolt"
+    },
+    "R": {
+     "hours": "Monday to Friday from 9am to 6pm.",
+     "name": "Southfields",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_r_southfields"
+    },
+    "RM": {
+     "hours": "Monday to Sunday from 8am to 10pm.",
+     "name": "Rufford and Moreton",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_rm_rufford_and_moreton"
+    },
+    "RR": {
+     "hours": "Monday to Friday from 9am to 10am and 3pm to 4pm.",
+     "name": "Little Ealing",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_rr_little_ealing"
+    },
+    "S": {
+     "hours": "Monday to Friday from 10am to 7:30pm Saturday from 10am to 4pm Northside on weekends Saturday from 10am to 1pm Southside on weekends",
+     "name": "South Ealing",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_s_south_ealing"
+    },
+    "SA": {
+     "hours": "Monday to Friday from 9am to 10am and 2pm to 3pm.",
+     "name": "South Acton Estate",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_sa_south_acton_estate"
+    },
+    "SAI": {
+     "hours": "Monday to Friday from 8am to 6pm.",
+     "name": "South Acton Industrial",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_sai_south_acton_industrial"
+    },
+    "SG": {
+     "hours": "Monday to Friday from 9am to 7pm.",
+     "name": "Stanley Gardens and Warple Way",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_sg_stanley_gardens_and_warple_way"
+    },
+    "SS": {
+     "hours": "Monday to Friday from 10am to 11am and 3pm to 4pm.",
+     "name": "Wesley Estate",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_ss_wesley_estate"
+    },
+    "T1": {
+     "hours": "Monday to Saturday from 9am to 7pm.",
+     "name": "The Vale",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_t1_the_vale"
+    },
+    "T": {
+     "hours": "Monday to Sunday from 9am to 9pm.",
+     "name": "The Vale",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_t_the_vale"
+    },
+    "TA": {
+     "hours": "Monday to Friday from 9am to 11am and 3pm to 5pm.",
+     "name": "Twyford Abbey",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_ta_twyford_abbey"
+    },
+    "TT": {
+     "hours": "Monday to Friday from 10am to 11am and 2pm to 3pm.",
+     "name": "Kent Gardens",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_tt_kent_gardens"
+    },
+    "TW": {
+     "hours": "Monday to Sunday from 8am to 10pm.",
+     "name": "Trinity Way",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_tw_trinity_way"
+    },
+    "U": {
+     "hours": "Monday to Saturday from 9:30am to 5:30pm.",
+     "name": "Green Man",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_u_green_man"
+    },
+    "V": {
+     "hours": "Monday to Saturday from 8:30am to 6pm Sunday from 2pm to 6pm",
+     "name": "Southall 2",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_v_southall_2"
+    },
+    "W": {
+     "hours": "Monday to Friday from 9am to 10am and 3pm to 4pm.",
+     "name": "Ealing Broadway",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_w_ealing_broadway"
+    },
+    "WE": {
+     "hours": "Monday to Friday from 9am to 10am and 2pm to 3pm.",
+     "name": "West Ealing Town Centre",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_we_west_ealing_town_centre"
+    },
+    "X": {
+     "hours": "Monday to Friday from 9am to 5pm.",
+     "name": "Valetta Road",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_x_valetta_road"
+    },
+    "Y": {
+     "hours": "Monday to Friday from 9am to 10am and 3pm to 4pm.",
+     "name": "West Twyford",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_y_west_twyford"
+    },
+    "Z": {
+     "hours": "Monday to Friday from 10am to 11am and 2pm to 3pm.",
+     "name": "West Acton",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_z_west_acton"
+    },
+    "F and G": {
+     "hours": "Monday to Friday from 9am to10am, 3pm to 4pm and 6pm to 7pm in Zone F Monday to Friday from 9am to 10am and 3pm to 4pm in Zone G",
+     "name": "Ealing Common",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zones_f_and_g_ealing_common"
+    }
+   },
+   "notes": "This borough doesn’t publish zone boundaries in a form this map can use, so only the borough outline is shown. Tap inside it for the council’s zone list. Hours are from the council’s page for each zone."
+  },
+  "croydon": {
+   "name": "Croydon",
+   "short": "Croydon",
+   "boundaryOnly": "Croydon",
+   "hoursUrl": "https://www.croydon.gov.uk/parking-streets-and-transport/parking/parking-restrictions/list-controlled-parking-zones",
+   "checked": "2026-11-08",
+   "licence": "Zone hours: Croydon council. Borough outline: Office for National Statistics / London Datastore (OGL v3).",
+   "zones": {
+    "Bynes Road Permit Zone": {
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Bynes_Road_Permit_Zone.pdf",
+     "name": "Bynes Road Permit Zone",
+     "note": "Boundary map: PDF from the council."
+    },
+    "Centre Permit Zone": {
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Centre_Permit_Zone.pdf",
+     "name": "Centre Permit Zone",
+     "note": "Boundary map: PDF from the council."
+    },
+    "Coulsdon Resident Only Permit Zone": {
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Coulsdon_Resident_Only_Permit_Zone.pdf",
+     "name": "Coulsdon Resident Only Permit Zone",
+     "note": "Boundary map: PDF from the council."
+    },
+    "Coulsdon Town Centre Permit Zone": {
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Coulsdon_Town_Centre_Permit_Zone.pdf",
+     "name": "Coulsdon Town Centre Permit Zone",
+     "note": "Boundary map: PDF from the council."
+    },
+    "E2 Zone": {
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/E2%20%20ZONE%20MAP.pdf",
+     "name": "E2 Zone",
+     "note": "Boundary map: PDF from the council."
+    },
+    "East Outer Permit Area": {
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/East%20Outer%20Permit%20Area%202019.pdf",
+     "name": "East Outer Permit Area",
+     "note": "Boundary map: PDF from the council."
+    },
+    "East Inner Permit Zone": {
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/East_Inner_Permit_Zone.pdf",
+     "name": "East Inner Permit Zone",
+     "note": "Boundary map: PDF from the council."
+    },
+    "N1 Zone": {
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/N1%20Zone.pdf",
+     "name": "N1 Zone",
+     "note": "Boundary map: PDF from the council."
+    },
+    "N2 Zone": {
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/N2%20Zone.pdf",
+     "name": "N2 Zone",
+     "note": "Boundary map: PDF from the council."
+    },
+    "Napier Road Permit Zone": {
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Napier_Road_Permit_Zone.pdf",
+     "name": "Napier Road Permit Zone",
+     "note": "Boundary map: PDF from the council."
+    },
+    "Norbury Permit Zone": {
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Norbury_Permit_Zone%202017.pdf",
+     "name": "Norbury Permit Zone",
+     "note": "Boundary map: PDF from the council."
+    },
+    "North Zone": {
+     "url": "https://www.croydon.gov.uk/sites/default/files/2024-02/north-zone-%28oct-2021.pdf",
+     "name": "North Zone",
+     "note": "Boundary map: PDF from the council."
+    },
+    "Old Lodge Lane Permit Zone": {
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Old_Lodge_Lane_Permit_Zone.pdf",
+     "name": "Old Lodge Lane Permit Zone",
+     "note": "Boundary map: PDF from the council."
+    },
+    "Purley Permit Zone": {
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Purley_Permit_Zone.pdf",
+     "name": "Purley Permit Zone",
+     "note": "Boundary map: PDF from the council."
+    },
+    "Sanderstead Permit Zone": {
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Sanderstead_Permit_Zone.pdf",
+     "name": "Sanderstead Permit Zone",
+     "note": "Boundary map: PDF from the council."
+    },
+    "South Norwood Permit Zone": {
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/South%20Norwood%20Permit%20Zone.pdf",
+     "name": "South Norwood Permit Zone",
+     "note": "Boundary map: PDF from the council."
+    },
+    "South Permit Zone": {
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/South_Permit_Zone.pdf",
+     "name": "South Permit Zone",
+     "note": "Boundary map: PDF from the council."
+    },
+    "Thornton Heath Permit Zone": {
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Thornton_Heath_Permit_Zone.pdf",
+     "name": "Thornton Heath Permit Zone",
+     "note": "Boundary map: PDF from the council."
+    },
+    "West Permit Zone": {
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/West_Permit_Zone.pdf",
+     "name": "West Permit Zone",
+     "note": "Boundary map: PDF from the council."
+    },
+    "West Thornton Permit Zone": {
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/West_Thornton_Permit_Zone_0.pdf",
+     "name": "West Thornton Permit Zone",
+     "note": "Boundary map: PDF from the council."
+    }
+   },
+   "notes": "Croydon publishes neither zone boundaries nor hours online (hours are on the street signs). Its zone list and PDF maps are linked here."
+  },
+  "barnet": {
+   "name": "Barnet",
+   "short": "Barnet",
+   "boundaryOnly": "Barnet",
+   "hoursUrl": "https://www.barnet.gov.uk/parking/parking-and-traffic-enforcement/controlled-parking-zones-cpz/how-controlled-parking-zones",
+   "checked": "2026-11-08",
+   "licence": "Zone hours: Barnet council. Borough outline: Office for National Statistics / London Datastore (OGL v3).",
+   "zones": {},
+   "notes": "Barnet publishes neither zone boundaries nor a zone hours list online; its interactive map is at barnet.traffweb.app."
+  },
+  "havering": {
+   "name": "Havering",
+   "short": "Havering",
+   "boundaryOnly": "Havering",
+   "hoursUrl": "https://www.havering.gov.uk/parking-2/permit-parking-areas-controlled-parking-zones-restrictions",
+   "checked": "2026-11-08",
+   "licence": "Zone hours: Havering council. Borough outline: Office for National Statistics / London Datastore (OGL v3).",
+   "zones": {},
+   "notes": "Havering publishes neither zone boundaries nor a zone hours list online."
+  },
+  "hillingdon": {
+   "name": "Hillingdon",
+   "short": "Hillingdon",
+   "boundaryOnly": "Hillingdon",
+   "hoursUrl": "https://pre.hillingdon.gov.uk/parking",
+   "checked": "2026-11-08",
+   "licence": "Zone hours: Hillingdon council. Borough outline: Office for National Statistics / London Datastore (OGL v3).",
+   "zones": {},
+   "notes": "Hillingdon calls its zones parking management schemes and publishes their hours only in traffic-order notices."
+  },
+  "hounslow": {
+   "name": "Hounslow",
+   "short": "Hounslow",
+   "boundaryOnly": "Hounslow",
+   "hoursUrl": "https://www.hounslow.gov.uk/parking-permits/controlled-parking-zones",
+   "checked": "2026-11-08",
+   "licence": "Zone hours: Hounslow council. Borough outline: Office for National Statistics / London Datastore (OGL v3).",
+   "zones": {},
+   "notes": "Hounslow publishes zone hours only through its interactive map pop-ups and entry signs."
+  },
+  "walthamforest": {
+   "name": "Waltham Forest",
+   "short": "Waltham Forest",
+   "boundaryOnly": "Waltham Forest",
+   "hoursUrl": "https://www.walthamforest.gov.uk/parking-roads-and-travel/parking-permits-and-suspensions/controlled-parking-zones-cpzs",
+   "checked": "2026-11-08",
+   "licence": "Zone hours: Waltham Forest council. Borough outline: Office for National Statistics / London Datastore (OGL v3).",
+   "zones": {},
+   "notes": "Waltham Forest publishes a PDF overview map but no zone hours list online."
   }
  }
 }

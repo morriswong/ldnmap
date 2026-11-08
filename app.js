@@ -1611,7 +1611,7 @@ function loadParkingData() {
       setParkingRules(d[0]);
       parkingData = {
         zones: d[1],
-        labels: { type: 'FeatureCollection', features: d[1].features.map(function(f) {
+        labels: { type: 'FeatureCollection', features: d[1].features.filter(function(f) { return !f.properties.outline; }).map(function(f) {
           return { type: 'Feature', properties: { zone: f.properties.zone, rule: f.properties.rule },
             geometry: { type: 'Point', coordinates: [f.properties.lx, f.properties.ly] } };
         }) }
@@ -1826,10 +1826,15 @@ function addParkingLayers() {
     map.addSource('parking-streets', { type: 'geojson', data: parkingDetailCollection('streets') });
     map.addSource('parking-kerb', { type: 'geojson', data: parkingDetailCollection('kerb') });
     map.addSource('parking-machines', { type: 'geojson', data: parkingDetailCollection('machines') });
-    map.addLayer({ id: 'parking-zones-fill', type: 'fill', source: 'parking-zones',
+    // Boroughs that publish no zone boundaries: a faint outline you can tap for their zone list.
+    map.addLayer({ id: 'parking-borough-fill', type: 'fill', source: 'parking-zones', filter: ['has', 'outline'],
+      paint: { 'fill-color': PARKING_COLORS.unknown, 'fill-opacity': 0.06 } }, underRoads);
+    map.addLayer({ id: 'parking-borough-outline', type: 'line', source: 'parking-zones', filter: ['has', 'outline'],
+      paint: { 'line-color': PARKING_COLORS.unknown, 'line-width': 1.5, 'line-dasharray': [3, 2], 'line-opacity': 0.9 } }, underLabels);
+    map.addLayer({ id: 'parking-zones-fill', type: 'fill', source: 'parking-zones', filter: ['!', ['has', 'outline']],
       paint: { 'fill-color': ruleColor,
         'fill-opacity': ['interpolate', ['linear'], ['zoom'], 9, 0.35, 12, 0.28, 15, 0.12, 17, 0.06] } }, underRoads);
-    map.addLayer({ id: 'parking-zones-line', type: 'line', source: 'parking-zones',
+    map.addLayer({ id: 'parking-zones-line', type: 'line', source: 'parking-zones', filter: ['!', ['has', 'outline']],
       paint: { 'line-color': ruleColor, 'line-width': ['interpolate', ['linear'], ['zoom'], 9, 0.5, 12, 1, 16, 2.5],
         'line-opacity': 0.8 } }, underLabels);
     map.addLayer({ id: 'parking-streets', type: 'line', source: 'parking-streets', minzoom: PARKING_STREET_ZOOM,
@@ -1863,7 +1868,8 @@ function addParkingLayers() {
 }
 
 var PARKING_LAYERS = ['parking-zones-label', 'parking-machines', 'parking-kerb-double', 'parking-kerb-single',
-  'parking-kerb-bay', 'parking-streets-sel', 'parking-streets', 'parking-zones-line', 'parking-zones-fill'];
+  'parking-kerb-bay', 'parking-streets-sel', 'parking-streets', 'parking-zones-line', 'parking-zones-fill',
+  'parking-borough-outline', 'parking-borough-fill'];
 function removeParkingLayers() {
   PARKING_LAYERS.forEach(function(id) { if (map.getLayer(id)) map.removeLayer(id); });
   ['parking-zones', 'parking-zone-labels', 'parking-streets', 'parking-kerb', 'parking-machines'].forEach(function(id) {
@@ -1893,6 +1899,19 @@ map.on('click', function(e) {
   if (!parkingOn || !map.getLayer('parking-zones-fill')) return;
   if (map.getLayer('fuel-circle') && map.queryRenderedFeatures(e.point, { layers: ['fuel-circle'] }).length) return;
   var zone = map.queryRenderedFeatures(e.point, { layers: ['parking-zones-fill'] })[0];
+  if (!zone) {
+    // Inside a borough that publishes no zone boundaries: open its zone list at any zoom.
+    var outline = map.queryRenderedFeatures(e.point, { layers: ['parking-borough-fill'] })[0];
+    if (outline) {
+      parkingSel = { kind: 'borough', b: outline.properties.b, zone: '', rule: outline.properties.rule, lngLat: e.lngLat };
+      if (map.getLayer('parking-streets-sel')) map.setFilter('parking-streets-sel', parkingSelFilter());
+      renderParkingBody();
+      openParkingPanel();
+      if (isMobileView() && window.__parkingSheet) window.__parkingSheet.snap('half');
+      parkingBody.scrollTop = 0;
+      return;
+    }
+  }
   if (map.getZoom() < PARKING_STREET_ZOOM - 0.01) {
     // Below street level the first tap zooms in to the zone.
     if (zone) map.flyTo({ center: e.lngLat, zoom: PARKING_STREET_ZOOM + 0.5 });
@@ -1938,7 +1957,7 @@ function segDist(p, a, b) {
   return Math.sqrt(x * x + y * y);
 }
 
-['parking-streets', 'parking-zones-fill'].forEach(function(id) {
+['parking-streets', 'parking-zones-fill', 'parking-borough-fill'].forEach(function(id) {
   map.on('mouseenter', id, function() { map.getCanvas().style.cursor = 'pointer'; });
   map.on('mouseleave', id, function() { map.getCanvas().style.cursor = ''; });
 });
@@ -2009,10 +2028,12 @@ function renderParkingBody() {
       ? 'Tap a zone to zoom in, then tap a street to see its rules.'
       : 'Tap a street to see its rules, or tap inside a zone for the zone’s.'));
     var ids = Object.keys(parkingRules.boroughs);
-    var known = ids.reduce(function(n, id) { return n + parkingRules.boroughs[id].knownHours; }, 0);
-    var total = ids.reduce(function(n, id) { return n + parkingRules.boroughs[id].zoneCount; }, 0);
-    hint.appendChild(pkEl('p', 'pk-small', 'Covers ' + ids.length + ' borough' + (ids.length === 1 ? '' : 's') + ' and ' + total +
-      ' zones; ' + known + ' have hours this map can read. Grey zones show their council’s wording instead of a colour.'));
+    var mapped = ids.filter(function(id) { return !parkingRules.boroughs[id].listOnly; });
+    var known = mapped.reduce(function(n, id) { return n + parkingRules.boroughs[id].knownHours; }, 0);
+    var total = mapped.reduce(function(n, id) { return n + parkingRules.boroughs[id].zoneCount; }, 0);
+    hint.appendChild(pkEl('p', 'pk-small', 'Zone maps for ' + mapped.length + ' boroughs (' + total + ' zones, ' + known +
+      ' with hours this map can read; grey zones show their council’s wording instead). The other ' + (ids.length - mapped.length) +
+      ' boroughs publish no zone boundaries: they’re outlined in grey and tapping one lists its zones.'));
     hint.appendChild(pkEl('p', 'pk-small', 'Yellow lines and bays show only where OpenStreetMap has them (a few percent of streets). A blank kerb doesn’t mean parking is allowed.'));
     hint.appendChild(pkEl('p', 'pk-small', 'Street signs always override the map.'));
     parkingBody.appendChild(hint);
@@ -2030,6 +2051,7 @@ function parkingRow(parent, label, value) {
 
 function renderParkingCard(sel) {
   var borough = parkingRules.boroughs[sel.b] || {};
+  if (sel.kind === 'borough') return renderBoroughCard(sel, borough);
   var rule = parkingRule(sel.rule) || {};
   var zoneRule = parkingRule(sel.b + ':' + sel.zone) || {};
   var special = rule.streets ? rule : null;
@@ -2133,6 +2155,49 @@ function renderParkingCard(sel) {
   else if (zoneRule.url || rule.url) card.appendChild(pkLink('Zone ' + sel.zone + ' on the council site', zoneRule.url || rule.url)).className = 'pk-pdf';
   else if (borough.hoursUrl) card.appendChild(pkLink(borough.name + ' parking zones (council site)', borough.hoursUrl)).className = 'pk-pdf';
   if (borough.checked) card.appendChild(pkEl('p', 'pk-small', 'Hours checked against the council on ' + borough.checked + '.'));
+  card.appendChild(pkEl('p', 'pk-signs', 'Street signs always override the map.'));
+  return card;
+}
+
+// A borough with no zone boundaries: its council's zone list, each with a status pill.
+function renderBoroughCard(sel, borough) {
+  var card = pkEl('div', 'pk-card');
+  var head = pkEl('div', 'pk-card-head');
+  var titles = pkEl('div', 'pk-card-titles');
+  titles.appendChild(pkEl('div', 'pk-card-title', borough.name));
+  titles.appendChild(pkEl('div', 'pk-card-sub', 'No zone boundaries published'));
+  head.appendChild(titles);
+  var close = pkEl('button', 'pk-card-close');
+  close.type = 'button';
+  close.setAttribute('aria-label', 'Close card');
+  close.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+  close.addEventListener('click', function() { parkingSel = null; renderParkingBody(); });
+  head.appendChild(close);
+  card.appendChild(head);
+  if (borough.notes) card.appendChild(pkEl('p', 'pk-note', borough.notes));
+  var keys = Object.keys(parkingRules.rules).filter(function(k) { return parkingRules.rules[k].borough === sel.b; })
+    .sort(function(a, b) { return parkingRules.rules[a].zone.localeCompare(parkingRules.rules[b].zone, 'en', { numeric: true }); });
+  if (keys.length) {
+    card.appendChild(pkEl('div', 'pk-section', keys.length + ' zones ' + parkingWhenLabel()));
+    var list = pkEl('ul', 'pk-zone-list');
+    keys.forEach(function(k) {
+      var r = parkingRules.rules[k];
+      var status = parkingStatus(k);
+      var li = pkEl('li', '');
+      var top = pkEl('div', 'pk-zone-top');
+      top.appendChild(pkEl('span', 'pk-mini-pill pk-pill--' + status, PARKING_PILLS[status]));
+      top.appendChild(pkEl('span', 'pk-zone-code', r.zone));
+      if (r.name && r.name !== r.zone) top.appendChild(pkEl('span', 'pk-zone-name', r.name));
+      li.appendChild(top);
+      var hours = pkEl('div', 'pk-small', r.hours);
+      if (r.url) { hours.appendChild(document.createTextNode(' ')); hours.appendChild(pkLink('Council page', r.url)); }
+      li.appendChild(hours);
+      list.appendChild(li);
+    });
+    card.appendChild(list);
+  }
+  if (borough.hoursUrl) card.appendChild(pkLink(borough.name + ' parking zones (council site)', borough.hoursUrl)).className = 'pk-pdf';
+  if (borough.checked) card.appendChild(pkEl('p', 'pk-small', 'Checked against the council on ' + borough.checked + '.'));
   card.appendChild(pkEl('p', 'pk-signs', 'Street signs always override the map.'));
   return card;
 }

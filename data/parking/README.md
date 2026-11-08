@@ -7,8 +7,8 @@ the sources listed in `tools/parking_sources.json`.
 
 | File | What it holds |
 |---|---|
-| `rules.json` | `boroughs`: one entry per borough (name, `bbox`, council URLs, `checked` date, yellow-line wording, charges, `zoneCount`, `knownHours`). `rules`: one rule per zone or street rule, keyed `"<borough>:<zone>"` (`hf:E`) or `"<borough>:<street rule>"` (`hf:K-Richford`) |
-| `zones.geojson` | Every zone polygon. Properties: `b` (borough id), `zone`, `rule`, `lx`/`ly` (a point inside the zone for its label) |
+| `rules.json` | `boroughs`: one entry per borough (name, `bbox`, council URLs, `checked` date, yellow-line wording, charges, `zoneCount`, `knownHours`, `detail` when it has street files, `listOnly` when it has no zone boundaries). `rules`: one rule per zone or street rule, keyed `"<borough>:<zone>"` (`hf:E`) or `"<borough>:<street rule>"` (`hf:K-Richford`); a `listOnly` borough's rules have no geometry and are shown as a list |
+| `zones.geojson` | Every zone polygon. Properties: `b` (borough id), `zone`, `rule`, `lx`/`ly` (a point inside the zone for its label). Boroughs that publish no zone boundaries have one feature with `outline: 1` instead: their borough boundary (London Datastore, OGL) |
 | `<borough>/streets.geojson` | Street pieces inside that borough's zones. Properties: `name`, `zone`, `rule`, `tfl` (1 on TfL red routes, where zone rules don't apply), `cls` (1 = main road … 5 = service road) |
 | `<borough>/machines.geojson` | Ticket machines from OpenStreetMap: `id`, `zone`, `type` (`Card only`, `Card & cash`, `Unknown`), `pdf` |
 | `<borough>/kerb.geojson` | Bays and yellow lines where OpenStreetMap has them: `kind` (`bay`, `single_yellow`, `double_yellow`), `side` (`left`, `right`, `both`, relative to the street's drawing direction), `zone` |
@@ -27,6 +27,13 @@ exclusive. Each rule has:
 
 `parking-rules.js` turns these into `'ctrl'`, `'free'`, `'permit'` or `'unknown'`
 (`isControlled(ruleKey, day, minutes, eventDay)`); `tests/parking.test.mjs` tests it.
+
+## Coverage
+
+Every London borough (and the City) is in `tools/parking_sources.json`. Where a council publishes zone
+boundaries in a machine-readable form they are drawn and coloured; where it publishes only a web list
+of zones and hours, the borough is outlined and the list is shown; where it publishes neither, the
+outline carries a note and a link. Nothing is traced from PDFs or guessed.
 
 ## Sources and gaps
 

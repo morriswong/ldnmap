@@ -17,6 +17,7 @@ Sources per borough are in tools/parking_sources.json: a polygon service (ArcGIS
 GeoJSON or zipped Shapefile) and the council's hours text per zone, parsed into periods by
 tools/parking_hours.py. Streets, kerbs and ticket machines come from OpenStreetMap.
 """
+import html
 import io
 import json
 import os
@@ -24,6 +25,7 @@ import re
 import sys
 import urllib.parse
 import urllib.request
+import xml.etree.ElementTree as ET
 import zipfile
 
 from pyproj import Transformer
@@ -38,6 +40,7 @@ OUT = os.path.join(ROOT, 'data', 'parking')
 SOURCES = os.path.join(ROOT, 'tools', 'parking_sources.json')
 CACHE = os.environ.get('PARKING_CACHE', '/tmp/ldnmap-parking-cache')
 UA = 'Mozilla/5.0 (ldnmap parking data build)'
+OSM_UA = 'ldnmap-parking-build/1.0 (+https://ldnmap.pages.dev)'   # Overpass refuses browser-like agents
 OVERPASS = 'https://overpass-api.de/api/interpreter'
 
 CLS = {'motorway': 1, 'trunk': 1, 'primary': 1, 'secondary': 2, 'tertiary': 3,
@@ -51,24 +54,44 @@ def log(*a):
     print(*a, file=sys.stderr)
 
 
-def fetch(url, name, data=None):
+def fetch(url, name, data=None, ua=UA):
     """GET (or POST `data`) a URL, cached in CACHE under `name`."""
     os.makedirs(CACHE, exist_ok=True)
     path = os.path.join(CACHE, name)
     if not os.path.exists(path):
-        req = urllib.request.Request(url, data=data, headers={'User-Agent': UA, 'Accept': '*/*'})
-        with urllib.request.urlopen(req, timeout=300) as r, open(path, 'wb') as f:
-            f.write(r.read())
+        # curl rather than urllib: the system Python's TLS can't talk to some servers (Overpass).
+        import subprocess
+        cmd = ['curl', '-sS', '-L', '-m', '600', '-A', ua, '-H', 'Accept: */*', '-o', path + '.part', url]
+        if data is not None:
+            cmd += ['--data-binary', '@-']
+        res = subprocess.run(cmd, input=data, capture_output=True)
+        if res.returncode != 0:
+            raise SystemExit(f'download failed: {url}\n{res.stderr.decode()}')
+        os.replace(path + '.part', path)
     with open(path, 'rb') as f:
         return f.read()
 
 
-def fetch_json(url, name, data=None):
-    return json.loads(fetch(url, name, data))
+def fetch_json(url, name, data=None, ua=UA):
+    return json.loads(fetch(url, name, data, ua).decode('utf-8-sig'))
 
 
 def overpass(query, name):
-    return fetch_json(OVERPASS, name, urllib.parse.urlencode({'data': query}).encode())['elements']
+    """Overpass answers; a busy server returns HTML or an error document, so retry a few times."""
+    import time
+    data = urllib.parse.urlencode({'data': query}).encode()
+    for attempt in range(4):
+        try:
+            d = fetch_json(OVERPASS, name, data, OSM_UA)
+            if 'elements' in d:
+                return d['elements']
+            msg = str(d)[:200]
+        except json.JSONDecodeError:
+            msg = open(os.path.join(CACHE, name), 'rb').read(200)
+        os.remove(os.path.join(CACHE, name))
+        log(f'  Overpass answer for {name} unusable (attempt {attempt + 1}): {msg!r}')
+        time.sleep(30 * (attempt + 1))
+    raise RuntimeError(f'Overpass kept failing for {name}')
 
 
 def reproject(geom, epsg):
@@ -151,6 +174,41 @@ def load_polygons(bid, src):
         d = fetch_json(q, f'{bid}-polys.geojson')
         feats = d['features']
         epsg = src.get('epsg')
+    elif kind == 'file':
+        # A file in the cache dir made by hand or by another tool (e.g. the Enfield KML, which sits
+        # behind a browser check): GeoJSON.
+        with open(os.path.join(CACHE, src['path'])) as f:
+            feats = json.load(f)['features']
+        epsg = src.get('epsg')
+    elif kind == 'drupal-settings':
+        # GeoJSON embedded in a Drupal page's settings JSON (Greenwich).
+        page = fetch(src['url'], f'{bid}-page.html').decode('utf-8', 'replace')
+        m = re.search(r'<script[^>]*data-drupal-selector="drupal-settings-json"[^>]*>(.*?)</script>', page, re.S)
+        d = json.loads(html.unescape(m.group(1)))
+        for part in src['path'].split('.'):
+            d = d[part]
+        if isinstance(d, str):
+            d = json.loads(d)
+        feats = d['features']
+        epsg = src.get('epsg')
+    elif kind == 'redbridge':
+        # The council's own web-map JSON: polygons as lat/lng rings, hours in a description.
+        items = fetch_json(src['url'], f'{bid}-polys.json')
+        feats = []
+        for it in items:
+            polys = []
+            for poly in (it.get('geometry') or {}).get('polygons') or []:
+                rings = [[(pt['lng'], pt['lat']) for pt in poly['outerRing']]]
+                for hole in poly.get('holes') or []:
+                    rings.append([(pt['lng'], pt['lat']) for pt in hole])
+                polys.append(rings)
+            if polys:
+                feats.append({'properties': {'title': it.get('title'), 'description': it.get('description')},
+                              'geometry': {'type': 'MultiPolygon', 'coordinates': polys}})
+        epsg = None
+    elif kind == 'gml':
+        # A WFS GetFeature answer in GML 3.2 (MapServer/iShare), geometry as gml:posList.
+        feats, epsg = parse_gml(fetch(src['url'], f'{bid}-polys.gml'))
     elif kind == 'shapefile':
         import shapefile
         raw = fetch(src['url'], f'{bid}-polys.zip')
@@ -173,6 +231,8 @@ def load_polygons(bid, src):
             m = re.search(src['zonePattern'], code)
             code = m.group(1) if m else code
         code = src.get('zoneMap', {}).get(code, code)
+        if src.get('zoneConst'):
+            code = src['zoneConst']
         if not code or code.lower() in ('none', 'null'):
             continue
         g = reproject(shape(f['geometry']), epsg).buffer(0)
@@ -180,17 +240,128 @@ def load_polygons(bid, src):
     return out
 
 
+GML = '{http://www.opengis.net/gml/3.2}'
+
+
+def parse_gml(raw):
+    """[GeoJSON-like features] and the EPSG code from a WFS 2.0 GML FeatureCollection."""
+    root = ET.fromstring(raw)
+    epsg = None
+    feats = []
+    for member in root.iter():
+        if not member.tag.endswith('}member'):
+            continue
+        el = list(member)[0]
+        props, polys = {}, []
+        for child in el:
+            tag = child.tag.split('}')[-1]
+            if tag == 'boundedBy':
+                continue
+            if any(g.tag in (GML + 'posList',) for g in child.iter()):
+                for poly in child.iter(GML + 'Polygon'):
+                    rings = []
+                    for ring_tag in ('exterior', 'interior'):
+                        for ring in poly.iter(GML + ring_tag):
+                            nums = ring.find('.//' + GML + 'posList').text.split()
+                            rings.append([(float(nums[i]), float(nums[i + 1])) for i in range(0, len(nums), 2)])
+                    polys.append(rings)
+                srs = next((g.get('srsName') for g in child.iter() if g.get('srsName')), None)
+                if srs:
+                    epsg = int(re.search(r'(\d+)$', srs).group(1))
+            else:
+                props[tag] = (child.text or '').strip()
+        if polys:
+            feats.append({'properties': props, 'geometry': {'type': 'MultiPolygon', 'coordinates': polys}})
+    return feats, epsg
+
+
 # ---------------------------------------------------------------------------
 # Rules
 # ---------------------------------------------------------------------------
 
-def build_rules(bid, b, zone_codes):
-    """Rules for a borough: one per zone from the sources file (or the polygon data), plus street rules."""
+def data_hours(b, props):
+    """(hours text, note) read from a polygon's attributes, per the borough's hoursFromData."""
+    cfg = b.get('hoursFromData')
+    if not cfg:
+        return None, None
+    if cfg.get('template'):
+        # "Mon-Fri {a}; Sat {b}": segments whose field is blank are dropped.
+        parts = []
+        for seg in cfg['template'].split(';'):
+            m = re.search(r'\{(\w+)\}', seg)
+            v = str(props.get(m.group(1)) or '').strip() if m else ''
+            if v and v.lower() != 'none':
+                parts.append(seg.replace(m.group(0), v).strip())
+        text = '; '.join(parts)
+    else:
+        text = cfg.get('join', ' ').join(str(props.get(f) or '').strip() for f in cfg['fields']
+                                         if str(props.get(f) or '').strip().lower() != 'none').strip()
+    for pat, repl in cfg.get('replace', []):
+        text = re.sub(pat, repl, text)
+    note = None
+    if cfg.get('noteRegex'):
+        # Everything from the match on is a note ("…, and on event days: …"), not the normal hours.
+        m = re.search(cfg['noteRegex'], text, re.I)
+        if m:
+            text, note = text[:m.start()], text[m.start():].strip(' ,;.') + '.'
+    if cfg.get('noteAfter') and cfg['noteAfter'] in text:
+        text, note = text.split(cfg['noteAfter'], 1)
+        note = re.sub(r'\s*' + re.escape(cfg['noteAfter']) + r'\s*', '. ', note).strip(' .') + '.'
+    text = re.sub(r'\s+', ' ', text).strip()
+    extra = [str(props.get(f) or '').strip() for f in cfg.get('noteFields', [])]
+    extra = [e for e in extra if e and e.lower() != 'none']
+    if extra:
+        note = ' '.join(([note] if note else []) + [e if e.endswith('.') else e + '.' for e in extra])
+    return (text or None), note
+
+
+def zones_from_polygons(bid, b, polys):
+    """{zone code: {'geom', 'name', 'hours', 'note', 'url'}} from the polygon features. Polygons with the
+    same code are merged; if they carry different hours the code gets a suffix, so no polygon is
+    shown with another one's hours."""
+    src = b['polygons']
+    groups = {}
+    for code, g, props in polys:
+        hours, note = data_hours(b, props)
+        name = str(props.get(src['nameField']) or '').strip() if src.get('nameField') else None
+        if name and name.lower() == 'none':
+            name = None
+        for pat, repl in src.get('nameReplace', []):
+            name = re.sub(pat, repl, name) if name else name
+        url = str(props.get(src['urlField']) or '').strip() if src.get('urlField') else None
+        groups.setdefault(code, []).append((hours, note, name, url, g))
+    zones = {}
+    for code, items in groups.items():
+        variants = []
+        for hours, note, name, url, g in items:
+            key = (hours or '').lower()
+            v = next((v for v in variants if v['key'] == key), None)
+            if not v:
+                v = {'key': key, 'hours': hours, 'note': note, 'name': name, 'url': url, 'geoms': []}
+                variants.append(v)
+            v['geoms'].append(g)
+            if name and v['name'] and name != v['name'] and name not in v['name']:
+                v['name'] = v['name'] + ' / ' + name
+        for i, v in enumerate(variants):
+            zcode = code if len(variants) == 1 else f'{code} ({i + 1})'
+            zones[zcode] = {'geom': unary_union(v['geoms']), 'name': v['name'], 'hours': v['hours'],
+                            'note': v['note'], 'url': v['url']}
+    return zones
+
+
+def build_rules(bid, b, zone_info):
+    """Rules for a borough: one per zone (hours from the sources file, else from the polygon data),
+    plus street rules."""
     rules = {}
     zones = dict(b.get('zones', {}))
-    # Zones in the polygons but not in the sources file still get a rule, with unknown hours.
-    for code in zone_codes:
-        zones.setdefault(code, {})
+    for code, info in zone_info.items():
+        z = dict(zones.get(code, {}))
+        if z.get('hours') is None and info.get('hours'):
+            z['hours'] = info['hours']
+        for k in ('name', 'note', 'url'):
+            if info.get(k) and not z.get(k):
+                z[k] = info[k]
+        zones[code] = z
     for code, z in zones.items():
         hours = z.get('hours')
         if hours is None:
@@ -322,6 +493,17 @@ def hf_river_hook(bid, z, name, piece, rule, ways):
 STREET_HOOKS = {'hf_river': hf_river_hook}
 
 
+def borough_boundary(name):
+    """A borough's outline from the London Datastore boundary shapefile (OGL; cached as
+    London_Borough_Excluding_MHW.* in CACHE), in WGS84."""
+    import shapefile
+    rd = shapefile.Reader(os.path.join(CACHE, 'London_Borough_Excluding_MHW.shp'))
+    for sr in rd.iterShapeRecords():
+        if sr.record['NAME'] == name:
+            return reproject(shape(sr.shape.__geo_interface__), 27700).buffer(0)
+    raise SystemExit(f'no borough boundary called {name!r}')
+
+
 # ---------------------------------------------------------------------------
 
 def main(argv):
@@ -344,13 +526,25 @@ def main(argv):
     for bid in wanted:
         b = boroughs[bid]
         log(f'{bid} ({b["name"]})')
+        if b.get('boundaryOnly'):
+            # No zone polygons published: the borough outline plus its listed zones (no geometry).
+            outline = borough_boundary(b['boundaryOnly'])
+            rules = build_rules(bid, b, {})
+            all_zones.append(feature(outline.simplify(0.0002), {'b': bid, 'zone': '', 'rule': f'{bid}:', 'outline': 1}))
+            w, s, e, n = outline.bounds
+            entry = {k: b[k] for k in ('name', 'short', 'hoursUrl', 'checked', 'eventDaysUrl', 'bankHolidayUrl',
+                                       'mapPdf', 'yellowLines', 'charges', 'notes', 'licence') if k in b}
+            entry.update({'bbox': [round(w, 4), round(s, 4), round(e, 4), round(n, 4)], 'listOnly': True,
+                          'zoneCount': len(rules), 'knownHours': sum(1 for r in rules.values() if r['periods'] is not None)})
+            all_boroughs[bid] = entry
+            all_rules.update(rules)
+            continue
         polys = load_polygons(bid, b['polygons'])
-        zones = {}
-        for code, g, _ in polys:
-            zones[code] = unary_union([zones[code], g]) if code in zones else g
+        zone_info = zones_from_polygons(bid, b, polys)
+        zones = {code: info['geom'] for code, info in zone_info.items()}
         if not zones:
             raise SystemExit(f'{bid}: no zone polygons')
-        rules = build_rules(bid, b, sorted(zones))
+        rules = build_rules(bid, b, zone_info)
         missing = sorted(set(b.get('zones', {})) - set(zones))
         if missing:
             log(f'  zones with hours but no polygon: {", ".join(missing)}')
@@ -367,11 +561,16 @@ def main(argv):
         all_boroughs[bid] = entry
         all_rules.update(rules)
         if not b.get('skipOsm'):
-            streets, kerb, machines = build_osm(bid, b, zones, rules)
-            write(os.path.join(OUT, bid, 'streets.geojson'), streets)
-            write(os.path.join(OUT, bid, 'kerb.geojson'), kerb)
-            write(os.path.join(OUT, bid, 'machines.geojson'), machines)
-            entry['detail'] = True
+            try:
+                streets, kerb, machines = build_osm(bid, b, zones, rules)
+            except RuntimeError as e:
+                log(f'  {e}; keeping any earlier street files')
+                entry['detail'] = os.path.exists(os.path.join(OUT, bid, 'streets.geojson'))
+            else:
+                write(os.path.join(OUT, bid, 'streets.geojson'), streets)
+                write(os.path.join(OUT, bid, 'kerb.geojson'), kerb)
+                write(os.path.join(OUT, bid, 'machines.geojson'), machines)
+                entry['detail'] = True
 
     rules_out = {'checked': max(b.get('checked', '') for b in all_boroughs.values()),
                  'boroughs': dict(sorted(all_boroughs.items())), 'rules': dict(sorted(all_rules.items()))}
