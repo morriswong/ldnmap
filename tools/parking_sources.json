@@ -2497,205 +2497,1305 @@
   "wandsworth": {
    "name": "Wandsworth",
    "short": "Wandsworth",
-   "boundaryOnly": "Wandsworth",
    "hoursUrl": "https://www.wandsworth.gov.uk/find-parking-zones",
    "checked": "2026-11-08",
-   "licence": "Zone hours: Wandsworth council. Borough outline: Office for National Statistics / London Datastore (OGL v3).",
+   "licence": "Zone boundaries traced from Wandsworth Council’s CPZ map; hours from the council. Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
    "zones": {
-    "B1": {
-     "hours": "9.30am to 4.30pm Monday to Friday",
-     "name": "Battersea",
-     "maxStay": "Maximum stay for visitors - 4 hours",
-     "note": "page: battersea-parking-zones"
-    },
-    "B2": {
-     "hours": "9.30am to 4.30pm Monday to Friday",
-     "name": "Battersea",
-     "maxStay": "Maximum stay for visitors - 4 hours"
-    },
-    "B2 (2)": {
-     "hours": "Battersea Church Road and Sunbury Lane - 9am to 5pm Monday to Saturday",
-     "name": "Battersea",
-     "maxStay": "Maximum stay for visitors - 4 hours"
-    },
-    "B3": {
-     "hours": "9.30am to 5.30pm Monday to Friday",
-     "name": "Battersea",
-     "maxStay": "Maximum stay for visitors - 4 hours"
-    },
-    "B4": {
-     "hours": "- 9am to 5pm Monday to Friday",
-     "name": "Battersea",
-     "maxStay": "Maximum stay for visitors - 4 hours"
-    },
-    "B5": {
-     "hours": "- 11am to 12pm Monday to Friday",
-     "name": "Battersea",
-     "note": "Permit holders only"
-    },
-    "B6": {
-     "hours": "- 9.30am to 4.30pm Monday to Friday",
-     "name": "Battersea",
-     "maxStay": "Maximum stay for visitors - 4 hours"
-    },
-    "B7": {
-     "hours": "- 9am to 5pm Monday to Friday",
-     "name": "Battersea",
-     "maxStay": "Maximum stay for visitors - 4 hours"
-    },
-    "B8": {
-     "hours": "- 8.30am to 6.30pm Monday to Saturday",
-     "name": "Battersea",
-     "maxStay": "Maximum stay for visitors - 4 hours"
-    },
-    "B8a": {
-     "hours": "- 8.30am to 10pm Monday to Sunday",
-     "name": "Battersea",
-     "maxStay": "Maximum stay for visitors - 4 hours"
-    },
-    "B9": {
-     "hours": "- 10 to 11am Monday to Friday",
-     "name": "Battersea",
-     "note": "Permit holders only"
-    },
-    "Battersea Park CPZ": {
-     "hours": "9am to 8pm Monday to Sunday (including Public and Bank Holidays)",
-     "name": "Battersea Park area",
-     "maxStay": "Maximum stay for visitors - 4 hours",
-     "note": "Permits for Battersea Park Area CPZ are NOT valid in Battersea Park. BK Permit Holders only may park in Kersley Mews. page: battersea-park-area-parking-zones"
-    },
-    "C1": {
-     "hours": "8.30am to 6.30pm, Monday to Saturday.",
-     "name": "Clapham Junction - The central area",
-     "maxStay": "Max stay - 2 hours",
-     "note": "page: clapham-junction-parking-zones"
-    },
-    "C2": {
-     "hours": "9.30am to 5.30pm, Monday to Saturday.",
-     "name": "Clapham Junction - Northcote area",
-     "maxStay": "Max stay - 4 hours"
-    },
-    "C3": {
-     "hours": "8.30am to 6.30pm, Monday to Saturday.",
-     "name": "Clapham Junction - Lavender Hill area",
-     "maxStay": "Max stay - 2 hours"
-    },
-    "C3 (2)": {
-     "hours": "9.30am to 5.30pm Monday to Friday.",
-     "name": "Clapham Junction - Lavender Hill area",
-     "maxStay": "Max stay - 2 hours",
-     "note": "this hours/max-stay combination appears twice on the page"
-    },
-    "C3 (3)": {
-     "hours": "9.30am to 5.30pm Monday to Friday.",
-     "name": "Clapham Junction - Lavender Hill area",
-     "maxStay": "Max stay - 4 hours",
-     "note": "NOTE: Residents of Elspeth Road are eligible for C3e resident permits. A C3e permit allows the holder to park in Lavender Gardens and in the part of the C3 sub-zone nearest to Elspeth Road (bordered by the dotted blue line in the above plan). The signs in these street show both C3 and C3e sub-zone permits are valid."
-    },
-    "C4": {
-     "hours": "9.30am to 5.30pm, Monday to Friday.",
-     "name": "Clapham Junction - Thurleigh Road area",
-     "maxStay": "Max stay for visitors - 4 hours."
-    },
-    "H1": {
-     "hours": "9.30am to 5.30pm Monday to Friday.",
-     "name": "Clapham South",
-     "maxStay": "Max stay for visitor - 4 hours",
-     "note": "Nightingale Walk only Max stay for visitor - 8 hours. Cavendish Road and Hazelbourne Road - Boundary Road Agreement. H1 and H3 permit holders and vehicles displaying a pay and display ticket from Wandsworth's side of the road, may park in bays on the Lambeth side, and vice versa. page: clapham-south-parking-zones"
-    },
-    "H2": {
-     "hours": "10.30am to 11.30am Monday to Friday",
-     "name": "Clapham South",
-     "note": "Permit holder only parking."
-    },
-    "H2 (2)": {
-     "hours": "9.30am to 5.30pm Monday to Friday.",
-     "name": "Clapham South",
-     "maxStay": "Max stay for visitor - 4 hours"
-    },
-    "H3": {
-     "hours": "9.30am to 5.30pm Monday to Saturday.",
-     "name": "Balham",
-     "maxStay": "Max stay for visitor - 4 hours",
-     "note": "Note: Some parking bays in Bedford Hill are NOT available to Permit holders... The maximum stay in these bays is 1 hour. Cavendish Road and Hazelbourne Road - Boundary Road Agreement."
-    },
-    "H3 (2)": {
-     "hours": "9.30am to 5.30pm Monday to Friday.",
-     "name": "Balham",
-     "maxStay": "Max stay for visitor - 4 hours"
-    },
-    "L1": {
-     "hours": "9.30am to 4.30pm Monday to Friday",
-     "name": "Earlsfield",
-     "maxStay": "(Maximum stay 4 hours)",
-     "note": "page: earlsfield-parking-zones"
-    },
-    "L2": {
-     "hours": "9.30am to 4.30pm, Monday to Friday",
-     "name": "Earlsfield",
-     "maxStay": "(Maximum stay 4 hours)"
-    },
-    "L2 (2)": {
-     "hours": "10.30am to 11.30am, Monday to Friday",
-     "name": "Earlsfield",
-     "note": "(Permit holders only). Important Note: In Garratt Lane all parking bays operate Monday to Saturday between 10am and 4pm. Most of the bays are pay and display only with a maximum stay of one hour... some of them have yellow line waiting restrictions that operate outside these hours."
-    },
-    "F1": {
-     "hours": "11am to 12pm Monday to Friday",
-     "name": "Furzedown",
-     "note": "Permit holders only. page: furzedown-parking-zones"
-    },
-    "G1": {
-     "hours": "9.30am to 4.30pm, Monday to Friday",
-     "name": "Garratt Green",
-     "maxStay": "Maximum stay: 4 hours",
-     "note": "page: garratt-green-parking-zones"
-    },
     "A1": {
-     "hours": "8.30am to 6.30pm, Monday to Saturday",
      "name": "Putney",
-     "maxStay": "Maximum stay: 1 or 2 hours",
-     "note": "page: putney-parking-zones"
+     "hours": "8.30am to 6.30pm, Monday to Saturday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ],
+     "maxStay": "1 or 2 hours"
     },
     "A2": {
-     "hours": "8.30am to 6.30pm, Monday to Saturday",
      "name": "Putney",
-     "maxStay": "Maximum stay: 4 or 10 hours"
+     "hours": "8.30am to 6.30pm, Monday to Saturday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ],
+     "maxStay": "4 or 10 hours"
     },
     "A3": {
-     "hours": "9.30am to 4.30pm, Monday to Friday (with the exception of Balmuir Gardens, which has controls operating from 8.30am to 6.30pm Monday to Saturday)",
      "name": "Putney",
-     "maxStay": "Maximum stay: 4 or 7 hours"
+     "hours": "9.30am to 4.30pm, Monday to Friday (with the exception of Balmuir Gardens, which has controls operating from 8.30am to 6.30pm Monday to Saturday)",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "16:30"
+      }
+     ],
+     "maxStay": "4 or 7 hours",
+     "unsure": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "08:30",
+       "to": "09:30"
+      },
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "16:30",
+       "to": "18:30"
+      },
+      {
+       "days": [
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ],
+     "note": "Balmuir Gardens’ longer hours show as unknown across the zone."
     },
     "A4": {
+     "name": "Putney",
      "hours": "9.30am to 10.30am Monday to Friday only",
-     "name": "Putney",
-     "note": "Permit holders only"
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "10:30"
+      }
+     ],
+     "permitOnly": true
     },
-    "A5": {
-     "hours": "9.30am to 4.30pm Monday to Saturday.",
+    "A5a": {
      "name": "Putney",
-     "maxStay": "Maximum stay: 4 hours"
+     "hours": "9.30am to 4.30pm Monday to Saturday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "09:30",
+       "to": "16:30"
+      }
+     ],
+     "maxStay": "4 hours"
     },
-    "A5 (2)": {
-     "hours": "9.30am to 4.30pm Monday to Friday.",
+    "A5b": {
      "name": "Putney",
-     "maxStay": "Maximum stay: 4 hours"
+     "hours": "9.30am to 4.30pm Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "16:30"
+      }
+     ],
+     "maxStay": "4 hours"
     },
-    "A5 (3)": {
-     "hours": "9.30am to 10.30am Monday to Friday.",
-     "name": "Putney 1 hour",
-     "note": "Permit holders only."
-    },
-    "A6": {
-     "hours": "9.30am to 4.30pm Monday to Friday.",
+    "A5c": {
      "name": "Putney",
-     "maxStay": "Maximum stay: 4 hours"
+     "hours": "9.30am to 10.30am Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "10:30"
+      }
+     ],
+     "permitOnly": true
     },
-    "A6 (2)": {
-     "hours": "2pm to 3pm Monday to Friday.",
+    "A6a": {
      "name": "Putney",
-     "note": "Permit holders only"
+     "hours": "9.30am to 4.30pm Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "16:30"
+      }
+     ],
+     "maxStay": "4 hours"
+    },
+    "A6b": {
+     "name": "Putney",
+     "hours": "2pm to 3pm Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "14:00",
+       "to": "15:00"
+      }
+     ],
+     "permitOnly": true
+    },
+    "B": {
+     "name": "Battersea Park area",
+     "hours": "9am to 8pm Monday to Sunday (including Public and Bank Holidays)",
+     "periods": [
+      {
+       "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "09:00",
+       "to": "20:00"
+      }
+     ],
+     "maxStay": "4 hours",
+     "note": "Permits for Battersea Park Area CPZ are NOT valid in Battersea Park. BK Permit Holders only may park in Kersley Mews."
+    },
+    "B1": {
+     "name": "Battersea",
+     "hours": "9.30am to 4.30pm Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "16:30"
+      }
+     ],
+     "maxStay": "4 hours"
+    },
+    "B2a": {
+     "name": "Battersea",
+     "hours": "9.30am to 4.30pm Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "16:30"
+      }
+     ],
+     "maxStay": "4 hours"
+    },
+    "B2b": {
+     "name": "Battersea: Battersea Church Road and Sunbury Lane",
+     "hours": "9am to 5pm Monday to Saturday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "09:00",
+       "to": "17:00"
+      }
+     ],
+     "maxStay": "4 hours",
+     "note": "Part of zone B2."
+    },
+    "B3": {
+     "name": "Battersea",
+     "hours": "9.30am to 5.30pm Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "17:30"
+      }
+     ],
+     "maxStay": "4 hours"
+    },
+    "B4": {
+     "name": "Battersea",
+     "hours": "9am to 5pm Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:00",
+       "to": "17:00"
+      }
+     ],
+     "maxStay": "4 hours"
+    },
+    "B5": {
+     "name": "Battersea",
+     "hours": "11am to 12pm Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "11:00",
+       "to": "12:00"
+      }
+     ],
+     "permitOnly": true
+    },
+    "B6": {
+     "name": "Battersea",
+     "hours": "9.30am to 4.30pm Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "16:30"
+      }
+     ],
+     "maxStay": "4 hours"
+    },
+    "B7": {
+     "name": "Battersea",
+     "hours": "9am to 5pm Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:00",
+       "to": "17:00"
+      }
+     ],
+     "maxStay": "4 hours"
+    },
+    "B8": {
+     "name": "Battersea",
+     "hours": "8.30am to 6.30pm Monday to Saturday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ],
+     "maxStay": "4 hours"
+    },
+    "B8a": {
+     "name": "Battersea",
+     "hours": "8.30am to 10pm Monday to Sunday",
+     "periods": [
+      {
+       "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "22:00"
+      }
+     ],
+     "maxStay": "4 hours"
+    },
+    "B9": {
+     "name": "Battersea",
+     "hours": "10 to 11am Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:00",
+       "to": "11:00"
+      }
+     ],
+     "permitOnly": true
+    },
+    "C1": {
+     "name": "Clapham Junction: central area",
+     "hours": "8.30am to 6.30pm, Monday to Saturday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ],
+     "maxStay": "2 hours"
+    },
+    "C2": {
+     "name": "Clapham Junction: Northcote area",
+     "hours": "9.30am to 5.30pm, Monday to Saturday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "09:30",
+       "to": "17:30"
+      }
+     ],
+     "maxStay": "4 hours"
+    },
+    "C3a": {
+     "name": "Clapham Junction: Lavender Hill area",
+     "hours": "8.30am to 6.30pm, Monday to Saturday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ],
+     "maxStay": "2 hours"
+    },
+    "C3b": {
+     "name": "Clapham Junction: Lavender Hill area",
+     "hours": "9.30am to 5.30pm Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "17:30"
+      }
+     ],
+     "maxStay": "2 hours"
+    },
+    "C3c": {
+     "name": "Clapham Junction: Lavender Hill area",
+     "hours": "9.30am to 5.30pm Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "17:30"
+      }
+     ],
+     "maxStay": "4 hours"
+    },
+    "C3d": {
+     "name": "Clapham Junction: Lavender Hill area",
+     "hours": "9.30am to 5.30pm Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "17:30"
+      }
+     ],
+     "maxStay": "2 hours"
+    },
+    "C4": {
+     "name": "Clapham Junction: Thurleigh Road area",
+     "hours": "9.30am to 5.30pm, Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "17:30"
+      }
+     ],
+     "maxStay": "4 hours"
+    },
+    "D1": {
+     "name": "Wandsworth Common",
+     "hours": "9.30am to 4.30pm Monday to Saturday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "09:30",
+       "to": "16:30"
+      }
+     ],
+     "maxStay": "1, 2 or 4 hours"
+    },
+    "D2a": {
+     "name": "Wandsworth Common",
+     "hours": "11.30am to 12.30pm Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "11:30",
+       "to": "12:30"
+      }
+     ],
+     "permitOnly": true
+    },
+    "D2b": {
+     "name": "Wandsworth Common",
+     "hours": "9.30am to 4.30pm Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "16:30"
+      }
+     ],
+     "maxStay": "4 hours"
+    },
+    "D3a": {
+     "name": "Tooting Bec",
+     "hours": "9.30am to 4.30pm Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "16:30"
+      }
+     ],
+     "maxStay": "4 hours"
+    },
+    "D3b": {
+     "name": "Tooting Bec",
+     "hours": "9.30am to 6.30pm Monday to Saturday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "09:30",
+       "to": "18:30"
+      }
+     ],
+     "maxStay": "2 hours"
+    },
+    "D4": {
+     "name": "Wandsworth Common and Tooting Bec",
+     "hours": "11am to 12 midday Monday to Saturday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "11:00",
+       "to": "12:00"
+      }
+     ],
+     "permitOnly": true
+    },
+    "D5a": {
+     "name": "Wandsworth Common and Tooting Bec",
+     "hours": "10am to 11am, Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:00",
+       "to": "11:00"
+      }
+     ],
+     "permitOnly": true,
+     "note": "The council’s map draws Alma Terrace (zone D5b: 9.30am to 4pm Monday to Saturday) inside this zone, so it isn’t shown apart."
+    },
+    "D5b": {
+     "name": "Alma Terrace",
+     "hours": "9.30am to 4pm Monday to Saturday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "09:30",
+       "to": "16:00"
+      }
+     ],
+     "maxStay": "2 hours (visitors)"
+    },
+    "E1": {
+     "name": "Tooting Broadway",
+     "hours": "9.30am to 5.30pm Monday to Saturday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "09:30",
+       "to": "17:30"
+      }
+     ],
+     "maxStay": "4 hours",
+     "note": "In some roads near St George's hospital there are 8 hour maximum stay bays. Please check the signs when you park."
+    },
+    "E2a": {
+     "name": "Tooting Broadway",
+     "hours": "9.30am to 5.30pm Monday to Saturday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "09:30",
+       "to": "17:30"
+      }
+     ],
+     "maxStay": "4 hours"
+    },
+    "E2b": {
+     "name": "Tooting Broadway",
+     "hours": "10am to 11am Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:00",
+       "to": "11:00"
+      }
+     ],
+     "permitOnly": true
+    },
+    "F1": {
+     "name": "Furzedown",
+     "hours": "11am to 12pm Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "11:00",
+       "to": "12:00"
+      }
+     ],
+     "permitOnly": true
+    },
+    "G1": {
+     "name": "Garratt Green",
+     "hours": "9.30am to 4.30pm, Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "16:30"
+      }
+     ],
+     "maxStay": "4 hours"
+    },
+    "H1": {
+     "name": "Clapham South",
+     "hours": "9.30am to 5.30pm Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "17:30"
+      }
+     ],
+     "maxStay": "4 hours",
+     "note": "Nightingale Walk only Max stay for visitor - 8 hours. Cavendish Road and Hazelbourne Road - Boundary Road Agreement. H1 and H3 permit holders and vehicles displaying a pay and display ticket from Wandsworth's side of the road, may park in bays on the Lambeth side, and vice versa."
+    },
+    "H2a": {
+     "name": "Clapham South",
+     "hours": "10.30am to 11.30am Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:30",
+       "to": "11:30"
+      }
+     ],
+     "permitOnly": true
+    },
+    "H2b": {
+     "name": "Clapham South",
+     "hours": "9.30am to 5.30pm Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "17:30"
+      }
+     ],
+     "maxStay": "4 hours"
+    },
+    "H3a": {
+     "name": "Balham",
+     "hours": "9.30am to 5.30pm Monday to Saturday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "09:30",
+       "to": "17:30"
+      }
+     ],
+     "maxStay": "4 hours",
+     "note": "Note: Some parking bays in Bedford Hill are NOT available to Permit holders... The maximum stay in these bays is 1 hour. Cavendish Road and Hazelbourne Road - Boundary Road Agreement."
+    },
+    "H3b": {
+     "name": "Balham",
+     "hours": "9.30am to 5.30pm Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "17:30"
+      }
+     ],
+     "maxStay": "4 hours"
+    },
+    "J": {
+     "name": "St John’s Hill",
+     "hours": "9.30am to 4.30pm Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "16:30"
+      }
+     ],
+     "maxStay": "4 hours",
+     "note": "Note: Most parking bays in this zone are shared use... Some parking bays in St John's Hill are NOT available to Permit holders... The maximum stay in these bays is 2 hours."
+    },
+    "L1": {
+     "name": "Earlsfield",
+     "hours": "9.30am to 4.30pm Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "16:30"
+      }
+     ],
+     "maxStay": "4 hours"
+    },
+    "L2a": {
+     "name": "Earlsfield",
+     "hours": "9.30am to 4.30pm, Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "16:30"
+      }
+     ],
+     "maxStay": "4 hours"
+    },
+    "L2b": {
+     "name": "Earlsfield",
+     "hours": "10.30am to 11.30am, Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:30",
+       "to": "11:30"
+      }
+     ],
+     "permitOnly": true,
+     "note": "Important Note: In Garratt Lane all parking bays operate Monday to Saturday between 10am and 4pm. Most of the bays are pay and display only with a maximum stay of one hour... some of them have yellow line waiting restrictions that operate outside these hours."
+    },
+    "P1": {
+     "name": "Putney Heath",
+     "hours": "11am to 12 noon Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "11:00",
+       "to": "12:00"
+      }
+     ],
+     "permitOnly": true
+    },
+    "Q1": {
+     "name": "West Hill",
+     "hours": "10am to 4pm, Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:00",
+       "to": "16:00"
+      }
+     ],
+     "maxStay": "4 hours"
+    },
+    "Q2": {
+     "name": "West Hill",
+     "hours": "10am to 11am, Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:00",
+       "to": "11:00"
+      }
+     ],
+     "permitOnly": true
+    },
+    "R1": {
+     "name": "Roehampton",
+     "hours": "10am to 11am Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:00",
+       "to": "11:00"
+      }
+     ]
+    },
+    "R2": {
+     "name": "Roehampton",
+     "hours": "11am to 12 noon Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "11:00",
+       "to": "12:00"
+      }
+     ]
+    },
+    "S1": {
+     "name": "Southfields",
+     "hours": "9.30am to 4.30pm Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "16:30"
+      }
+     ],
+     "maxStay": "4 hours"
+    },
+    "S2": {
+     "name": "Southfields",
+     "hours": "1.30pm to 2.30pm, Monday to Friday (except Replingham Road: 9.30am to 4.30pm Monday to Friday)",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "13:30",
+       "to": "14:30"
+      }
+     ],
+     "maxStay": "4 hours"
+    },
+    "S3": {
+     "name": "Southfields",
+     "hours": "1.30pm to 2.30pm, Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "13:30",
+       "to": "14:30"
+      }
+     ]
+    },
+    "S4": {
+     "name": "Southfields",
+     "hours": "1.30pm to 2.30pm, Monday to Friday, permit holders only",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "13:30",
+       "to": "14:30"
+      }
+     ],
+     "permitOnly": true
+    },
+    "S5": {
+     "name": "Southfields",
+     "hours": "2pm to 3pm, Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "14:00",
+       "to": "15:00"
+      }
+     ]
+    },
+    "W1a": {
+     "name": "Wandsworth Town",
+     "hours": "9.30am to 4.30pm Monday to Friday; Barchard Street: 9.30am to 8pm, Monday to Sunday (permit holders only)",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "16:30"
+      }
+     ],
+     "maxStay": "2 or 4 hours",
+     "unsure": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "16:30",
+       "to": "20:00"
+      },
+      {
+       "days": [
+        0,
+        6
+       ],
+       "from": "09:30",
+       "to": "20:00"
+      }
+     ],
+     "note": "Barchard Street’s longer hours show as unknown across the zone."
+    },
+    "W1b": {
+     "name": "Wandsworth Town",
+     "hours": "8.30am to 6.30pm, Monday to Saturday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ]
+    },
+    "W2a": {
+     "name": "Wandsworth Town",
+     "hours": "9.30am to 4.30pm, Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "16:30"
+      }
+     ],
+     "maxStay": "2 or 4 hours"
+    },
+    "W2b": {
+     "name": "Wandsworth Town",
+     "hours": "10.30am to 11.30am, Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:30",
+       "to": "11:30"
+      }
+     ],
+     "permitOnly": true
+    },
+    "W3a": {
+     "name": "Wandsworth Town",
+     "hours": "10.30am to 11.30am Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:30",
+       "to": "11:30"
+      }
+     ],
+     "permitOnly": true,
+     "note": "Important Note: In Barmouth Road near the junction with Killarney Road there are some pay and display only bays which operate from 9.30am to 4.30pm Monday to Friday. The maximum stay allowed in these bays is 2 hours."
+    },
+    "W3b": {
+     "name": "Wandsworth Town",
+     "hours": "9.30am to 4.30pm Monday to Friday",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "16:30"
+      }
+     ],
+     "maxStay": "4 hours",
+     "note": "Important Note: In Garratt Lane most bays are pay and display only with a maximum stay of one hour. Some bays are available only between 10am to 4pm."
+    },
+    "W4": {
+     "name": "Wandsworth Town",
+     "hours": "9.30am-6.30pm, Monday to Friday (Maximum stay 4 hours) and 3pm-4pm, Saturday and Sunday (Permit holders only)",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "18:30"
+      }
+     ],
+     "maxStay": "4 hours",
+     "note": "Saturday and Sunday 3pm to 4pm: permit holders only.",
+     "permit": [
+      {
+       "days": [
+        0,
+        6
+       ],
+       "from": "15:00",
+       "to": "16:00"
+      }
+     ]
     },
     "A1/A2": {
      "hours": "8.30am to 6.30pm Monday to Saturday",
@@ -2712,159 +3812,14 @@
     "AO": {
      "hours": "9.30am to 4.30pm Monday to Friday",
      "name": "Roads accepting Putney outer area business permit AO"
-    },
-    "P1": {
-     "hours": "(Operational 11am - 12 noon Monday-Friday)",
-     "name": "Putney Heath",
-     "note": "page: putney-heath-parking-zones"
-    },
-    "R1": {
-     "hours": "(Operational 10am - 11am Monday-Friday)",
-     "name": "Roehampton",
-     "note": "page: roehampton-parking-zones"
-    },
-    "R2": {
-     "hours": "(Operational 11am - 12noon Monday-Friday)",
-     "name": "Roehampton"
-    },
-    "S1": {
-     "hours": "9.30am to 4.30pm Monday to Friday",
-     "name": "Southfields",
-     "maxStay": "(Maximum stay 4 hours)",
-     "note": "page: southfields-parking-zones"
-    },
-    "S2": {
-     "hours": "1.30pm to 2.30pm, Monday to Friday",
-     "name": "Southfields",
-     "note": "Except Replingham Road - Operational 9:30am to 4.30pm Monday to Friday (Maximum stay 4 hours)"
-    },
-    "S3": {
-     "hours": "1.30pm to 2.30pm, Monday to Friday",
-     "name": "Southfields"
-    },
-    "S4": {
-     "hours": "1.30pm to 2.30pm, Monday to Friday, permit holders only",
-     "name": "Southfields"
-    },
-    "S5": {
-     "hours": "2pm to 3pm, Monday to Friday",
-     "name": "Southfields"
-    },
-    "J": {
-     "hours": "Hours of control 9.30am to 4.30pm Monday to Friday",
-     "name": "St John's Hill",
-     "maxStay": "maximum stay 4 hours",
-     "note": "Note: Most parking bays in this zone are shared use... Some parking bays in St John's Hill are NOT available to Permit holders... The maximum stay in these bays is 2 hours. page: st-johns-hill-parking-zones"
-    },
-    "E1": {
-     "hours": "9.30am to 5.30pm Monday to Saturday.",
-     "name": "Tooting Broadway",
-     "maxStay": "Max stay per visitors - 4 hours.",
-     "note": "In some roads near St George's hospital there are 8 hour maximum stay bays. Please check the signs when you park. page: tooting-broadway-parking-zones"
-    },
-    "E2": {
-     "hours": "9.30am to 5.30pm Monday to Saturday.",
-     "name": "Tooting Broadway",
-     "maxStay": "Max stay per visitor - 4 hours."
-    },
-    "E2 (2)": {
-     "hours": "10am to 11am Monday to Friday.",
-     "name": "Tooting Broadway",
-     "note": "Permit holders only."
-    },
-    "D1": {
-     "hours": "9.30am to 4.30pm Monday to Saturday.",
-     "name": "Wandsworth Common Area",
-     "maxStay": "Maximum stay for visitors: Bellevue Road - 1 hour; Althorp Road and Wiseton Road - 2 hours; St. James Drive, Nottingham Road and Brodrick Road - 4 hours",
-     "note": "page: wandsworth-common-and-tooting-bec-parking-zones"
-    },
-    "D2": {
-     "hours": "11.30am to 12.30pm Monday to Friday.",
-     "name": "Wandsworth Common",
-     "note": "Permit holders only."
-    },
-    "D2 (2)": {
-     "hours": "9.30am to 4.30pm Monday to Friday",
-     "name": "Wandsworth Common",
-     "maxStay": "Crockerton Rd maximum stay for visitors - 4 hours"
-    },
-    "D3": {
-     "hours": "9.30am to 4.30pm Monday to Friday",
-     "name": "Tooting Bec",
-     "maxStay": "maximum stay for visitors - 4 hours"
-    },
-    "D3 (2)": {
-     "hours": "9.30am to 6.30pm Monday to Saturday",
-     "name": "Tooting Bec",
-     "maxStay": "maximum stay for visitors - 2 hours"
-    },
-    "D4": {
-     "hours": "11am to 12 Midday Monday to Saturday.",
-     "name": "Wandsworth Common and Tooting Bec",
-     "note": "Permit holders only."
-    },
-    "D5": {
-     "hours": "9.30am and 4pm Monday to Saturday",
-     "name": "Alma Terrace",
-     "maxStay": "maximum stay for visitors - 2 hours",
-     "note": "sic ('and')"
-    },
-    "D5 (2)": {
-     "hours": "10am to 11am, Monday to Friday",
-     "name": "Wandsworth Common and Tooting Bec",
-     "note": "Permit holders only"
-    },
-    "W1": {
-     "hours": "9.30am to 4.30pm Monday to Friday",
-     "name": "Wandsworth Town",
-     "maxStay": "(Maximum stay 2 or 4 hours)",
-     "note": "page: wandsworth-town-parking-zones"
-    },
-    "W1 (2)": {
-     "hours": "8.30am to 6.30pm, Monday to Saturday.",
-     "name": "Wandsworth Town"
-    },
-    "W1 (3)": {
-     "hours": "9.30am to 8pm, Monday to Sunday - Permit holders only",
-     "name": "Wandsworth Town"
-    },
-    "W2": {
-     "hours": "9.30am to 4.30pm, Monday to Friday",
-     "name": "Wandsworth Town",
-     "maxStay": "(Maximum stay 2 or 4 hours)"
-    },
-    "W2 (2)": {
-     "hours": "10.30am to 11.30am, Monday to Friday - Permit holders only",
-     "name": "Wandsworth Town"
-    },
-    "W3": {
-     "hours": "10.30am to 11.30am Monday to Friday - Permit holders only",
-     "name": "Wandsworth Town",
-     "note": "Important Note: In Barmouth Road near the junction with Killarney Road there are some pay and display only bays which operate from 9.30am to 4.30pm Monday to Friday. The maximum stay allowed in these bays is 2 hours."
-    },
-    "W3 (2)": {
-     "hours": "9.30am to 4.30pm Monday to Friday",
-     "name": "Wandsworth Town",
-     "maxStay": "(Maximum stay 4 hours)",
-     "note": "Important Note: In Garratt Lane most bays are pay and display only with a maximum stay of one hour. Some bays are available only between 10am to 4pm."
-    },
-    "W4": {
-     "hours": "9.30am-6.30pm, Monday to Friday (Maximum stay 4 hours) and 3pm-4pm, Saturday and Sunday (Permit holders only)",
-     "name": "Wandsworth Town",
-     "maxStay": "(Maximum stay 4 hours)"
-    },
-    "Q1": {
-     "hours": "10am to 4pm, Monday to Friday.",
-     "name": "Westhill",
-     "maxStay": "Maximum stay for visitors: 4 hours.",
-     "note": "page: westhill-parking-zones"
-    },
-    "Q2": {
-     "hours": "10am to 11am, Monday to Friday (permit holders only).",
-     "name": "Westhill"
     }
    },
-   "notes": "This borough doesn’t publish zone boundaries in a form this map can use, so only the borough outline is shown. Tap inside it for the council’s zone list. Sub-zones listed more than once have different hours on different streets."
+   "notes": "Zone boundaries from the council’s “Controlled Parking Zones in Wandsworth” map (vector PDF), placed by fitting its borough boundary to Wandsworth’s (median error under 5 m). Sub-zones (a, b) are the map’s; hours are the council’s current web pages, which agree with the map except D2b (the web page says Monday to Friday). Roads accepting two zones’ permits (A1/A2, A1/A3, A1/A5, AO) are listed but not drawn.",
+   "polygons": {
+    "type": "file",
+    "path": "wandsworth.geojson",
+    "zoneField": "zone"
+   }
   },
   "westminster": {
    "name": "Westminster",
