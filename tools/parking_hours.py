@@ -76,6 +76,9 @@ def parse_hours(text):
     t = re.sub(r'\(.*?\)', ' ', t)          # drop asides like "(except bank holidays)"
     t = re.sub(r'(?<=[A-Za-z]):', ' ', t)    # "Monday to Friday: 2pm" -> "Monday to Friday 2pm"
     t = re.sub(r'\s*(&|and)\s+(bank|public)\s+holidays?', '', t, flags=re.I)   # "Sun & Bank Holidays"
+    # "8:30am and 6:30pm" (a single "between … and …" range): only when no other range is written
+    if not RANGE_RE.search(t):
+        t = re.sub(r'(\d(?:[.:]\d\d)?\s*(?:am|pm|noon))\s+and\s+(\d)', r'\1 to \2', t, flags=re.I)
     t = re.sub(r'(?<!\d)(?<!\d\s)\b(midnight|noon|midday)\b', r'12 \1', t, flags=re.I)   # bare "midnight"
     m = ALL_DAY_RE.match(t)
     if m:
@@ -193,6 +196,8 @@ if __name__ == '__main__':
         '24 hrs Mon-Sun': [{'days': ALL, 'from': '00:00', 'to': '24:00'}],
         'Permit required at all times, Monday to Saturday': [{'days': [1, 2, 3, 4, 5, 6], 'from': '00:00', 'to': '24:00'}],
         'Permit required at all times': [{'days': ALL, 'from': '00:00', 'to': '24:00'}],
+        'Monday to Friday, 8:30am and 6:30pm': [{'days': WK, 'from': '08:30', 'to': '18:30'}],
+        'Monday to Friday 11am-12 noon and 3pm-4pm': [{'days': WK, 'from': '11:00', 'to': '12:00'}, {'days': WK, 'from': '15:00', 'to': '16:00'}],
         'See signs': None,
         'Mon-Fri 2 hours': None,
         'Monday to Friday 8.30am to 6.30pm, match days 8.30am to 9.30pm': None,   # ambiguous: left for a person

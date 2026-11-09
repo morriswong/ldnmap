@@ -1267,10 +1267,9 @@
   "islington": {
    "name": "Islington",
    "short": "Islington",
-   "boundaryOnly": "Islington",
    "hoursUrl": "https://www.islington.gov.uk/parking/parking-restrictions/controlled-parking-zones",
    "checked": "2026-11-08",
-   "licence": "Zone hours: Islington council. Borough outline: Office for National Statistics / London Datastore (OGL v3).",
+   "licence": "Zone boundaries traced from Islington Council’s CPZ map; hours from the council’s CPZ page. Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
    "zones": {
     "A": {
      "hours": "Mon-Fri 8.30am to 6.30pm; Saturday 8.30am to 1.30pm"
@@ -1355,8 +1354,13 @@
      "hours": "Mon-Fri 10am to 2pm"
     }
    },
-   "notes": "This borough doesn’t publish zone boundaries in a form this map can use, so only the borough outline is shown. Tap inside it for the council’s zone list. Nine zones have extra match-day restrictions.",
-   "eventDaysUrl": "https://www.islington.gov.uk/parking/parking-restrictions/controlled-parking-zones"
+   "notes": "Zone boundaries traced from the council’s CPZ map (GeoPDF, version 34), which it calls a guide only; expect edges to be out by up to about 20 m. Nine zones have extra match-day restrictions.",
+   "eventDaysUrl": "https://www.islington.gov.uk/parking/parking-restrictions/controlled-parking-zones",
+   "polygons": {
+    "type": "file",
+    "path": "islington.geojson",
+    "zoneField": "zone"
+   }
   },
   "lewisham": {
    "name": "Lewisham",
@@ -1494,10 +1498,9 @@
   "southwark": {
    "name": "Southwark",
    "short": "Southwark",
-   "boundaryOnly": "Southwark",
    "hoursUrl": "https://www.southwark.gov.uk/parking/find-somewhere-to-park/parking-zones",
    "checked": "2026-11-08",
-   "licence": "Zone hours: Southwark council. Borough outline: Office for National Statistics / London Datastore (OGL v3).",
+   "licence": "Zone boundaries: Southwark Council map data. Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
    "zones": {
     "B": {
      "hours": "Monday to Saturday, 8:30am to 6:30pm",
@@ -1632,9 +1635,26 @@
     "TS": {
      "hours": "Monday to Friday, 8:30am to 6:30pm",
      "name": "Thorburn Square"
+    },
+    "Clink St": {
+     "hours": "At all times",
+     "name": "Clink Street residents’ parking zone",
+     "note": "Residents’ parking zone: permit holders only.",
+     "permitOnly": true
     }
    },
-   "notes": "This borough doesn’t publish zone boundaries in a form this map can use, so only the borough outline is shown. Tap inside it for the council’s zone list."
+   "notes": "Zone boundaries from the council’s Southwark Maps viewer. Hours from the council’s parking zones page, except Nunhead and Rotherhithe Village, which aren’t on that page (hours from the map data).",
+   "polygons": {
+    "type": "file",
+    "path": "southwark.geojson",
+    "zoneField": "zone",
+    "nameField": "name"
+   },
+   "hoursFromData": {
+    "fields": [
+     "datahours"
+    ]
+   }
   },
   "richmond": {
    "name": "Richmond upon Thames",
