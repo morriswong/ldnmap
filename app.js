@@ -1726,9 +1726,20 @@ function closeParkingPanel() {
   if (window.__parkingSheet) window.__parkingSheet.close();
 }
 
-// The borough whose zones' bounding box holds a point, or null.
+// The borough at a point, or null: the zone or borough outline drawn there (or nearest it, when the
+// point is on screen), else the first borough whose zones' bounding box holds it. Bounding boxes of
+// neighbouring boroughs overlap, so they are only the fallback.
 function parkingBoroughAt(lng, lat) {
   if (!parkingRules) return null;
+  if (map.getBounds().contains([lng, lat]) && map.getLayer('parking-zones-fill')) {
+    var p = map.project([lng, lat]);
+    var layers = ['parking-zones-fill', 'parking-borough-fill'].filter(function(l) { return map.getLayer(l); });
+    for (var r = 0; r <= 160; r += 40) {
+      var hit = map.queryRenderedFeatures([[p.x - r, p.y - r], [p.x + r, p.y + r]], { layers: layers })
+        .filter(function(f) { return parkingRules.boroughs[f.properties.b]; })[0];
+      if (hit) return hit.properties.b;
+    }
+  }
   var ids = Object.keys(parkingRules.boroughs).filter(function(id) {
     var bb = parkingRules.boroughs[id].bbox;
     return lng >= bb[0] && lng <= bb[2] && lat >= bb[1] && lat <= bb[3];
