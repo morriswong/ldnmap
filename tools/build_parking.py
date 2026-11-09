@@ -740,6 +740,10 @@ def main(argv):
         missing = sorted(set(b.get('zones', {})) - set(zones))
         if missing:
             log(f'  zones with hours but no polygon: {", ".join(missing)}')
+        if b.get('partial'):
+            # Some zones couldn't be drawn: the borough outline too, so a tap outside the drawn zones lists them all.
+            outline = borough_boundary(b['partial'])
+            all_zones.append(feature(outline.simplify(0.0002), {'b': bid, 'zone': '', 'rule': f'{bid}:', 'outline': 1}))
         for code, g in sorted(zones.items()):
             pt = g.representative_point()
             all_zones.append(feature(g.simplify(0.00001), {'b': bid, 'zone': code, 'rule': f'{bid}:{code}',
@@ -748,6 +752,8 @@ def main(argv):
         entry = {k: b[k] for k in ('name', 'short', 'hoursUrl', 'checked', 'eventDaysUrl', 'bankHolidayUrl',
                                    'mapPdf', 'yellowLines', 'charges', 'notes', 'licence') if k in b}
         entry['bbox'] = [round(w, 4), round(s, 4), round(e, 4), round(n, 4)]
+        if b.get('partial'):
+            entry['partial'] = True
         entry['zoneCount'] = len(zones)
         entry['knownHours'] = sum(1 for r in rules.values() if r['periods'] is not None and 'streets' not in r
                                   and r['zone'] in zones)

@@ -2042,9 +2042,11 @@ function renderParkingBody() {
     var mapped = ids.filter(function(id) { return !parkingRules.boroughs[id].listOnly; });
     var known = mapped.reduce(function(n, id) { return n + parkingRules.boroughs[id].knownHours; }, 0);
     var total = mapped.reduce(function(n, id) { return n + parkingRules.boroughs[id].zoneCount; }, 0);
+    var partial = mapped.filter(function(id) { return parkingRules.boroughs[id].partial; }).length;
     hint.appendChild(pkEl('p', 'pk-small', 'Zone maps for ' + mapped.length + ' boroughs (' + total + ' zones, ' + known +
       ' with hours this map can read; grey zones show their council’s wording instead). The other ' + (ids.length - mapped.length) +
-      ' boroughs publish no zone boundaries: they’re outlined in grey and tapping one lists its zones.'));
+      ' boroughs publish no zone map this can use: they’re outlined in grey and tapping one lists its zones.' +
+      (partial ? ' Where only some of a borough’s zones could be drawn, it’s outlined too: tap outside the drawn zones for the full list.' : '')));
     hint.appendChild(pkEl('p', 'pk-small', 'Yellow lines and bays show only where OpenStreetMap has them (a few percent of streets). A blank kerb doesn’t mean parking is allowed.'));
     hint.appendChild(pkEl('p', 'pk-small', 'Street signs always override the map.'));
     parkingBody.appendChild(hint);
@@ -2176,7 +2178,7 @@ function renderBoroughCard(sel, borough) {
   var head = pkEl('div', 'pk-card-head');
   var titles = pkEl('div', 'pk-card-titles');
   titles.appendChild(pkEl('div', 'pk-card-title', borough.name));
-  titles.appendChild(pkEl('div', 'pk-card-sub', 'No zone boundaries published'));
+  titles.appendChild(pkEl('div', 'pk-card-sub', borough.partial ? 'Not every zone is drawn' : 'No zone boundaries published'));
   head.appendChild(titles);
   var close = pkEl('button', 'pk-card-close');
   close.type = 'button';

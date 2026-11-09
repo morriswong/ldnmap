@@ -39,6 +39,11 @@ test('Richford Street (hf:K-Richford): Sunday 19:00 is controlled', () => {
   assert.equal(isControlled('hf:K', SUN, at(19), false), 'free');
 });
 
+test('an event-day-only zone (Hounslow R) is free on other days', () => {
+  assert.equal(isControlled('hounslow:R', SAT, at(15), false), 'free');
+  assert.equal(isControlled('hounslow:R', SAT, at(15), true), 'ctrl');
+});
+
 test('from is inclusive, to is exclusive', () => {
   assert.equal(isControlled('hf:E', SUN, at(8, 29), false), 'free');
   assert.equal(isControlled('hf:E', SUN, at(8, 30), false), 'ctrl');

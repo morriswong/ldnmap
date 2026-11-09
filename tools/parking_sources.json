@@ -4719,12 +4719,1198 @@
   "hounslow": {
    "name": "Hounslow",
    "short": "Hounslow",
-   "boundaryOnly": "Hounslow",
-   "hoursUrl": "https://www.hounslow.gov.uk/parking-permits/controlled-parking-zones",
-   "checked": "2026-11-08",
-   "licence": "Zone hours: Hounslow council. Borough outline: Office for National Statistics / London Datastore (OGL v3).",
-   "zones": {},
-   "notes": "Hounslow publishes zone hours only through its interactive map pop-ups and entry signs."
+   "hoursUrl": "https://hounslow.statmap.co.uk/map/Aurora.svc/run?script=%5CAurora%5CControlled%20Parking%20Zones.AuroraScript%24",
+   "checked": "2026-11-09",
+   "licence": "Zone boundaries traced from Hounslow Council’s interactive CPZ map; hours from its pop-ups. Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
+   "zones": {
+    "GE": {
+     "name": "Gunnersbury Estate",
+     "hours": "Monday-Friday 9:30am-11:30am; 3:30pm-5:30pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "11:30"
+      },
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "15:30",
+       "to": "17:30"
+      }
+     ]
+    },
+    "BE": {
+     "name": "Brentford East CPZ",
+     "hours": "Monday-Friday 9am-11am & 5pm-7pm; Saturday-Sunday 2pm-4pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:00",
+       "to": "11:00"
+      },
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "17:00",
+       "to": "19:00"
+      },
+      {
+       "days": [
+        0,
+        6
+       ],
+       "from": "14:00",
+       "to": "16:00"
+      }
+     ]
+    },
+    "BN": {
+     "name": "Brentford North",
+     "hours": "Monday-Friday 10am-11am; 3pm-4pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:00",
+       "to": "11:00"
+      },
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "15:00",
+       "to": "16:00"
+      }
+     ]
+    },
+    "CW": {
+     "name": "Chiswick West",
+     "hours": "Monday-Friday 9am-6pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:00",
+       "to": "18:00"
+      }
+     ]
+    },
+    "CIC": {
+     "name": "Chiswick Inner Core",
+     "hours": "Monday-Saturday 7am-7pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "07:00",
+       "to": "19:00"
+      }
+     ]
+    },
+    "BM": {
+     "name": "Boston Manor",
+     "hours": "Monday-Friday 9am-6pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:00",
+       "to": "18:00"
+      }
+     ]
+    },
+    "MC": {
+     "name": "Mid Chiswick",
+     "hours": "Monday-Saturday 9am-7pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "09:00",
+       "to": "19:00"
+      }
+     ]
+    },
+    "MC/CC": {
+     "name": "Mid Chiswick & Central Chiswick Overlap",
+     "hours": "Monday-Saturday 9am-7pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "09:00",
+       "to": "19:00"
+      }
+     ]
+    },
+    "SH": {
+     "name": "Stile Hall",
+     "hours": "Monday-Friday 10am-12noon & 6pm-8pm; Saturday-Sunday 2pm-4pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:00",
+       "to": "12:00"
+      },
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "18:00",
+       "to": "20:00"
+      },
+      {
+       "days": [
+        0,
+        6
+       ],
+       "from": "14:00",
+       "to": "16:00"
+      }
+     ]
+    },
+    "BSTN": {
+     "name": "Brentford Station",
+     "hours": "Monday-Friday 9:30am-5:30pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "17:30"
+      }
+     ]
+    },
+    "BSTN (2)": {
+     "name": "Brentford Station",
+     "hours": "Monday-Saturday 9am-8pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "09:00",
+       "to": "20:00"
+      }
+     ]
+    },
+    "HBT": {
+     "name": "Haverfields/Brentford Towers",
+     "hours": "Monday-Friday 10am-11am & 7pm-8pm; Match Day Saturday 2.30pm-3.30pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:00",
+       "to": "11:00"
+      },
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "19:00",
+       "to": "20:00"
+      }
+     ],
+     "event": {
+      "hours": "Monday-Friday 10am-11am & 7pm-8pm; Match Day Saturday 2.30pm-3.30pm",
+      "periods": [
+       {
+        "days": [
+         1,
+         2,
+         3,
+         4,
+         5
+        ],
+        "from": "10:00",
+        "to": "11:00"
+       },
+       {
+        "days": [
+         1,
+         2,
+         3,
+         4,
+         5
+        ],
+        "from": "19:00",
+        "to": "20:00"
+       },
+       {
+        "days": [
+         6
+        ],
+        "from": "14:30",
+        "to": "15:30"
+       }
+      ]
+     },
+     "note": "Match days are Brentford FC home games; tick “Event day” for them."
+    },
+    "BRS": {
+     "name": "Brook Road South",
+     "hours": "Monday-Friday 10am-12noon & 6pm-8pm; Match Day Saturday 2.30pm-3.30pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:00",
+       "to": "12:00"
+      },
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "18:00",
+       "to": "20:00"
+      }
+     ],
+     "event": {
+      "hours": "Monday-Friday 10am-12noon & 6pm-8pm; Match Day Saturday 2.30pm-3.30pm",
+      "periods": [
+       {
+        "days": [
+         1,
+         2,
+         3,
+         4,
+         5
+        ],
+        "from": "10:00",
+        "to": "12:00"
+       },
+       {
+        "days": [
+         1,
+         2,
+         3,
+         4,
+         5
+        ],
+        "from": "18:00",
+        "to": "20:00"
+       },
+       {
+        "days": [
+         6
+        ],
+        "from": "14:30",
+        "to": "15:30"
+       }
+      ]
+     },
+     "note": "Match days are Brentford FC home games; tick “Event day” for them."
+    },
+    "SOTG": {
+     "name": "Strand on the Green",
+     "hours": "Monday-Friday 10am-12noon & 6pm-8pm; Saturday-Sunday 2pm-4pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:00",
+       "to": "12:00"
+      },
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "18:00",
+       "to": "20:00"
+      },
+      {
+       "days": [
+        0,
+        6
+       ],
+       "from": "14:00",
+       "to": "16:00"
+      }
+     ]
+    },
+    "FR": {
+     "name": "Fauconberg Road",
+     "hours": "Monday-Friday 10am-12noon",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:00",
+       "to": "12:00"
+      }
+     ]
+    },
+    "GP": {
+     "name": "Grove Park Residents",
+     "hours": "Monday-Friday 10am-12noon",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:00",
+       "to": "12:00"
+      }
+     ]
+    },
+    "BX": {
+     "name": "Brentford Exemplar",
+     "hours": "Monday-Saturday 7am-7pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "07:00",
+       "to": "19:00"
+      }
+     ]
+    },
+    "BU": {
+     "name": "The Butts",
+     "hours": "Monday-Saturday 8am-6:30pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:00",
+       "to": "18:30"
+      }
+     ]
+    },
+    "WE": {
+     "name": "Wyke Estate",
+     "hours": "Monday-Friday 9:30am-5:30pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "17:30"
+      }
+     ]
+    },
+    "RV": {
+     "name": "Riverview CPZ",
+     "hours": "Monday-Friday 10am-12Noon",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:00",
+       "to": "12:00"
+      }
+     ]
+    },
+    "OS/1": {
+     "name": "Jersey Road",
+     "hours": "Monday-Friday 10am-12noon",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:00",
+       "to": "12:00"
+      }
+     ]
+    },
+    "BIC": {
+     "name": "Brentford Inner Core",
+     "hours": "Monday-Saturday 8am-6:30pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:00",
+       "to": "18:30"
+      }
+     ]
+    },
+    "OS": {
+     "name": "Osterley Station",
+     "hours": "Monday-Friday 9:30am-5:30pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "17:30"
+      }
+     ]
+    },
+    "BW": {
+     "name": "Brentford West ‘area’",
+     "hours": "Monday-Sunday 9:30am-6pm",
+     "periods": [
+      {
+       "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "09:30",
+       "to": "18:00"
+      }
+     ]
+    },
+    "SLS": {
+     "name": "Syon Lane Station",
+     "hours": "Monday-Friday 9am-6pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:00",
+       "to": "18:00"
+      }
+     ]
+    },
+    "CS": {
+     "name": "Chiswick Station CPZ",
+     "hours": "Monday-Friday 10am-12Noon",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:00",
+       "to": "12:00"
+      }
+     ]
+    },
+    "NA": {
+     "name": "Northumberland Estate",
+     "hours": "Monday-Friday 9am-11am",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:00",
+       "to": "11:00"
+      }
+     ]
+    },
+    "MR": {
+     "name": "Marlborough Road ‘area’ CPZ",
+     "hours": "Monday-Friday 9.30am-5.30pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "17:30"
+      }
+     ]
+    },
+    "TA": {
+     "name": "Thornbury Avenue 'area'",
+     "hours": "Monday-Friday 10am-12noon",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:00",
+       "to": "12:00"
+      }
+     ]
+    },
+    "RW": {
+     "name": "Ridgeway Road CPZ",
+     "hours": "Monday-Friday 9.30am-5.30pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "17:30"
+      }
+     ]
+    },
+    "SR": {
+     "name": "Spencer Road",
+     "hours": "Monday-Friday 9:30am-5:30pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "17:30"
+      }
+     ]
+    },
+    "HR": {
+     "name": "Hartham Road ‘area’ CPZ",
+     "hours": "Monday-Saturday 10am-7pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "10:00",
+       "to": "19:00"
+      }
+     ]
+    },
+    "SG": {
+     "name": "Spring Grove",
+     "hours": "Monday-Friday 9:30am-5:30pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "17:30"
+      }
+     ]
+    },
+    "BR": {
+     "name": "Burlington Road ‘area’",
+     "hours": "Monday-Friday 10am-12noon",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:00",
+       "to": "12:00"
+      }
+     ]
+    },
+    "TW": {
+     "name": "West Middlesex Hospital",
+     "hours": "Monday-Saturday 8am-8pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:00",
+       "to": "20:00"
+      }
+     ]
+    },
+    "AC": {
+     "name": "Alton Close CPZ",
+     "hours": "Monday - Friday 9am - 6pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:00",
+       "to": "18:00"
+      }
+     ]
+    },
+    "LRS": {
+     "name": "London Road Shoppers",
+     "hours": "Monday-Saturday 8am-6:30pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:00",
+       "to": "18:30"
+      }
+     ]
+    },
+    "LR": {
+     "name": "Linkfield Road 'area' CPZ",
+     "hours": "Monday-Friday 10am-12Noon & 5pm-7pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:00",
+       "to": "12:00"
+      },
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "17:00",
+       "to": "19:00"
+      }
+     ]
+    },
+    "LP": {
+     "name": "Lampton Park CPZ",
+     "hours": "Monday-Friday 9:30am-6pm; Saturday 9:30am-12:30pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "18:00"
+      },
+      {
+       "days": [
+        6
+       ],
+       "from": "09:30",
+       "to": "12:30"
+      }
+     ]
+    },
+    "HTCN": {
+     "name": "Hounslow Town Centre North",
+     "hours": "Monday-Friday 9:30am-6pm; Saturday 9:30am-12:30pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "18:00"
+      },
+      {
+       "days": [
+        6
+       ],
+       "from": "09:30",
+       "to": "12:30"
+      }
+     ]
+    },
+    "SP": {
+     "name": "Church St / Mill Plat CPZ",
+     "hours": "Monday-Friday 9am-11am",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:00",
+       "to": "11:00"
+      }
+     ]
+    },
+    "SSS": {
+     "name": "South Street Shoppers",
+     "hours": "Monday-Saturday 9:30am-5pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "09:30",
+       "to": "17:00"
+      }
+     ]
+    },
+    "SB": {
+     "name": "Stanborough Road ‘area’",
+     "hours": "Monday-Saturday 9:30am-6:30pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "09:30",
+       "to": "18:30"
+      }
+     ]
+    },
+    "TM": {
+     "name": "The Maltings CPZ (Shire Horse Way)",
+     "hours": "Monday-Friday 9.30am - 6pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "18:00"
+      }
+     ]
+    },
+    "NS": {
+     "name": "North Street ‘area’ CPZ",
+     "hours": "Monday-Friday 9.30am-5pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "17:00"
+      }
+     ]
+    },
+    "HTCS": {
+     "name": "Hounslow Town Centre South",
+     "hours": "Monday-Friday 9:30am-6pm; Saturday 9:30-12:30pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "18:00"
+      },
+      {
+       "days": [
+        6
+       ],
+       "from": "09:30",
+       "to": "12:30"
+      }
+     ]
+    },
+    "R": {
+     "name": "Twickenham RFU",
+     "hours": "On Event Days 7am-11pm",
+     "periods": [],
+     "event": {
+      "hours": "On Event Days 7am-11pm",
+      "periods": [
+       {
+        "days": [
+         0,
+         1,
+         2,
+         3,
+         4,
+         5,
+         6
+        ],
+        "from": "07:00",
+        "to": "23:00"
+       }
+      ]
+     },
+     "note": "Controlled only on Twickenham Stadium event days; tick “Event day” to see them."
+    },
+    "WR": {
+     "name": "Worple Road ‘area’ CPZ",
+     "hours": "Monday-Sunday 9am-11am & 5pm-7pm",
+     "periods": [
+      {
+       "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "09:00",
+       "to": "11:00"
+      },
+      {
+       "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "17:00",
+       "to": "19:00"
+      }
+     ]
+    },
+    "HG": {
+     "name": "Hatton Green",
+     "hours": "Monday-Friday 9:30am-5:30pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "17:30"
+      }
+     ]
+    },
+    "MP": {
+     "name": "Maswell Park ‘area’",
+     "hours": "Monday-Friday 9.30am-5.30pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "17:30"
+      }
+     ]
+    },
+    "GR": {
+     "name": "Glebelands Road CPZ",
+     "hours": "Monday - Sunday 10am - 8pm",
+     "periods": [
+      {
+       "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "10:00",
+       "to": "20:00"
+      }
+     ]
+    },
+    "BL": {
+     "name": "Bedfont Lane",
+     "hours": "Monday-Friday 9:30am-6:30pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:30",
+       "to": "18:30"
+      }
+     ]
+    },
+    "KR": {
+     "name": "Kings Road Area",
+     "hours": "Monday-Friday 9am-5pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:00",
+       "to": "17:00"
+      }
+     ]
+    },
+    "TR": {
+     "name": "Tilley Road",
+     "hours": "Monday-Sunday 9am-8pm",
+     "periods": [
+      {
+       "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "09:00",
+       "to": "20:00"
+      }
+     ]
+    },
+    "RG": {
+     "name": "Rose Gardens CPZ",
+     "hours": "Monday - Sunday 10am - 8pm",
+     "periods": [
+      {
+       "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "10:00",
+       "to": "20:00"
+      }
+     ]
+    }
+   },
+   "notes": "Zones traced from the council’s interactive CPZ map (its map images are placed exactly, about 2 m per pixel) and named from its own pop-ups. Some zones aren’t drawn because their outlines on that map aren’t closed (around Bedford Park, Central Chiswick and Lampton): there the borough is outlined instead. The council says its map is guidance only.",
+   "polygons": {
+    "type": "file",
+    "path": "hounslow.geojson",
+    "zoneField": "zone"
+   },
+   "partial": "Hounslow"
   },
   "walthamforest": {
    "name": "Waltham Forest",
