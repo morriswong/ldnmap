@@ -32,9 +32,13 @@ exclusive. Each rule has:
 ## Coverage
 
 Every London borough (and the City) is in `tools/parking_sources.json`. Where a council publishes zone
-boundaries in a machine-readable form they are drawn and coloured; where it publishes only a web list
-of zones and hours, the borough is outlined and the list is shown; where it publishes neither, the
-outline carries a note and a link. Nothing is traced from PDFs or guessed.
+boundaries in a machine-readable form they are drawn and coloured. Where it publishes them only as a
+map (a PDF or a web map), they are traced from that map and placed by fitting the map's own borough or
+ward boundary to the real one; where it publishes a list of streets per zone, each zone is drawn
+around those streets in OpenStreetMap. Each such borough's `notes` says which, with the fit's error.
+Where a council publishes only a web list of zones and hours, the borough is outlined and the list is
+shown; where it publishes neither, the outline carries a note and a link. Hours are never guessed:
+times the council's wording doesn't settle are `unsure` (shown as unknown).
 
 ## Sources and gaps
 

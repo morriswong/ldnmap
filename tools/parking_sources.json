@@ -1679,16 +1679,49 @@
   "richmond": {
    "name": "Richmond upon Thames",
    "short": "Richmond",
-   "boundaryOnly": "Richmond upon Thames",
    "hoursUrl": "https://www.richmond.gov.uk/services/parking/cpz/cpz_times",
    "checked": "2026-11-08",
-   "licence": "Zone hours: Richmond upon Thames council. Borough outline: Office for National Statistics / London Datastore (OGL v3).",
+   "licence": "Zone boundaries traced from Richmond upon Thames Council’s CPZ map; hours from the council. Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
    "zones": {
     "A1": {
-     "periods": null,
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ],
      "hours": "Monday to Saturday 8.30am to 6.30pm (Bank and Public Holidays free); Monday to Saturday 8.30am to 6.30pm and Sundays and Bank Holidays 11am to 5pm; Monday to Sundays (Including Bank and Public Holidays) 8.30am to midnight (Richmond Green Resident Permit Holder Bays)",
      "name": "Richmond Town",
-     "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
+     "note": "Bay types: Permit; Pay and Display; RingGo in P&D. Some roads and the Richmond Green resident bays are controlled for longer, so evenings and Sundays show as unknown.",
+     "unsure": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "18:30",
+       "to": "24:00"
+      },
+      {
+       "days": [
+        0
+       ],
+       "from": "08:30",
+       "to": "24:00"
+      }
+     ]
     },
     "A2": {
      "hours": "Monday to Saturday 8.30am to 6.30pm (Bank and Public Holidays free)",
@@ -1706,10 +1739,53 @@
      "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
     },
     "B1": {
-     "periods": null,
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:00",
+       "to": "12:00"
+      }
+     ],
      "hours": "All roads except part Station Road: Monday to Friday 10am to 12 noon (Bank and Public Holidays are free); Part Station Road: Monday to Saturday 8am to 6.30pm (Bank and Public Holidays free)",
      "name": "Barnes",
-     "note": "Bay types: Permit; Free (time limited); RingGo"
+     "note": "Bay types: Permit; Free (time limited); RingGo. Part of Station Road is controlled Monday to Saturday 8am to 6.30pm; those extra hours show as unknown across the zone.",
+     "unsure": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "08:00",
+       "to": "10:00"
+      },
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "12:00",
+       "to": "18:30"
+      },
+      {
+       "days": [
+        6
+       ],
+       "from": "08:00",
+       "to": "18:30"
+      }
+     ]
     },
     "B2": {
      "hours": "Monday to Friday 10am to noon (Bank and Public Holidays free)",
@@ -1722,10 +1798,44 @@
      "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
     },
     "CB": {
-     "periods": null,
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:00",
+       "to": "18:30"
+      }
+     ],
      "hours": "All roads in zone excluding Byfeld Gardens: Monday to Saturday 8am to 6.30pm (Bank and Public Holidays free); Byfeld Gardens only: Monday to Sunday 8am to 9.30pm (including Bank and Public Holidays)",
      "name": "Central Barnes",
-     "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
+     "note": "Bay types: Permit; Pay and Display; RingGo in P&D. Byfeld Gardens is controlled every day until 9.30pm; those extra hours show as unknown across the zone.",
+     "unsure": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "18:30",
+       "to": "21:30"
+      },
+      {
+       "days": [
+        0
+       ],
+       "from": "08:00",
+       "to": "21:30"
+      }
+     ]
     },
     "CR": {
      "hours": "Monday to Friday 10am to 4.30pm (Bank and Public Holidays free)",
@@ -1738,10 +1848,35 @@
      "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
     },
     "E": {
-     "periods": null,
-     "hours": "All roads in zone: Monday to Friday 8.30am to 10.30am (Bank and Public Holidays free) except:; Popes Grove (between Popes Avenue and the railway bridge): Monday to Friday 10am to 4.30pm; Waldegrave Gardens (between Tower Road and Waldegrave Road): Monday to Friday 10.30am to 2.30pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "08:30",
+       "to": "10:30"
+      }
+     ],
+     "hours": "Monday to Friday 8.30am to 10.30am (Bank and Public Holidays free); Waldegrave Gardens (between Tower Road and Waldegrave Road): Monday to Friday 10.30am to 2.30pm",
      "name": "South Twickenham",
-     "note": "No roads in this zone operate on Bank and Public Holidays so parking is free in the zone on these days. Please refer to signs on street. Bay types: Permit; Free (time limited)"
+     "note": "No roads in this zone operate on Bank and Public Holidays so parking is free in the zone on these days. Please refer to signs on street. Bay types: Permit; Free (time limited)",
+     "unsure": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:30",
+       "to": "14:30"
+      }
+     ]
     },
     "ES": {
      "hours": "Monday to Friday 10am to noon (Bank and Public Holidays free)",
@@ -1769,10 +1904,39 @@
      "note": "Bay types: Permit; RingGo"
     },
     "H": {
-     "periods": null,
+     "periods": [
+      {
+       "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ],
      "hours": "Monday to Sunday 8.30am to 6.30pm, including Bank and Public Holidays (shared-use Permit/Pay and Display Bays); Monday to Sunday 8.30am to 8pm, including Bank and Public Holidays (shared-use Permit Bays)",
      "name": "Hampton Court",
-     "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
+     "note": "Bay types: Permit; Pay and Display; RingGo in P&D. Permit-only bays run until 8pm, so 6.30pm to 8pm shows as unknown.",
+     "unsure": [
+      {
+       "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "18:30",
+       "to": "20:00"
+      }
+     ]
     },
     "HM": {
      "hours": "Monday to Saturday 9am to 6.30pm (Bank and Public Holidays free)",
@@ -1785,10 +1949,35 @@
      "note": "Bay types: Permit; RingGo"
     },
     "KA": {
-     "periods": null,
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:00",
+       "to": "12:00"
+      }
+     ],
      "hours": "All roads except part Kew Road and Kew Gardens Road: Monday to Friday 10am to 12 noon (Bank and Public Holidays are free); Part Kew Road and Kew Gardens Road: Monday to Friday 10am to 4.30pm including Bank Holidays; Part Kew Road: Monday to Friday 10am to 10pm including Bank Holidays",
      "name": "Kew",
-     "note": "Bay types: Permit; Free (time limited); Pay and Display; RingGo in P&D"
+     "note": "Bay types: Permit; Free (time limited); Pay and Display; RingGo in P&D. Parts of Kew Road and Kew Gardens Road are controlled until 4.30pm or 10pm (including bank holidays); those extra hours show as unknown across the zone.",
+     "unsure": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "12:00",
+       "to": "22:00"
+      }
+     ]
     },
     "KB": {
      "hours": "Monday to Friday 10am to noon (Bank and Public Holidays free)",
@@ -1798,7 +1987,40 @@
     "KC": {
      "hours": "Monday to Sunday 10am to 4.30pm (including Bank and Public Holidays) and during major events in the area 10am to 11pm",
      "name": "North Kew",
-     "note": "Bay types: Permit; RingGo"
+     "note": "Bay types: Permit; RingGo",
+     "periods": [
+      {
+       "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "10:00",
+       "to": "16:30"
+      }
+     ],
+     "event": {
+      "hours": "During major events in the area: 10am to 11pm",
+      "periods": [
+       {
+        "days": [
+         0,
+         1,
+         2,
+         3,
+         4,
+         5,
+         6
+        ],
+        "from": "10:00",
+        "to": "23:00"
+       }
+      ]
+     }
     },
     "KS": {
      "hours": "Monday to Sunday 8am to 10pm (Bank and Public Holidays free)",
@@ -1861,10 +2083,32 @@
      "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
     },
     "S1": {
-     "periods": null,
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:00",
+       "to": "16:30"
+      }
+     ],
      "hours": "Monday to Sunday 10am to 4.30pm between 1 April and 31 October (Bank and Public Holidays free);; Monday to Friday 10am to 4.30pm between 1 November and 31 March (Bank and Public Holidays free)",
      "name": "Orleans",
-     "note": "Bay types: Permit; RingGo in P&D"
+     "note": "Bay types: Permit; RingGo in P&D. Weekends are controlled only from 1 April to 31 October, so they show as unknown.",
+     "unsure": [
+      {
+       "days": [
+        0,
+        6
+       ],
+       "from": "10:00",
+       "to": "16:30"
+      }
+     ]
     },
     "S2": {
      "hours": "Monday to Friday 10am to 4.30pm (Bank and Public Holidays free)",
@@ -1882,8 +2126,20 @@
      "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
     },
     "T": {
-     "periods": null,
-     "hours": "Monday to Friday, 8.30am to 10.30am (Bank and Public Holidays free) excluding Bridgeman Road , Cedar Road, Christchurch Avenue, Station Road; Monday to Saturday, 8.30am to 10pm - (Bank and Public Holidays free) - Bridgeman Road , Cedar Road, Christchurch Avenue, Station Road only",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "08:30",
+       "to": "10:30"
+      }
+     ],
+     "hours": "Monday to Friday, 8.30am to 10.30am (Bank and Public Holidays free)",
      "name": "Teddington",
      "note": "Bay types: Permit; Free (time limited); Pay and Display; RingGo in P&D"
     },
@@ -1918,19 +2174,138 @@
      "note": "Bay types: Permit; Pay by Phone"
     },
     "WC": {
-     "periods": null,
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:00",
+       "to": "14:00"
+      }
+     ],
      "hours": "Monday to Friday, 10am to 2pm (Bank and Public Holidays free); Event days, 11am to 11pm",
-     "name": "Whitton Central"
+     "name": "Whitton Central",
+     "event": {
+      "hours": "Event days: 11am to 11pm",
+      "periods": [
+       {
+        "days": [
+         0,
+         1,
+         2,
+         3,
+         4,
+         5,
+         6
+        ],
+        "from": "11:00",
+        "to": "23:00"
+       },
+       {
+        "days": [
+         1,
+         2,
+         3,
+         4,
+         5
+        ],
+        "from": "10:00",
+        "to": "11:00"
+       }
+      ]
+     }
     },
     "WR": {
-     "periods": null,
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ],
      "hours": "Monday to Saturday, 8.30am to 6.30pm (Bank and Public Holidays free); Event days, 11am to 11pm",
-     "name": "Whitton Road"
+     "name": "Whitton Road",
+     "event": {
+      "hours": "Event days: 11am to 11pm",
+      "periods": [
+       {
+        "days": [
+         1,
+         2,
+         3,
+         4,
+         5,
+         6
+        ],
+        "from": "08:30",
+        "to": "23:00"
+       },
+       {
+        "days": [
+         0
+        ],
+        "from": "11:00",
+        "to": "23:00"
+       }
+      ]
+     }
     },
     "WS": {
-     "periods": null,
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:00",
+       "to": "14:00"
+      }
+     ],
      "hours": "Monday to Friday, 10am to 2pm (Bank and Public Holidays free); Event days, 11am to 11pm",
-     "name": "Whitton South"
+     "name": "Whitton South",
+     "event": {
+      "hours": "Event days: 11am to 11pm",
+      "periods": [
+       {
+        "days": [
+         0,
+         1,
+         2,
+         3,
+         4,
+         5,
+         6
+        ],
+        "from": "11:00",
+        "to": "23:00"
+       },
+       {
+        "days": [
+         1,
+         2,
+         3,
+         4,
+         5
+        ],
+        "from": "10:00",
+        "to": "11:00"
+       }
+      ]
+     }
     },
     "WT": {
      "hours": "Monday to Saturday 8.30am to 6.30pm (Bank and Public Holidays free)",
@@ -1965,15 +2340,159 @@
     "Z4": {
      "hours": "Monday to Friday 10.30am to 2.30pm (Bank and Public Holidays free). Applies 1 September to 30 June",
      "name": "Southfield Gardens, Twickenham",
-     "note": "Bay types: Permit; Free (time limited)"
+     "note": "Bay types: Permit; Free (time limited). Applies 1 September to 30 June only: in July and August the street is free, though the map still shows these hours.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:30",
+       "to": "14:30"
+      }
+     ]
     },
     "Z5": {
      "hours": "Monday to Sunday 8.30am to 6.30pm (Bank and Public Holidays free)",
      "name": "First Cross Road, Twickenham",
      "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
+    },
+    "A1/A2": {
+     "name": "Zone A1/A2 buffer area",
+     "hours": "Monday to Saturday 8.30am to 6.30pm (Bank and Public Holidays free)",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ],
+     "unsure": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "18:30",
+       "to": "24:00"
+      },
+      {
+       "days": [
+        0
+       ],
+       "from": "08:30",
+       "to": "24:00"
+      }
+     ],
+     "note": "The council’s map marks this as the Zone A1/A2 buffer area. Both zones are controlled Monday to Saturday 8.30am to 6.30pm; some A1 bays run longer, so evenings and Sundays show as unknown."
+    },
+    "E-Popes": {
+     "name": "South Twickenham: Popes Grove (Popes Avenue to the railway bridge)",
+     "hours": "Monday to Friday 10am to 4.30pm (Bank and Public Holidays free)",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:00",
+       "to": "16:30"
+      }
+     ],
+     "note": "No roads in this zone operate on Bank and Public Holidays so parking is free in the zone on these days. Please refer to signs on street. Bay types: Permit; Free (time limited)"
+    },
+    "T-Station": {
+     "name": "Teddington: Bridgeman Road, Cedar Road, Christchurch Avenue, Station Road",
+     "hours": "Monday to Saturday, 8.30am to 10pm (Bank and Public Holidays free)",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "22:00"
+      }
+     ],
+     "note": "Bay types: Permit; Free (time limited); Pay and Display; RingGo in P&D"
+    },
+    "SH/WT": {
+     "name": "Strawberry Hill / West Twickenham",
+     "hours": "Labelled SH/WT on the council’s map. SH: Monday to Friday 10am to 4.30pm; WT: Monday to Saturday 8.30am to 6.30pm (Bank and Public Holidays free)",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:00",
+       "to": "16:30"
+      }
+     ],
+     "unsure": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "08:30",
+       "to": "10:00"
+      },
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "16:30",
+       "to": "18:30"
+      },
+      {
+       "days": [
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ],
+     "note": "Both zones’ hours cover Monday to Friday 10am to 4.30pm; the rest of WT’s hours show as unknown here. Check the signs on the street."
     }
    },
-   "notes": "This borough doesn’t publish zone boundaries in a form this map can use, so only the borough outline is shown. Tap inside it for the council’s zone list. Zones with several hour regimes are shown grey: check the signs."
+   "notes": "Zone boundaries traced from the council’s “Controlled Parking Zones (CPZs)” map (vector PDF, https://www.richmond.gov.uk/media/0zsnuisk/zone_all.pdf), placed by fitting its borough boundary to Richmond’s (median error about 7 m); zone labels matched by their pointer lines. Pay and display zones M3–M9 and the Twickenham event zone (R) are not drawn.",
+   "polygons": {
+    "type": "file",
+    "path": "richmond.geojson",
+    "zoneField": "zone"
+   }
   },
   "wandsworth": {
    "name": "Wandsworth",
