@@ -61,7 +61,7 @@ def fetch(url, name, data=None, ua=UA):
     if not os.path.exists(path):
         # curl rather than urllib: the system Python's TLS can't talk to some servers (Overpass).
         import subprocess
-        cmd = ['curl', '-sS', '-L', '-m', '600', '-A', ua, '-H', 'Accept: */*', '-o', path + '.part', url]
+        cmd = ['curl', '-sS', '-L', '--compressed', '-m', '600', '-A', ua, '-H', 'Accept: */*', '-o', path + '.part', url]
         if data is not None:
             cmd += ['--data-binary', '@-']
         res = subprocess.run(cmd, input=data, capture_output=True)
@@ -206,6 +206,13 @@ def load_polygons(bid, src):
                 feats.append({'properties': {'title': it.get('title'), 'description': it.get('description')},
                               'geometry': {'type': 'MultiPolygon', 'coordinates': polys}})
         epsg = None
+    elif kind == 'appyway':
+        # AppyWay "Streets" public snapshot (the council's restrictions map): zone polygons plus
+        # structured operating hours in the companion sets file.
+        return appyway_zones(bid, src)
+    elif kind == 'streets':
+        # Zones published as lists of streets: draw each zone as its streets (OpenStreetMap).
+        return street_zones(bid, src)
     elif kind == 'gml':
         # A WFS GetFeature answer in GML 3.2 (MapServer/iShare), geometry as gml:posList.
         feats, epsg = parse_gml(fetch(src['url'], f'{bid}-polys.gml'))
@@ -237,6 +244,186 @@ def load_polygons(bid, src):
             continue
         g = reproject(shape(f['geometry']), epsg).buffer(0)
         out.append((code, polygons_only(g), props))
+    return out
+
+
+# ---------------------------------------------------------------------------
+# Zones from an AppyWay public snapshot
+# ---------------------------------------------------------------------------
+
+APPY_DAYS = {1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 0}       # AppyWay Mon=1 … Sun=7 -> ours Sun=0
+APPY_NAMES = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+
+
+def appyway_zones(bid, src):
+    zones = fetch_json(src['zones'], f'{bid}-appyway-zones.geojson')['features']
+    sets = {x['setId']: x for x in fetch_json(src['sets'], f'{bid}-appyway-sets.json')['operatingHoursSets']}
+    keep = set(src.get('types', [1, 9]))
+
+    def periods_of(set_id):
+        rules = (sets.get(set_id) or {}).get('operatingHours', {}).get('standardDays', [])
+        per, text, stay = [], [], None
+        for r in rules:
+            rt = r['ruleTime']
+            days = sorted(APPY_DAYS[d] for d in rt['days'])
+            for h in rt['hours']:
+                a, b = h['start'][:5], h['end'][:5]
+                if b == '00:00':
+                    b = '24:00'
+                if a < b:
+                    per.append({'days': days, 'from': a, 'to': b})
+            label = _day_span(rt['days'])
+            text.append(label + ' ' + ', '.join(f"{_hm(h['start'])}–{_hm(h['end'])}" for h in rt['hours']))
+            if r.get('maxStay'):
+                stay = r['maxStay']
+        return per, '; '.join(text), stay
+
+    out = []
+    for f in zones:
+        p = f['properties']
+        if p.get('type') not in keep or not f.get('geometry'):
+            continue
+        details = {d['restrictionTypeId']: d for d in p.get('restrictionTypeDetails', [])}
+        name = re.sub(r'^(zone)\s+', '', p['name'].strip(), flags=re.I)
+        m = re.search(r'\(([A-Z]{1,3}\d?)\)$', name)
+        code = m.group(1) if m else name
+        props = {'name': p['name'].strip()}
+        if p['type'] == 9:                      # permit parking area: permit holders only
+            d = details.get(4) or details.get(1)
+            props['permitOnly'] = True
+        else:                                   # CPZ: the controlled hours (single yellow lines, pay bays)
+            d = details.get(1) or details.get(4)
+        if not d or not d.get('operatingHoursSet'):
+            continue
+        per, text, stay = periods_of(d['operatingHoursSet'][0]['setId'])
+        props.update({'hours': text, 'periods': per})
+        if stay:
+            props['maxStay'] = f'{stay // 60} hours' if stay % 60 == 0 and stay >= 120 else (f'{stay} minutes' if stay < 60 else f'{stay // 60} hour' + ('' if stay == 60 else f' {stay % 60} minutes'))
+        out.append((code, polygons_only(shape(f['geometry']).buffer(0)), props))
+    return out
+
+
+def _hm(t):
+    h, m = int(t[:2]), int(t[3:5])
+    suffix = 'am' if h < 12 or h == 24 else 'pm'
+    h12 = h % 12 or 12
+    return f'{h12}{":%02d" % m if m else ""}{suffix}' if t[:5] not in ('12:00', '00:00') else ('noon' if t[:5] == '12:00' else 'midnight')
+
+
+def _day_span(days):
+    days = sorted(days)
+    if days == list(range(days[0], days[-1] + 1)) and len(days) > 2:
+        return f'{APPY_NAMES[days[0]]}–{APPY_NAMES[days[-1]]}'
+    return ', '.join(APPY_NAMES[d] for d in days)
+
+
+# ---------------------------------------------------------------------------
+# Zones from street lists
+# ---------------------------------------------------------------------------
+
+STREET_BUFFER_M = 18          # half-width of a drawn street zone (metres)
+PARTIAL_RE = re.compile(r'\b(numbers?|odd|even|between|junction|side|part|from|excluding|only|including flat)\b', re.I)
+
+
+LOCALITIES = r'(hanwell|acton|greenford|southall|perivale|northolt|ealing|park royal|chiswick|brentford)'
+
+
+def norm_street(name):
+    n = name.lower().replace('’', "'").replace('‘', "'")
+    n = re.sub(r"\s+'", "'", n)                          # "Queen Anne 's Grove"
+    n = re.sub(r'^[ab]\d+\s+', '', n)                     # "A40 Western Avenue"
+    n = re.sub(r'\s+' + LOCALITIES + r'$', '', n)           # "George Street Hanwell"
+    n = re.sub(r"\bst\.?\s", 'st ', n)
+    n = re.sub(r"[^a-z0-9 ]", '', n)
+    return re.sub(r'\s+', ' ', n).strip()
+
+
+def parse_street_entry(entry):
+    """('Mattock Lane', partial?) from 'Mattock Lane, W5 (between … numbers 1 to 36)'."""
+    e = entry.strip().rstrip('.')
+    detail = ''
+    m = re.search(r'\(', e)
+    if m:
+        detail = e[m.start():]
+        e = e[:m.start()]
+    name = re.split(r',', e)[0]
+    name = re.sub(r'\s+(W\d+|NW\d+|UB\d+|SW\d+|SE\d+|TW\d+|KT\d+|CR\d+|BR\d+|DA\d+|E\d+|N\d+)\b.*$', '', name).strip()
+    partial = bool(detail and PARTIAL_RE.search(detail)) or bool(re.search(r'\b(east|west|north|south) to (east|west|north|south)\b', detail, re.I))
+    return name, partial
+
+
+def street_zones(bid, src):
+    """[(zone code, polygon, props)] for zones given as {code: [street entries]} in src['lists']."""
+    import json as _json
+    lists = src['lists'] if isinstance(src['lists'], dict) else _json.load(open(os.path.join(ROOT, src['lists'])))
+    to_bng = Transformer.from_crs('EPSG:4326', 'EPSG:27700', always_xy=True).transform
+    to_wgs = Transformer.from_crs('EPSG:27700', 'EPSG:4326', always_xy=True).transform
+    boundary = transform(to_bng, borough_boundary(src['borough']))
+    w, s, e, n = transform(to_wgs, boundary).bounds
+    ways = overpass(f'[out:json][timeout:300];way["highway"]["name"]({s},{w},{n},{e});out tags geom;',
+                    f'{bid}-named-ways.json')
+    by_name = {}
+    for w_ in ways:
+        if 'geometry' not in w_ or len(w_['geometry']) < 2:
+            continue
+        line = transform(to_bng, LineString([(p['lon'], p['lat']) for p in w_['geometry']]))
+        if not line.intersects(boundary):
+            continue
+        by_name.setdefault(norm_street(w_['tags']['name']), []).append(line.intersection(boundary))
+    # Same-named roads in different places: split each name into clusters 300 m apart.
+    clusters = {}
+    for nm, ls in by_name.items():
+        groups = []
+        for l in ls:
+            hit = [g for g in groups if g.distance(l) < 300]
+            merged = unary_union(hit + [l])
+            groups = [g for g in groups if g not in hit] + [merged]
+        clusters[nm] = groups
+    out, missing = [], []
+    parsed = {z: [parse_street_entry(x) for x in entries] for z, entries in lists.items()}
+
+    def anchor_of(z):
+        # median position of the zone's short, unambiguous streets (long roads cross many zones)
+        a = [clusters[norm_street(nm)][0] for nm, part in parsed.get(z, [])
+             if len(clusters.get(norm_street(nm), [])) == 1]
+        a = [g for g in a if g.length < 1200]
+        if not a:
+            return None
+        xs = sorted(g.centroid.x for g in a); ys = sorted(g.centroid.y for g in a)
+        return Point(xs[len(xs) // 2], ys[len(ys) // 2])
+
+    for z, entries in parsed.items():
+        # names with a single place in the borough fix where the zone is; failing that, a parent
+        # zone's (MM1 -> MM); failing that, same-named streets are skipped rather than guessed
+        centre = anchor_of(z)
+        if centre is None:
+            parent = re.sub(r'\d+$', '', z)
+            centre = anchor_of(parent) if parent != z else None
+        full, partial = [], []
+        for nm, part in entries:
+            cl = clusters.get(norm_street(nm))
+            if not cl:
+                missing.append(f'{z}: {nm}')
+                continue
+            if len(cl) > 1 and centre is None:
+                missing.append(f'{z}: {nm} (several in the borough, nothing to place it by)')
+                continue
+            g = cl[0] if len(cl) == 1 else min(cl, key=lambda c: c.distance(centre))
+            if centre is not None and g.distance(centre) > 2500:
+                missing.append(f'{z}: {nm} (nearest is {g.distance(centre):.0f} m away)')
+                continue
+            (partial if part else full).append(g)
+        if not full and not partial:
+            continue
+        core = unary_union(full) if full else None
+        if core is not None and partial:
+            near = core.buffer(150).convex_hull.buffer(50)
+            partial = [g.intersection(near) for g in partial]
+        lines = unary_union([g for g in full + partial if not g.is_empty])
+        area = transform(to_wgs, lines.buffer(STREET_BUFFER_M, cap_style=2))
+        out.append((z, area, {'streets': len(entries)}))
+    if missing:
+        log(f'  {len(missing)} listed streets not matched: ' + '; '.join(missing[:25]) + (' …' if len(missing) > 25 else ''))
     return out
 
 
@@ -323,21 +510,24 @@ def zones_from_polygons(bid, b, polys):
     groups = {}
     for code, g, props in polys:
         hours, note = data_hours(b, props)
+        if props.get('hours') and not hours:
+            hours = props['hours']
         name = str(props.get(src['nameField']) or '').strip() if src.get('nameField') else None
         if name and name.lower() == 'none':
             name = None
         for pat, repl in src.get('nameReplace', []):
             name = re.sub(pat, repl, name) if name else name
         url = str(props.get(src['urlField']) or '').strip() if src.get('urlField') else None
-        groups.setdefault(code, []).append((hours, note, name, url, g))
+        extra = {k: props[k] for k in ('periods', 'permitOnly', 'maxStay') if k in props}
+        groups.setdefault(code, []).append((hours, note, name, url, g, extra))
     zones = {}
     for code, items in groups.items():
         variants = []
-        for hours, note, name, url, g in items:
+        for hours, note, name, url, g, extra in items:
             key = (hours or '').lower()
             v = next((v for v in variants if v['key'] == key), None)
             if not v:
-                v = {'key': key, 'hours': hours, 'note': note, 'name': name, 'url': url, 'geoms': []}
+                v = {'key': key, 'hours': hours, 'note': note, 'name': name, 'url': url, 'geoms': [], 'extra': extra}
                 variants.append(v)
             v['geoms'].append(g)
             if name and v['name'] and name != v['name'] and name not in v['name']:
@@ -345,7 +535,7 @@ def zones_from_polygons(bid, b, polys):
         for i, v in enumerate(variants):
             zcode = code if len(variants) == 1 else f'{code} ({i + 1})'
             zones[zcode] = {'geom': unary_union(v['geoms']), 'name': v['name'], 'hours': v['hours'],
-                            'note': v['note'], 'url': v['url']}
+                            'note': v['note'], 'url': v['url'], 'extra': v.get('extra', {})}
     return zones
 
 
@@ -361,6 +551,8 @@ def build_rules(bid, b, zone_info):
         for k in ('name', 'note', 'url'):
             if info.get(k) and not z.get(k):
                 z[k] = info[k]
+        for k, v in info.get('extra', {}).items():
+            z.setdefault(k, v)
         zones[code] = z
     for code, z in zones.items():
         hours = z.get('hours')

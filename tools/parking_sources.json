@@ -2499,168 +2499,28 @@
   "kingston": {
    "name": "Kingston upon Thames",
    "short": "Kingston",
-   "boundaryOnly": "Kingston upon Thames",
    "hoursUrl": "https://www.kingston.gov.uk/parking/find-street-parking",
    "checked": "2026-11-08",
-   "licence": "Zone hours: Kingston upon Thames council. Borough outline: Office for National Statistics / London Datastore (OGL v3).",
-   "zones": {
-    "DB": {
-     "hours": "Monday to Saturday, 8am to 6.30pm; Sunday, 11am to 5pm",
-     "name": "Parking permit area DB",
-     "note": "Covers: Dunbar Road, Beresford Road."
-    },
-    "DC": {
-     "hours": "Monday to Saturday, 8am to 6.30pm; Sunday 11am to 5pm",
-     "name": "Parking permit area DC",
-     "note": "Covers: Brook Road."
-    },
-    "DD": {
-     "hours": "Monday to Sunday, 8.30am to 8.30pm",
-     "name": "Parking permit area DD",
-     "note": "Covers: Queen's Road, George Road, Albert Road."
-    },
-    "DE": {
-     "hours": "Monday to Saturday, 11am to 2pm",
-     "name": "Parking permit area DE",
-     "note": "Covers: Albany Mews."
-    },
-    "DF": {
-     "hours": "Monday to Saturday, 11am to 2pm; Latchmere Lane only: Monday to Friday, 11am to 2pm",
-     "name": "Parking permit area DF",
-     "note": "Covers: Durlston Road, Earle Gardens, Latchmere Road (between Richmond Road and Latchmere Lane), St.Alban's Road, Studland Road."
-    },
-    "DG": {
-     "name": "Parking Permit Area DG",
-     "note": "Page https://www.kingston.gov.uk/parking-zones/parking-permit-area-dg lists streets only (Brown's Road, Warwick Grove, South Place, Mayberry Place, King Charles Crescent, Alpha Road, Britannia Road, Middle Green Close, Hobill Walk (68 - 86), Ewell Road (...), Richmond Grove (35 - 43), King Charles Road (...), Lysander Gardens (Cyrus Cottage)); no hours on page"
-    },
-    "DI": {
-     "name": "Parking Permit Area DI",
-     "note": "Page lists street: Toby Way; no hours"
-    },
-    "DJ": {
-     "name": "Parking Permit Area DJ",
-     "note": "Page lists: California Road odd Numbers 1 to 15; White Gables even numbers 2 to 26 and 246a, 246b, 248, 248a, 248b, 248c and rear of 248.; Kingston Road odd numbers 187 to 201; no hours"
-    },
-    "DK": {
-     "name": "Parking Permit Area DK",
-     "note": "Page lists: Dickerage Lane, Stafford Road, Warwick Road, Lincoln Road, Kingston Road; no hours"
-    },
-    "A": {
-     "hours": "Monday to Saturday, 8.30am to 6.30pm, including bank holidays",
-     "name": "Zone A (outer area)",
-     "note": "Covers: Avenue Road, Milner Road, Woodbines Avenue, part of The Bittoms."
-    },
-    "A1": {
-     "hours": "Monday to Saturday, 8.30am to 10.30pm; Sunday, 11am to 10.30pm; Sunday, 12pm to 5pm (Thames Street and Bishops Hall only)",
-     "name": "Zone A1 (central Kingston town centre)"
-    },
-    "B": {
-     "hours": "Monday to Saturday, 8.30am to 10.30pm; Sunday, 11am to 10.30pm",
-     "name": "Zone B (Canbury) - Town centre area",
-     "note": "Covers: part of Acre Road, part of Canbury Park Road, Cowleaze Road, East Road, Elm Crescent, Elm Grove."
-    },
-    "B (2)": {
-     "hours": "Monday to Saturday, 8.30am to 6.30pm; Sunday, 11am to 5pm",
-     "name": "Zone B (Canbury) - Inner area",
-     "note": "Covers: part of Acre Road, Burton Road, Gibbon Road, Richmond Park Road."
-    },
-    "B (3)": {
-     "hours": "Monday to Saturday, 8.30am to 6.30pm",
-     "name": "Zone B (Canbury) - Canbury main area"
-    },
-    "B (4)": {
-     "hours": "Monday to Friday, 10am to 3pm",
-     "name": "Zone B (Canbury) - Outer area 1",
-     "note": "Covers: Dinton Road, Wyndham Road, Bockhampton Road and part of Park Road."
-    },
-    "B (5)": {
-     "hours": "Monday to Friday, 10am to 3.30pm",
-     "name": "Zone B (Canbury) - Outer area 2",
-     "note": "Covers: Boyd Close, Crescent Road, Deer Park Close, Dutch Gardens, Heatherdale Close, Liverpool Road, Queens Road, Windmill Rise."
-    },
-    "C": {
-     "hours": "Monday to Saturday, 8.30am to 6.30pm",
-     "name": "Zone C (Canbury Gardens) - Main area"
-    },
-    "C (2)": {
-     "hours": "Monday to Saturday, 8.30am to 6.30pm; Monday to Saturday, 11am to 2pm (Lower Ham Road from junction of Bank Lane to Richmond Road)",
-     "name": "Zone C (Canbury Gardens) - Albany Park Road, Bank Lane, part of Lower Ham Road"
-    },
-    "G": {
-     "hours": "Monday to Friday, 8.30am to 6.30pm",
-     "name": "Zone G (Grove area)"
-    },
-    "G1": {
-     "hours": "Monday to Saturday, 8.30am to 6.30pm",
-     "name": "Zone G1 (Grove area)"
-    },
-    "H": {
-     "hours": "Monday to Saturday, 8.30am to 6.30pm",
-     "name": "Zone H (Kingston Hill)"
-    },
-    "N": {
-     "hours": "Monday to Saturday, 8.30am to 6.30pm",
-     "name": "Zone N (Norbiton) - Norbiton central area"
-    },
-    "N (2)": {
-     "hours": "Monday to Friday, 8.30am to 6.30pm",
-     "name": "Zone N (Norbiton) - Coombe Road shopping area"
-    },
-    "N (3)": {
-     "hours": "Monday to Saturday, 8.30pm to 6.30pm",
-     "name": "Zone N (Norbiton) - Outer area A",
-     "note": "sic: page says '8.30pm to 6.30pm' (likely typo for 8.30am; copied verbatim)"
-    },
-    "N (4)": {
-     "hours": "Monday to Friday, 10am to 3pm",
-     "name": "Zone N (Norbiton) - Outer area B"
-    },
-    "R": {
-     "hours": "Monday to Friday, 10am to 4pm",
-     "name": "Zone R (Riverside)"
-    },
-    "S": {
-     "hours": "Monday to Saturday, 8am to 6.30pm",
-     "name": "Zone S (Surbiton) - Surbiton central area"
-    },
-    "S (2)": {
-     "hours": "Monday to Sunday, 8am to 10.30pm (resident permit holders only)",
-     "name": "Zone S (Surbiton) - Cottage Grove"
-    },
-    "S (3)": {
-     "hours": "Monday to Friday, 8am to 6.30pm",
-     "name": "Zone S (Surbiton) - Outer area"
-    },
-    "S (4)": {
-     "hours": "Monday to Friday, 10am to 4pm (resident permit holders only)",
-     "name": "Zone S (Surbiton) - Selsdon Close"
-    },
-    "T": {
-     "hours": "Monday to Saturday, 8am to 6.30pm",
-     "name": "Zone T (Oakhill) - Oakhill main area"
-    },
-    "T (2)": {
-     "hours": "Monday to Friday, 10am to 3pm",
-     "name": "Zone T (Oakhill) - Kingsdowne Road"
-    },
-    "V": {
-     "hours": "Monday to Friday, 8.30am to 6.30pm",
-     "name": "Zone V (Villiers) - Villiers main area"
-    },
-    "V (2)": {
-     "hours": "Monday to Friday, 10am to 3pm",
-     "name": "Zone V (Villiers) - Hill Crescent, Hillside Road and Minstrel Gardens"
-    }
-   },
-   "notes": "This borough doesn’t publish zone boundaries in a form this map can use, so only the borough outline is shown. Tap inside it for the council’s zone list. The council’s GIS layer exists but is access-denied."
+   "licence": "Zones and hours: Royal Borough of Kingston upon Thames restrictions map (AppyWay). Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
+   "zones": {},
+   "notes": "Zones and hours from the council’s restrictions map (AppyWay Streets), which gives each zone’s areas their own hours; the council’s web page lists the same hours. Parking permit areas (DB–DK) are permit holders only during their hours.",
+   "polygons": {
+    "type": "appyway",
+    "zones": "https://trcdn.appyway.com/authority-snapshots/b6fbdc93-ce8b-4837-b671-712f22035cfc/5c4f812d-bde0-45c3-9b7d-6e6536d57dcd_public_zones.geojson",
+    "sets": "https://trcdn.appyway.com/authority-snapshots/b6fbdc93-ce8b-4837-b671-712f22035cfc/5c4f812d-bde0-45c3-9b7d-6e6536d57dcd_public_sets.geojson",
+    "nameField": "name",
+    "types": [
+     1,
+     9
+    ]
+   }
   },
   "bexley": {
    "name": "Bexley",
    "short": "Bexley",
-   "boundaryOnly": "Bexley",
    "hoursUrl": "https://www.bexley.gov.uk/services/parking-transport-and-streets/parking-permits/residents-parking-permits",
    "checked": "2026-11-08",
-   "licence": "Zone hours: Bexley council. Borough outline: Office for National Statistics / London Datastore (OGL v3).",
+   "licence": "Zone roads and hours: London Borough of Bexley. Streets: © OpenStreetMap contributors (ODbL).",
    "zones": {
     "AW": {
      "hours": "Monday to Friday 11am to 1pm",
@@ -2735,7 +2595,12 @@
      "name": "West Sidcup"
     }
    },
-   "notes": "This borough doesn’t publish zone boundaries in a form this map can use, so only the borough outline is shown. Tap inside it for the council’s zone list. Hours are from the residents’ permit charges table."
+   "notes": "Bexley publishes its zones as a road-by-road table, so zones are drawn as those roads (from OpenStreetMap). Where only part of a road is in a zone, the map shows the part near the zone’s other roads; the council’s table gives the exact extent. Abbey Wood 1 (AW1) and West Heath (WH) aren’t in that table, so they aren’t drawn. Hours are from the residents’ permit charges table.",
+   "polygons": {
+    "type": "streets",
+    "lists": "tools/parking_lists/bexley.json",
+    "borough": "Bexley"
+   }
   },
   "bromley": {
    "name": "Bromley",
@@ -2899,10 +2764,9 @@
   "ealing": {
    "name": "Ealing",
    "short": "Ealing",
-   "boundaryOnly": "Ealing",
    "hoursUrl": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz",
    "checked": "2026-11-08",
-   "licence": "Zone hours: Ealing council. Borough outline: Office for National Statistics / London Datastore (OGL v3).",
+   "licence": "Zone street lists and hours: Ealing Council. Streets: © OpenStreetMap contributors (ODbL).",
    "zones": {
     "A": {
      "hours": "Monday to Thursday from 8:30am to 7:30pm Friday and Saturday from 8:30am to 11pm Sunday from 10am to 4pm",
@@ -2928,11 +2792,6 @@
      "hours": "Monday to Friday from 10am to 11am and 3pm to 4pm.",
      "name": "Sudbury Town",
      "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_bb_sudbury_town"
-    },
-    "C and D": {
-     "hours": "Monday to Friday from 10am to 7:30pm in Zones C and D Saturday from 10am to 4pm in Zone C",
-     "name": "University of West London",
-     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_c_and_d_university_of_west_london"
     },
     "CC": {
      "hours": "Monday to Friday from 10am to 11am and 3pm to 4pm.",
@@ -3214,13 +3073,33 @@
      "name": "West Acton",
      "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_z_west_acton"
     },
-    "F and G": {
-     "hours": "Monday to Friday from 9am to10am, 3pm to 4pm and 6pm to 7pm in Zone F Monday to Friday from 9am to 10am and 3pm to 4pm in Zone G",
+    "C": {
+     "hours": "Monday to Friday from 10am to 7:30pm; Saturday from 10am to 4pm",
+     "name": "University of West London",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_c_and_d_university_of_west_london"
+    },
+    "D": {
+     "hours": "Monday to Friday from 10am to 7:30pm",
+     "name": "University of West London",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_c_and_d_university_of_west_london"
+    },
+    "F": {
+     "hours": "Monday to Friday from 9am to 10am, 3pm to 4pm and 6pm to 7pm",
+     "name": "Ealing Common",
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zones_f_and_g_ealing_common"
+    },
+    "G": {
+     "hours": "Monday to Friday from 9am to 10am and 3pm to 4pm",
      "name": "Ealing Common",
      "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zones_f_and_g_ealing_common"
     }
    },
-   "notes": "This borough doesn’t publish zone boundaries in a form this map can use, so only the borough outline is shown. Tap inside it for the council’s zone list. Hours are from the council’s page for each zone."
+   "notes": "Ealing publishes each zone as a list of streets, so zones are drawn as those streets (from OpenStreetMap), not as areas. Where the council lists only part of a street (some house numbers, “between … and …”), the map shows the part near the zone’s other streets; check the zone page for the exact numbers.",
+   "polygons": {
+    "type": "streets",
+    "lists": "tools/parking_lists/ealing.json",
+    "borough": "Ealing"
+   }
   },
   "croydon": {
    "name": "Croydon",
