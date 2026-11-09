@@ -21,7 +21,8 @@ exclusive. Each rule has:
 - `hours`: the council's own wording (shown on the card)
 - `periods`: controlled times parsed from it by `tools/parking_hours.py`, or `null` when the wording
   couldn't be read. A `null` rule is shown grey ("hours unknown"), never coloured by a guess.
-- optional `maxStay`, `note`, `pdf`/`url`, `permit` (permit-holders-only times), `permitOnly`
+- optional `unsure` (times shown as unknown, e.g. where two zones drawn as one area differ),
+  `maxStay`, `note`, `pdf`/`url`, `permit` (permit-holders-only times), `permitOnly`
   (whole zone), `event` (different `periods`/`maxStay` on event days), `streets` (a street rule:
   the named streets in `zone` follow this rule instead of the zone's)
 

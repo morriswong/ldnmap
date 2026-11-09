@@ -28,12 +28,14 @@ function inPeriods(periods, day, minutes) {
 
 // Status of a rule at a London day and time: 'ctrl' (pay or permit), 'free', 'permit'
 // (permit holders only), or 'unknown' when the council's hours could not be read into
-// periods (the card then shows the council's own text instead). Unknown keys are 'unknown'.
+// periods (the card then shows the council's own text instead) or the time falls in the
+// rule's `unsure` periods. Unknown keys are 'unknown'.
 function isControlled(ruleKey, day, minutes, eventDay) {
   var rule = parkingRule(ruleKey);
   if (!rule) return 'unknown';
   var periods = eventDay && rule.event ? rule.event.periods : rule.periods;
   if (!periods) return 'unknown';
+  if (inPeriods(rule.unsure, day, minutes)) return 'unknown';   // e.g. two zones drawn as one that differ here
   if (inPeriods(rule.permit, day, minutes)) return 'permit';
   if (!inPeriods(periods, day, minutes)) return 'free';
   return rule.permitOnly ? 'permit' : 'ctrl';

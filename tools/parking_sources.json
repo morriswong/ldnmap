@@ -1365,24 +1365,10 @@
   "lewisham": {
    "name": "Lewisham",
    "short": "Lewisham",
-   "boundaryOnly": "Lewisham",
    "hoursUrl": "https://lewisham.gov.uk/myservices/parking/permits/controlled-parking-zones-and-operating-times",
    "checked": "2026-11-08",
-   "licence": "Zone hours: Lewisham council. Borough outline: Office for National Statistics / London Datastore (OGL v3).",
+   "licence": "Zone boundaries traced from Lewisham Council’s parking restrictions map; hours from the council. Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
    "zones": {
-    "BHA": {
-     "hours": "Mon–Sat 9am-7pm",
-     "name": "Blackheath"
-    },
-    "B1": {
-     "hours": "Mon–Sat 9am-7pm",
-     "name": "Lewisham Central"
-    },
-    "B2": {
-     "hours": "Mon-Sat 9am-7pm; Sun 9am-1.30pm",
-     "name": "Lewisham Central Southern",
-     "note": "cells read 'Mon-Sat Sun' / '9am-7pm 9am-1.30pm' (two lines each)"
-    },
     "C": {
      "hours": "Mon–Sat 8am-6.30pm",
      "name": "Hindsley Place"
@@ -1459,10 +1445,6 @@
      "hours": "Mon–Fri 9am-5pm",
      "name": "Davids Road"
     },
-    "OB": {
-     "hours": "Mon-Sat 9am-7pm",
-     "name": "Old Road/Bankwell"
-    },
     "P": {
      "hours": "Mon–Fri 10am-12 noon",
      "name": "Hither Green East"
@@ -1491,9 +1473,47 @@
     "W": {
      "hours": "Mon–Fri 9am-7pm",
      "name": "Mountsfield Park"
+    },
+    "B1/B2": {
+     "hours": "Mon–Sat 9am-7pm",
+     "name": "Lewisham Central (B1) and Lewisham Central Southern (B2)",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "09:00",
+       "to": "19:00"
+      }
+     ],
+     "unsure": [
+      {
+       "days": [
+        0
+       ],
+       "from": "09:00",
+       "to": "13:30"
+      }
+     ],
+     "note": "The council’s map shows B1 and B2 as one area. B2 is also controlled on Sundays 9am–1.30pm, so Sunday mornings show as unknown here."
+    },
+    "BHA/OB": {
+     "hours": "Mon–Sat 9am-7pm",
+     "name": "Blackheath (BHA) and Old Road/Bankwell (OB)",
+     "note": "The council’s map doesn’t separate BHA and OB; both have the same hours."
     }
    },
-   "notes": "This borough doesn’t publish zone boundaries in a form this map can use, so only the borough outline is shown. Tap inside it for the council’s zone list. Hours from the council’s table published 15 January 2026."
+   "notes": "Zone boundaries traced from the council’s “Parking restrictions in Lewisham” map (vector PDF), placed by fitting its ward boundaries to Lewisham’s (median error under 1 m); zone edges follow the map’s dotted lines. Hours from the council’s table published 15 January 2026.",
+   "polygons": {
+    "type": "file",
+    "path": "lewisham.geojson",
+    "zoneField": "zone"
+   }
   },
   "southwark": {
    "name": "Southwark",
@@ -2330,33 +2350,42 @@
   "westminster": {
    "name": "Westminster",
    "short": "Westminster",
-   "boundaryOnly": "Westminster",
    "hoursUrl": "https://www.westminster.gov.uk/parking/parking-zones-and-prices",
    "checked": "2026-11-08",
-   "licence": "Zone hours: Westminster council. Borough outline: Office for National Statistics / London Datastore (OGL v3).",
+   "licence": "Zone boundaries traced from Westminster City Council’s CPZ map (2011); hours from the council (March 2026). Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
    "zones": {
     "A1": {
-     "periods": null,
-     "hours": "Paid-for bays & single yellow lines: 0830 - 1830 Mon - Fri; Resident bays: 0830 - 1830 Mon - Fri",
-     "name": "Zone A - Knightsbridge, Belgravia and Pimlico"
+     "hours": "0830 - 1830 Mon - Fri",
+     "name": "Zone A - Knightsbridge, Belgravia and Pimlico",
+     "note": "Resident bays: 0830 - 1830 Mon - Fri."
     },
     "A2": {
-     "periods": null,
-     "hours": "Paid-for bays & SYL: 0830 - 1830 Mon - Fri and 0830 - 1330 Sat; Resident bays: 0830 - 2200 Mon - Sat",
-     "name": "Zone A"
+     "hours": "0830 - 1830 Mon - Fri and 0830 - 1330 Sat",
+     "name": "Zone A",
+     "note": "Resident bays: 0830 - 2200 Mon - Sat."
     },
     "A3": {
      "name": "Zone A",
      "note": "row present in PDF but its cells merged with A2/A4 in text extraction - unverified"
     },
     "A4": {
-     "periods": null,
-     "hours": "Paid-for bays & SYL: 0830 - 1830 Mon - Sat; Resident bays: 24 hours everyday (incl. Bank/Public Holidays)",
-     "name": "Zone A"
+     "hours": "0830 - 1830 Mon - Sat",
+     "name": "Zone A",
+     "note": "Resident bays: 24 hours everyday (incl. Bank/Public Holidays)."
     },
-    "BC1": {
+    "B/C1": {
      "hours": "0830 - 1830 Mon - Fri",
-     "name": "Zone B - Bayswater and Maida Vale (South)",
+     "name": "Zone B/C1 (listed with BC1)",
+     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+    },
+    "B10": {
+     "hours": "0830 - 1830 Mon - Fri",
+     "name": "Zone B",
+     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+    },
+    "B11": {
+     "hours": "0830 - 2200 Mon - Sat",
+     "name": "Zone B",
      "note": "Applies to paid-for bays, single yellow lines and resident bays."
     },
     "B2": {
@@ -2375,9 +2404,9 @@
      "note": "Applies to paid-for bays, single yellow lines and resident bays."
     },
     "B5": {
-     "periods": null,
-     "hours": "Paid-for bays & SYL: 0830 - 1830 Mon - Sat; Resident bays: 0830 - 2030 everyday (incl. Bank/Public Holidays)",
-     "name": "Zone B"
+     "hours": "0830 - 1830 Mon - Sat",
+     "name": "Zone B",
+     "note": "Resident bays: 0830 - 2030 everyday (incl. Bank/Public Holidays)."
     },
     "B6": {
      "hours": "0830 - 1830 Mon - Fri and 0830 - 1330 Sat",
@@ -2385,34 +2414,24 @@
      "note": "Applies to paid-for bays, single yellow lines and resident bays."
     },
     "B7": {
-     "periods": null,
-     "hours": "Paid-for bays & SYL: 0830 - 1830 Mon - Sat; Resident bays: 24 hours everyday (incl. Bank/Public Holidays)",
-     "name": "Zone B"
+     "hours": "0830 - 1830 Mon - Sat",
+     "name": "Zone B",
+     "note": "Resident bays: 24 hours everyday (incl. Bank/Public Holidays)."
     },
-    "B10": {
+    "C/B1": {
      "hours": "0830 - 1830 Mon - Fri",
-     "name": "Zone B",
-     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+     "name": "Zone C/B1 (listed with CB1, C1, C2)",
+     "note": "Resident bays: 0830 - 1830 Mon - Fri (except Kilburn Pk Rd area* 0800 - 1830 Mon - Sat)."
     },
-    "B11": {
-     "hours": "0830 - 2200 Mon - Sat",
-     "name": "Zone B",
-     "note": "Applies to paid-for bays, single yellow lines and resident bays."
-    },
-    "B8 Taxi": {
+    "C1": {
      "hours": "0830 - 1830 Mon - Fri",
-     "name": "Zone B",
-     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+     "name": "Zone C1 (listed with CB1, C1, C2)",
+     "note": "Resident bays: 0830 - 1830 Mon - Fri (except Kilburn Pk Rd area* 0800 - 1830 Mon - Sat)."
     },
-    "B9 Coach": {
-     "hours": "0830 - midnight everyday (incl. Bank/Public Holidays)",
-     "name": "Zone B",
-     "note": "Applies to paid-for bays, single yellow lines and resident bays."
-    },
-    "CB1, C1, C2": {
-     "periods": null,
-     "hours": "Paid-for bays & SYL: 0830 - 1830 Mon - Fri; Resident bays: 0830 - 1830 Mon - Fri (except Kilburn Pk Rd area* 0800 - 1830 Mon - Sat)",
-     "name": "Zone C - Harrow Road, Queen's Park and Maida Vale (North)"
+    "C2": {
+     "hours": "0830 - 1830 Mon - Fri",
+     "name": "Zone C2 (listed with CB1, C1, C2)",
+     "note": "Resident bays: 0830 - 1830 Mon - Fri (except Kilburn Pk Rd area* 0800 - 1830 Mon - Sat)."
     },
     "D1": {
      "hours": "0830 - 1830 Mon - Fri",
@@ -2424,63 +2443,58 @@
      "name": "Zone D",
      "note": "Applies to paid-for bays, single yellow lines and resident bays."
     },
-    "D8 Taxi": {
-     "hours": "0830 - 1830 Mon - Fri",
-     "name": "Zone D",
-     "note": "Applies to paid-for bays, single yellow lines and resident bays."
-    },
-    "D9 Coach": {
-     "hours": "0830 - midnight everyday (incl. Bank/Public Holidays)",
-     "name": "Zone D",
-     "note": "Applies to paid-for bays, single yellow lines and resident bays."
-    },
     "E1": {
-     "periods": null,
-     "hours": "Paid-for bays & SYL: 0830 - 1830 Mon - Sat; Resident bays: 24 hours everyday (incl. Bank/Public Holidays)",
-     "name": "Zone E - Mayfair & St. James'"
-    },
-    "E9 Coach": {
-     "hours": "0830 - midnight everyday (incl. Bank/Public Holidays)",
-     "name": "Zone E",
-     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+     "hours": "0830 - 1830 Mon - Sat",
+     "name": "Zone E - Mayfair & St. James'",
+     "note": "Resident bays: 24 hours everyday (incl. Bank/Public Holidays)."
     },
     "F1": {
-     "periods": null,
-     "hours": "Paid-for bays & SYL: 0830 - 1830 Mon - Sat; Resident bays: 24 hours everyday (incl. Bank/Public Holidays)",
-     "name": "Zone F - Hyde Park, Marylebone and Fitzrovia"
-    },
-    "F2, F3": {
-     "hours": "0830 - 2030 everyday (incl. Bank/Public Holidays)",
-     "name": "Zone F",
-     "note": "Applies to paid-for bays, single yellow lines and resident bays."
-    },
-    "F4, F5, F6": {
-     "hours": "24 hours everyday (incl. Bank/Public Holidays)",
-     "name": "Zone F",
-     "note": "Applies to paid-for bays, single yellow lines and resident bays."
-    },
-    "F8 Taxi": {
      "hours": "0830 - 1830 Mon - Sat",
-     "name": "Zone F",
+     "name": "Zone F - Hyde Park, Marylebone and Fitzrovia",
+     "note": "Resident bays: 24 hours everyday (incl. Bank/Public Holidays)."
+    },
+    "F2": {
+     "hours": "0830 - 2030 everyday (incl. Bank/Public Holidays)",
+     "name": "Zone F2 (listed with F2, F3)",
+     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+    },
+    "F3": {
+     "hours": "0830 - 2030 everyday (incl. Bank/Public Holidays)",
+     "name": "Zone F3 (listed with F2, F3)",
+     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+    },
+    "F4": {
+     "hours": "24 hours everyday (incl. Bank/Public Holidays)",
+     "name": "Zone F4 (listed with F4, F5, F6)",
+     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+    },
+    "F5": {
+     "hours": "24 hours everyday (incl. Bank/Public Holidays)",
+     "name": "Zone F5 (listed with F4, F5, F6)",
+     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+    },
+    "F6": {
+     "hours": "24 hours everyday (incl. Bank/Public Holidays)",
+     "name": "Zone F6 (listed with F4, F5, F6)",
      "note": "Applies to paid-for bays, single yellow lines and resident bays."
     },
     "G1": {
-     "periods": null,
-     "hours": "Paid-for bays & SYL: 0830 - 1830 Mon - Sat; Resident bays: 24 hours everyday (incl. Bank/Public Holidays)",
-     "name": "Zone G - Soho, West End and Covent Garden"
+     "hours": "0830 - 1830 Mon - Sat",
+     "name": "Zone G - Soho, West End and Covent Garden",
+     "note": "Resident bays: 24 hours everyday (incl. Bank/Public Holidays)."
     },
     "G2": {
      "hours": "n/a",
      "name": "Zone G",
      "note": "Applies to paid-for bays, single yellow lines and resident bays."
-    },
-    "G9 Coach": {
-     "hours": "0830 - midnight everyday (incl. Bank/Public Holidays)",
-     "name": "Zone G",
-     "note": "Applies to paid-for bays, single yellow lines and resident bays."
     }
    },
-   "notes": "This borough doesn’t publish zone boundaries in a form this map can use, so only the borough outline is shown. Tap inside it for the council’s zone list. Hours are from the council’s tariffs and controlled hours PDF (March 2026)."
+   "notes": "Zone boundaries traced from the council’s CPZ map, which dates from February 2011; boundaries may have changed since and edges can be out by about 20–60 m. Hours from the council’s March 2026 tariffs and controlled hours table; the colour follows paid-for bays and single yellow lines. Taxi and coach bays aren’t shown.",
+   "polygons": {
+    "type": "file",
+    "path": "westminster.geojson",
+    "zoneField": "zone"
+   }
   },
   "kingston": {
    "name": "Kingston upon Thames",

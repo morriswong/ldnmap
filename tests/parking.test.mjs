@@ -79,6 +79,15 @@ test('every rule in the data is well formed', () => {
   }
 });
 
+test('unsure periods are unknown, the rest of the week keeps its status', () => {
+  ctx.setParkingRules({ rules: { 'x:B': { hours: 'Mon-Sat 9am-7pm', periods: [{ days: [1, 2, 3, 4, 5, 6], from: '09:00', to: '19:00' }],
+    unsure: [{ days: [0], from: '09:00', to: '13:30' }] } } });
+  assert.equal(isControlled('x:B', SAT, at(10), false), 'ctrl');
+  assert.equal(isControlled('x:B', SUN, at(10), false), 'unknown');
+  assert.equal(isControlled('x:B', SUN, at(15), false), 'free');
+  ctx.setParkingRules(rules);
+});
+
 test('London time follows British Summer Time', () => {
   assert.deepEqual({ ...londonDayTime(new Date('2026-07-05T09:30:00Z')) }, { day: SUN, minutes: at(10, 30) });
   assert.deepEqual({ ...londonDayTime(new Date('2026-12-05T23:59:00Z')) }, { day: SAT, minutes: at(23, 59) });

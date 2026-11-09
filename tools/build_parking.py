@@ -374,7 +374,7 @@ def build_rules(bid, b, zone_info):
             if periods is None:
                 log(f'  {bid}:{code}: could not read hours {hours!r}; shown as unknown')
         rule = {'borough': bid, 'zone': code, 'hours': hours, 'periods': periods}
-        for k in ('maxStay', 'pdf', 'note', 'permit', 'permitOnly', 'event', 'url', 'name'):
+        for k in ('maxStay', 'pdf', 'note', 'permit', 'permitOnly', 'event', 'url', 'name', 'unsure'):
             if z.get(k) not in (None, ''):
                 rule[k] = z[k]
         if rule.get('event') and 'periods' not in rule['event']:
@@ -557,7 +557,8 @@ def main(argv):
                                    'mapPdf', 'yellowLines', 'charges', 'notes', 'licence') if k in b}
         entry['bbox'] = [round(w, 4), round(s, 4), round(e, 4), round(n, 4)]
         entry['zoneCount'] = len(zones)
-        entry['knownHours'] = sum(1 for r in rules.values() if r['periods'] is not None and 'streets' not in r)
+        entry['knownHours'] = sum(1 for r in rules.values() if r['periods'] is not None and 'streets' not in r
+                                  and r['zone'] in zones)
         all_boroughs[bid] = entry
         all_rules.update(rules)
         if not b.get('skipOsm'):
