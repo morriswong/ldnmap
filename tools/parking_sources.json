@@ -5915,12 +5915,363 @@
   "walthamforest": {
    "name": "Waltham Forest",
    "short": "Waltham Forest",
-   "boundaryOnly": "Waltham Forest",
    "hoursUrl": "https://www.walthamforest.gov.uk/parking-roads-and-travel/parking-permits-and-suspensions/controlled-parking-zones-cpzs",
-   "checked": "2026-11-08",
-   "licence": "Zone hours: Waltham Forest council. Borough outline: Office for National Statistics / London Datastore (OGL v3).",
-   "zones": {},
-   "notes": "Waltham Forest publishes a PDF overview map but no zone hours list online."
+   "checked": "2026-11-10",
+   "licence": "Zone boundaries and hours from Waltham Forest Council’s CPZ overview map (December 2025 revision). Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
+   "notes": "Zones and their core hours are from the council’s “Controlled Parking Zones Overview Plan” PDF: each zone is drawn on it as its own shape, labelled with its code and hours and coloured by the hours key. The map is placed by fitting its borough boundary to Waltham Forest’s (median error about 5 m). The council says some streets in a zone have different times, so check the signs.",
+   "mapPdf": "https://www.walthamforest.gov.uk/sites/default/files/2026-03/2026_03_05_CPZ_Overview_Map-A1%20Portrait_Whole%20Borough%20Map.pdf",
+   "polygons": {
+    "type": "file",
+    "path": "walthamforest.geojson",
+    "zoneField": "zone"
+   },
+   "zones": {
+    "AM": {
+     "hours": "Monday - Friday 8.00am - 6.30pm",
+     "name": "Abbotts Park Road/Midland Road"
+    },
+    "BA": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Bakers Arms"
+    },
+    "BL": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Blackhorse Lane"
+    },
+    "BLN": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Blackhorse Lane North"
+    },
+    "BP": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Banbury Park"
+    },
+    "BR": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Blackhorse Road"
+    },
+    "BWR": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Brewster Road"
+    },
+    "CE": {
+     "hours": "Monday - Friday 8.00am - 9.00pm",
+     "name": "Chapel End"
+    },
+    "CF": {
+     "hours": "Monday - Friday 8.00am - 6.30pm",
+     "name": "Crownfield"
+    },
+    "CG": {
+     "hours": "Monday - Friday 10.00am - 4.00pm",
+     "name": "Coolgardie"
+    },
+    "CH": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Cann Hall"
+    },
+    "CHE": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Cann Hall East"
+    },
+    "CHN": {
+     "hours": "Monday - Friday 10.00am - 4.00pm",
+     "name": "Cann Hall North"
+    },
+    "CL": {
+     "hours": "Monday - Saturday 8.30am - 6.30pm",
+     "name": "Chingford Lane"
+    },
+    "CML": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Copper Mill Lane"
+    },
+    "CTN": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Cathall North"
+    },
+    "CTS": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Cathall South"
+    },
+    "FR": {
+     "hours": "Monday - Friday 10.00am - 4.00pm",
+     "name": "Fulbourne Road"
+    },
+    "FRN": {
+     "hours": "Monday - Friday 10.00am - 4.00pm",
+     "name": "Fulbourne Road North"
+    },
+    "FSR": {
+     "hours": "Monday - Friday 10.00am - 4.00pm",
+     "name": "Forest Rising"
+    },
+    "GGE": {
+     "hours": "Monday - Friday 8.00am - 6.30pm",
+     "name": "Grove Green East"
+    },
+    "GGN": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Grove Green North"
+    },
+    "GGS": {
+     "hours": "Monday - Friday 8.00am - 6.30pm",
+     "name": "Grove Green South"
+    },
+    "GGW": {
+     "hours": "Monday - Friday 8.00am - 6.30pm",
+     "name": "Grove Green West"
+    },
+    "GM": {
+     "hours": "Monday - Friday 10.00am - 4.00pm",
+     "name": "Green Man"
+    },
+    "GS": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Gold Smith"
+    },
+    "HE": {
+     "hours": "Monday - Friday 10.00am - 4.00pm",
+     "name": "Hale End"
+    },
+    "HF": {
+     "hours": "Monday - Sunday 8.00am - 9.00pm",
+     "name": "Hillyfield"
+    },
+    "HH": {
+     "hours": "Monday - Friday 8.00am - 6.30pm",
+     "name": "Higham Hill"
+    },
+    "HHE": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Higham Hill East"
+    },
+    "HHN": {
+     "hours": "Monday - Friday 8.00am - 6.30pm",
+     "name": "Higham Hill North"
+    },
+    "HPS": {
+     "hours": "Monday - Friday 8.00am - 6.30pm",
+     "name": "Highams Park Station"
+    },
+    "HS": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Hoe Street"
+    },
+    "HST": {
+     "hours": "Monday - Saturday 8.00am - 9.30pm & Sunday 10.00am - 9.30pm",
+     "name": "High Street"
+    },
+    "HT": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Hill Top"
+    },
+    "JF": {
+     "hours": "Monday - Sunday 7.30am - 10.30pm",
+     "name": "Jack's Farm",
+     "note": "Residents parking zone (RPZ)."
+    },
+    "KS": {
+     "hours": "Monday - Friday 8.00am - 6.30pm",
+     "name": "Kelmscott"
+    },
+    "LBR": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Lea Bridge Road"
+    },
+    "LC": {
+     "hours": "Monday - Friday 8.00am - 8.00pm",
+     "name": "Leytonstone Central"
+    },
+    "LH": {
+     "hours": "Monday - Friday 8.00am - 6.30pm",
+     "name": "Low Hall"
+    },
+    "LK": {
+     "hours": "Monday - Sunday 7.30am - 10.30pm",
+     "name": "Lena Kennedy"
+    },
+    "LNE": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Leyton East"
+    },
+    "LNN": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Leyton North"
+    },
+    "LNS": {
+     "hours": "Monday - Friday 10.00am - 4.00pm",
+     "name": "Leyton South"
+    },
+    "LNW": {
+     "hours": "Monday - Saturday 10.00am - 4.00pm",
+     "name": "Leyton West"
+    },
+    "LPE": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Lloyd Park East"
+    },
+    "LPN": {
+     "hours": "Monday - Saturday 8.00am - 9.00pm",
+     "name": "Lloyd Park North"
+    },
+    "LPW": {
+     "hours": "Monday - Sunday 8.00am - 9.00pm",
+     "name": "Lloyd Park West"
+    },
+    "LS": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Leytonstone Station"
+    },
+    "LSE": {
+     "hours": "Monday - Friday 10.00am - 2.00pm",
+     "name": "Leytonstone East"
+    },
+    "LSN": {
+     "hours": "Monday - Friday 10.00am - 4.00pm",
+     "name": "Leytonstone North"
+    },
+    "LSS": {
+     "hours": "Monday - Friday 10.00am - 2.00pm",
+     "name": "Leytonstone South"
+    },
+    "LSW": {
+     "hours": "Monday - Friday 10.00am - 4.00pm",
+     "name": "Leytonstone West"
+    },
+    "MC": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Marconi Road"
+    },
+    "MD": {
+     "hours": "Monday - Sunday 8.00am - 9.30pm",
+     "name": "Millicent Road/Dagenham Road"
+    },
+    "MH": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Markhouse"
+    },
+    "ML": {
+     "hours": "Monday - Sunday 7.30am - 10.30pm",
+     "name": "Marlowe",
+     "note": "Residents parking zone (RPZ)."
+    },
+    "MR": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Manor Road"
+    },
+    "MW": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Market West"
+    },
+    "NC": {
+     "hours": "Monday - Friday 10.00am - 4.00pm",
+     "name": "North Chingford"
+    },
+    "OL": {
+     "hours": "Monday - Friday 8.00am - 6.30pm",
+     "name": "Oliver Road"
+    },
+    "PC": {
+     "hours": "Monday - Sunday 8.00am - 9.30pm",
+     "name": "Poets Corner"
+    },
+    "QB": {
+     "hours": "Monday - Friday 8.00am - 12.30pm and 2.30pm - 6.30pm & Saturday 8.00am - 6.30pm",
+     "name": "Queens Road/Boundary Road"
+    },
+    "RA": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Royston Avenue"
+    },
+    "RC": {
+     "hours": "Monday - Sunday 8.00am - 9.00pm",
+     "name": "Ruckholt Close"
+    },
+    "SBn": {
+     "hours": "Monday - Friday 10.00am - 4.00pm",
+     "name": "Shernhall Street/Bakers Arms North"
+    },
+    "SBs": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Shernhall Street/Bakers Arms South"
+    },
+    "SJP": {
+     "hours": "Monday - Friday 8.00am - 6.30pm",
+     "name": "St. James Park"
+    },
+    "SR": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Sutherland Road"
+    },
+    "TR": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Tallack Road"
+    },
+    "TS": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Theydon Street"
+    },
+    "TU": {
+     "hours": "Monday - Sunday 7.30am - 10.30pm",
+     "name": "Tudor Road"
+    },
+    "VA": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Village Area"
+    },
+    "VFR": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Vicarage Road/Farmer Road"
+    },
+    "VN": {
+     "hours": "Monday - Sunday 7.30am - 10.30pm",
+     "name": "Village North"
+    },
+    "WA": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Winns Avenue"
+    },
+    "WD": {
+     "hours": "Monday - Sunday 7.30am - 10.30pm",
+     "name": "Wadham Avenue/Road"
+    },
+    "WR": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Wilmot Road"
+    },
+    "WS": {
+     "hours": "Monday - Sunday 7.30am - 10.30pm",
+     "name": "Walthamstow Stadium"
+    },
+    "WSC": {
+     "hours": "Monday - Saturday 8.00am - 9.30pm & Sunday 10.00am - 9.30pm",
+     "name": "Walthamstow Central"
+    },
+    "WSE": {
+     "hours": "Monday - Friday 10.00am - 4.00pm",
+     "name": "Wood Street East"
+    },
+    "WSN": {
+     "hours": "Monday - Friday 10.00am - 4.00pm",
+     "name": "Wood Street North"
+    },
+    "WSS": {
+     "hours": "Monday - Friday 10.00am - 4.00pm",
+     "name": "Wood Street South"
+    },
+    "WXN": {
+     "hours": "Monday - Saturday 8.00am - 6.30pm",
+     "name": "Whipps Cross North"
+    },
+    "WXSe": {
+     "hours": "Monday - Sunday 8.00am - 9.00pm",
+     "name": "Whipps Cross South East"
+    },
+    "WXSw": {
+     "hours": "Monday - Friday 9.00am - 6.00pm"
+    }
+   }
   }
  }
 }
