@@ -740,6 +740,7 @@ def main(argv):
         missing = sorted(set(b.get('zones', {})) - set(zones))
         if missing:
             log(f'  zones with hours but no polygon: {", ".join(missing)}')
+        outline = None
         if b.get('partial'):
             # Some zones couldn't be drawn: the borough outline too, so a tap outside the drawn zones lists them all.
             outline = borough_boundary(b['partial'])
@@ -748,7 +749,7 @@ def main(argv):
             pt = g.representative_point()
             all_zones.append(feature(g.simplify(0.00001), {'b': bid, 'zone': code, 'rule': f'{bid}:{code}',
                                                             'lx': round(pt.x, 5), 'ly': round(pt.y, 5)}))
-        w, s, e, n = unary_union(list(zones.values())).bounds
+        w, s, e, n = unary_union(list(zones.values()) + ([outline] if outline else [])).bounds
         entry = {k: b[k] for k in ('name', 'short', 'hoursUrl', 'checked', 'eventDaysUrl', 'bankHolidayUrl',
                                    'mapPdf', 'yellowLines', 'charges', 'notes', 'licence') if k in b}
         entry['bbox'] = [round(w, 4), round(s, 4), round(e, 4), round(n, 4)]

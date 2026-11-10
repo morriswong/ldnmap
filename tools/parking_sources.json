@@ -4079,10 +4079,9 @@
   "bromley": {
    "name": "Bromley",
    "short": "Bromley",
-   "boundaryOnly": "Bromley",
    "hoursUrl": "https://www.bromley.gov.uk/homepage/195/parking-permit-information-and-charges",
-   "checked": "2026-11-08",
-   "licence": "Zone hours: Bromley council. Borough outline: Office for National Statistics / London Datastore (OGL v3).",
+   "checked": "2026-11-10",
+   "licence": "Town-centre zone boundaries traced from Bromley Council’s “Bromley Town Centre CPZ” map; hours from that map’s signs and the council’s permit page. Borough outline: Office for National Statistics / London Datastore (OGL v3). Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
    "zones": {
     "BAR": {
      "hours": "10am to 12noon Monday to Friday",
@@ -4102,11 +4101,93 @@
     },
     "B": {
      "hours": "12noon to 2pm Monday to Saturday",
-     "name": "Bromley North"
+     "name": "Bromley North",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "12:00",
+       "to": "14:00"
+      }
+     ],
+     "unsure": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "12:00"
+      },
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "14:00",
+       "to": "18:30"
+      }
+     ],
+     "note": "The council’s permit table says 12noon to 2pm, Monday to Saturday; the zone-entry signs on its town-centre map say Monday to Saturday 8.30am to 6.30pm. The rest of that time is shown as unknown: check the signs."
     },
     "C": {
      "hours": "12noon to 2pm Monday to Saturday",
-     "name": "Bromley South"
+     "name": "Bromley South",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "12:00",
+       "to": "14:00"
+      }
+     ],
+     "unsure": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "12:00"
+      },
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "14:00",
+       "to": "18:30"
+      }
+     ],
+     "note": "The council’s permit table says 12noon to 2pm, Monday to Saturday; the zone-entry signs on its town-centre map say Monday to Saturday 8.30am to 6.30pm. The rest of that time is shown as unknown: check the signs."
     },
     "A and B***": {
      "hours": "See below See below",
@@ -4231,9 +4312,68 @@
     "WMR": {
      "hours": "8.30am to 6.30pm Monday to Saturday",
      "name": "Westmoreland Road"
+    },
+    "A": {
+     "name": "Bromley Town Centre (Inner and Central areas)",
+     "hours": "Inner Area: Monday to Saturday 8.30am to 6.30pm, Sunday 10am to 5pm. Central Area: Monday to Saturday 8am to 6pm, Sunday 10am to 5pm.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "18:00"
+      },
+      {
+       "days": [
+        0
+       ],
+       "from": "10:00",
+       "to": "17:00"
+      }
+     ],
+     "unsure": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:00",
+       "to": "08:30"
+      },
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "18:00",
+       "to": "18:30"
+      }
+     ],
+     "note": "From the zone-entry signs on the council’s town-centre map. The Inner and Central areas are drawn as one; the half-hours where their times differ are shown as unknown. Permits are sold as A and B or A and C, and A and B / A and C permit holders may not park in the bays 9.30am to 4.30pm, Monday to Saturday."
     }
    },
-   "notes": "This borough doesn’t publish zone boundaries in a form this map can use, so only the borough outline is shown. Tap inside it for the council’s zone list. Hours are from the permit information table, which may not list every zone."
+   "notes": "Only the town-centre zones (A, B, C) are drawn: the council publishes a map for those alone, so the rest of the borough is outlined and tapping it lists every zone. They are traced from the council’s Bromley Town Centre CPZ map (2021), placed by its 1:11,372 scale and matched to road junctions in OpenStreetMap (about 7 m). The Bromley North Village restricted parking zone has its own map and isn’t drawn.",
+   "polygons": {
+    "type": "file",
+    "path": "bromley.geojson",
+    "zoneField": "zone"
+   },
+   "partial": "Bromley",
+   "mapPdf": "https://www.bromley.gov.uk/downloads/file/1181/bromley-town-centre-cpz-map"
   },
   "ealing": {
    "name": "Ealing",
