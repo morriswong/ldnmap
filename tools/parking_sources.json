@@ -4718,113 +4718,113 @@
   "croydon": {
    "name": "Croydon",
    "short": "Croydon",
-   "boundaryOnly": "Croydon",
    "hoursUrl": "https://www.croydon.gov.uk/parking-streets-and-transport/parking/parking-restrictions/list-controlled-parking-zones",
-   "checked": "2026-11-08",
-   "licence": "Zone hours: Croydon council. Borough outline: Office for National Statistics / London Datastore (OGL v3).",
+   "checked": "2026-11-10",
+   "licence": "Zone boundaries traced from Croydon Council’s permit zone maps. Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
    "zones": {
-    "Bynes Road Permit Zone": {
-     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Bynes_Road_Permit_Zone.pdf",
+    "Bynes Road": {
      "name": "Bynes Road Permit Zone",
-     "note": "Boundary map: PDF from the council."
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Bynes_Road_Permit_Zone.pdf"
     },
-    "Centre Permit Zone": {
+    "Centre": {
+     "name": "Central",
      "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Centre_Permit_Zone.pdf",
-     "name": "Centre Permit Zone",
-     "note": "Boundary map: PDF from the council."
+     "note": "The council’s map (July 2008) says restrictions apply 7am to 7pm every day, single yellow lines 8am to midnight every day and bay charges 8am to midnight every day. That map is old, so the hours are shown as unknown: check the signs."
     },
-    "Coulsdon Resident Only Permit Zone": {
+    "Coulsdon Residents": {
+     "name": "Coulsdon resident-only area",
      "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Coulsdon_Resident_Only_Permit_Zone.pdf",
-     "name": "Coulsdon Resident Only Permit Zone",
-     "note": "Boundary map: PDF from the council."
+     "hours": "Monday to Friday 11am to noon",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "11:00",
+       "to": "12:00"
+      }
+     ],
+     "note": "From the council’s zone map: the bays are free to use at any time except 11am to noon, Monday to Friday, when a resident or visitor permit must be displayed; yellow lines apply at the same times."
     },
-    "Coulsdon Town Centre Permit Zone": {
-     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Coulsdon_Town_Centre_Permit_Zone.pdf",
-     "name": "Coulsdon Town Centre Permit Zone",
-     "note": "Boundary map: PDF from the council."
+    "Coulsdon": {
+     "name": "Coulsdon (town centre)",
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Coulsdon_Town_Centre_Permit_Zone.pdf"
     },
-    "E2 Zone": {
-     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/E2%20%20ZONE%20MAP.pdf",
+    "E2": {
      "name": "E2 Zone",
-     "note": "Boundary map: PDF from the council."
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/E2%20%20ZONE%20MAP.pdf"
     },
-    "East Outer Permit Area": {
-     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/East%20Outer%20Permit%20Area%202019.pdf",
+    "East Outer": {
      "name": "East Outer Permit Area",
-     "note": "Boundary map: PDF from the council."
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/East%20Outer%20Permit%20Area%202019.pdf"
     },
-    "East Inner Permit Zone": {
-     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/East_Inner_Permit_Zone.pdf",
+    "East Inner": {
      "name": "East Inner Permit Zone",
-     "note": "Boundary map: PDF from the council."
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/East_Inner_Permit_Zone.pdf"
     },
-    "N1 Zone": {
-     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/N1%20Zone.pdf",
+    "N1": {
      "name": "N1 Zone",
-     "note": "Boundary map: PDF from the council."
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/N1%20Zone.pdf"
     },
-    "N2 Zone": {
-     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/N2%20Zone.pdf",
+    "N2": {
      "name": "N2 Zone",
-     "note": "Boundary map: PDF from the council."
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/N2%20Zone.pdf"
     },
-    "Napier Road Permit Zone": {
-     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Napier_Road_Permit_Zone.pdf",
+    "Napier Road": {
      "name": "Napier Road Permit Zone",
-     "note": "Boundary map: PDF from the council."
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Napier_Road_Permit_Zone.pdf"
     },
-    "Norbury Permit Zone": {
-     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Norbury_Permit_Zone%202017.pdf",
+    "Norbury": {
      "name": "Norbury Permit Zone",
-     "note": "Boundary map: PDF from the council."
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Norbury_Permit_Zone%202017.pdf"
     },
-    "North Zone": {
-     "url": "https://www.croydon.gov.uk/sites/default/files/2024-02/north-zone-%28oct-2021.pdf",
+    "North": {
      "name": "North Zone",
-     "note": "Boundary map: PDF from the council."
+     "url": "https://www.croydon.gov.uk/sites/default/files/2024-02/north-zone-%28oct-2021.pdf"
     },
-    "Old Lodge Lane Permit Zone": {
-     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Old_Lodge_Lane_Permit_Zone.pdf",
+    "Old Lodge Lane": {
      "name": "Old Lodge Lane Permit Zone",
-     "note": "Boundary map: PDF from the council."
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Old_Lodge_Lane_Permit_Zone.pdf"
     },
-    "Purley Permit Zone": {
-     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Purley_Permit_Zone.pdf",
+    "Purley": {
      "name": "Purley Permit Zone",
-     "note": "Boundary map: PDF from the council."
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Purley_Permit_Zone.pdf"
     },
-    "Sanderstead Permit Zone": {
-     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Sanderstead_Permit_Zone.pdf",
+    "Sanderstead": {
      "name": "Sanderstead Permit Zone",
-     "note": "Boundary map: PDF from the council."
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Sanderstead_Permit_Zone.pdf"
     },
-    "South Norwood Permit Zone": {
-     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/South%20Norwood%20Permit%20Zone.pdf",
+    "South Norwood": {
      "name": "South Norwood Permit Zone",
-     "note": "Boundary map: PDF from the council."
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/South%20Norwood%20Permit%20Zone.pdf"
     },
-    "South Permit Zone": {
-     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/South_Permit_Zone.pdf",
+    "South": {
      "name": "South Permit Zone",
-     "note": "Boundary map: PDF from the council."
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/South_Permit_Zone.pdf"
     },
-    "Thornton Heath Permit Zone": {
-     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Thornton_Heath_Permit_Zone.pdf",
+    "Thornton Heath": {
      "name": "Thornton Heath Permit Zone",
-     "note": "Boundary map: PDF from the council."
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Thornton_Heath_Permit_Zone.pdf"
     },
-    "West Permit Zone": {
-     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/West_Permit_Zone.pdf",
+    "West": {
      "name": "West Permit Zone",
-     "note": "Boundary map: PDF from the council."
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/West_Permit_Zone.pdf"
     },
-    "West Thornton Permit Zone": {
-     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/West_Thornton_Permit_Zone_0.pdf",
+    "West Thornton": {
      "name": "West Thornton Permit Zone",
-     "note": "Boundary map: PDF from the council."
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/West_Thornton_Permit_Zone_0.pdf"
     }
    },
-   "notes": "Croydon publishes neither zone boundaries nor hours online (hours are on the street signs). Its zone list and PDF maps are linked here."
+   "notes": "Zone boundaries are traced from the council’s 20 permit zone maps (PDF), each placed by matching its street names to OpenStreetMap (median error 2 to 13 m per map). Several maps are old (2007 to 2021), so boundaries may have changed since; where two maps overlap, the newer one is used. The council doesn’t publish zone hours (they’re on the signs at each zone entrance), so zones are grey except where a map states its hours.",
+   "polygons": {
+    "type": "file",
+    "path": "croydon.geojson",
+    "zoneField": "zone"
+   }
   },
   "barnet": {
    "name": "Barnet",
