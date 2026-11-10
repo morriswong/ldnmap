@@ -4839,12 +4839,942 @@
   "havering": {
    "name": "Havering",
    "short": "Havering",
-   "boundaryOnly": "Havering",
-   "hoursUrl": "https://www.havering.gov.uk/parking-2/permit-parking-areas-controlled-parking-zones-restrictions",
-   "checked": "2026-11-08",
-   "licence": "Zone hours: Havering council. Borough outline: Office for National Statistics / London Datastore (OGL v3).",
-   "zones": {},
-   "notes": "Havering publishes neither zone boundaries nor a zone hours list online."
+   "hoursUrl": "https://havering-self.achieveservice.com/service/lbh-Parking-Permit-Zones-Lookup",
+   "checked": "2026-11-10",
+   "licence": "Zone streets and hours: Havering council (Parking Permit Zones Lookup). Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
+   "zones": {
+    "BP1": {
+     "name": "Beam Park",
+     "hours": "Permit parking is operative in this area 7am to 10am and 3pm to 7pm 7 days a week. Shared use bays (permit parking and payment parking) operate 7am-7pm, Monday-Saturday.",
+     "periods": [
+      {
+       "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "07:00",
+       "to": "10:00"
+      },
+      {
+       "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "15:00",
+       "to": "19:00"
+      }
+     ],
+     "unsure": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "10:00",
+       "to": "15:00"
+      }
+     ]
+    },
+    "CR1": {
+     "name": "Collier Row",
+     "hours": "Permit parking is operative in this area 8am to 6.30pm Monday to Saturday inclusive.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:00",
+       "to": "18:30"
+      }
+     ]
+    },
+    "EP1": {
+     "name": "Elm Park",
+     "hours": "Shared use pay and display and permit bays: Monday to Saturday 8.30am to 6.30pm, 3 hours maximum stay on the pay and display bays.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ]
+    },
+    "EP2": {
+     "name": "Elm Park",
+     "hours": "Shared use pay and display and permit bays: 8.30am to 6.30pm Monday to Saturday inclusive, 3 hour maximum stay on pay and display bays.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ]
+    },
+    "GP1": {
+     "name": "Gidea Park",
+     "hours": "Residents and dual use permit bays: 8am to 6:30pm Monday to Saturday inclusive. Some single yellow lines operate 8am to 6:30pm Monday to Saturday inclusive.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:00",
+       "to": "18:30"
+      }
+     ]
+    },
+    "GP2": {
+     "name": "Gidea Park",
+     "hours": "Residents only bays: 8am to 10am Monday to Friday inclusive. Some single yellow lines operate 8am to 6:30pm Monday to Saturday inclusive and 8am to 10pm Monday to Friday inclusive.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "08:00",
+       "to": "10:00"
+      }
+     ],
+     "unsure": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "10:00",
+       "to": "18:30"
+      },
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "18:30",
+       "to": "22:00"
+      }
+     ]
+    },
+    "GP3": {
+     "name": "Gidea Park",
+     "hours": "Residents only bays: 8am to 6:30pm Monday to Saturday inclusive.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:00",
+       "to": "18:30"
+      }
+     ]
+    },
+    "GP4": {
+     "name": "Gidea Park",
+     "hours": "Permit parking is operative in this area 8am to 6:30pm Monday to Saturday inclusive.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:00",
+       "to": "18:30"
+      }
+     ]
+    },
+    "GP5": {
+     "name": "Gidea Park",
+     "hours": "Residents only bays: 8am to 6:30pm Monday to Friday inclusive.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "08:00",
+       "to": "18:30"
+      }
+     ]
+    },
+    "GP6": {
+     "name": "Gidea Park",
+     "hours": "Permit parking is operative in this area 8am to 10am Monday to Friday inclusive.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "08:00",
+       "to": "10:00"
+      }
+     ]
+    },
+    "HH1": {
+     "name": "Harold Hill",
+     "hours": "Permit parking is operative in this area 8am to 6:30pm Monday to Saturday inclusive.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:00",
+       "to": "18:30"
+      }
+     ]
+    },
+    "HH2": {
+     "name": "Harold Hill"
+    },
+    "HW1": {
+     "name": "Harold Wood",
+     "hours": "Permit parking is operative in this area 10am to 2pm Monday to Friday inclusive.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:00",
+       "to": "14:00"
+      }
+     ]
+    },
+    "HW2": {
+     "name": "Harold Wood",
+     "hours": "Permit parking is operative in this area 10am to 2pm Monday to Friday inclusive.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:00",
+       "to": "14:00"
+      }
+     ]
+    },
+    "HW3": {
+     "name": "Harold Wood",
+     "hours": "Residents only bays: 10.30am-11.30am Monday to Friday inclusive.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:30",
+       "to": "11:30"
+      }
+     ]
+    },
+    "HW4": {
+     "name": "Harold Wood",
+     "hours": "Permit parking is operative in this area 10.30am to 11.30am Monday to Friday.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:30",
+       "to": "11:30"
+      }
+     ]
+    },
+    "HW5": {
+     "name": "Harold Wood",
+     "hours": "Permit parking is operative in this area 10.30am to 11.30am Monday to Friday.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:30",
+       "to": "11:30"
+      }
+     ]
+    },
+    "HW6": {
+     "name": "Harold Wood",
+     "hours": "Permit parking is operative in this area 8am to 6.30pm Monday to Friday inclusive.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "08:00",
+       "to": "18:30"
+      }
+     ]
+    },
+    "HWA": {
+     "name": "Harold Wood",
+     "hours": "Residents only bays: 8:30am to 6:30pm Monday to Friday inclusive. Some single yellow lines operate 8am to 6:30pm Monday to Saturday inclusive, or 10:30am to 11:30am Monday to Friday inclusive.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ],
+     "unsure": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "08:00",
+       "to": "08:30"
+      },
+      {
+       "days": [
+        6
+       ],
+       "from": "08:00",
+       "to": "18:30"
+      }
+     ]
+    },
+    "HWB": {
+     "name": "Harold Wood",
+     "hours": "Residents only bays: 8:30am to 6:30pm Monday to Friday inclusive. Some single yellow lines operate 8am to 6:30pm Monday to Saturday inclusive or 10:30am to 11:30am Monday to Friday inclusive.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ],
+     "unsure": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "08:00",
+       "to": "08:30"
+      },
+      {
+       "days": [
+        6
+       ],
+       "from": "08:00",
+       "to": "18:30"
+      }
+     ]
+    },
+    "HWC": {
+     "name": "Harold Wood",
+     "hours": "Residents only bays: 8:30am to 6:30pm Monday to Friday inclusive. Some single yellow lines operate 8:00am to 6:30pm Monday to Saturday inclusive or 10:30am to 11:30am Monday to Friday inclusive.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ],
+     "unsure": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "08:00",
+       "to": "08:30"
+      },
+      {
+       "days": [
+        6
+       ],
+       "from": "08:00",
+       "to": "18:30"
+      }
+     ],
+     "note": "The council’s page for HWC calls it HWB; its street list is HWC’s."
+    },
+    "HWD": {
+     "name": "Harold Wood",
+     "hours": "Residents only bays: 8:30am to 6:30pm Monday to Friday inclusive. Some single yellow lines operate 8am to 6:30pm Monday to Friday inclusive or 10:30am to 11:30am Monday to Friday inclusive.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ],
+     "unsure": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "08:00",
+       "to": "08:30"
+      }
+     ]
+    },
+    "HWE": {
+     "name": "Harold Wood",
+     "hours": "Residents only bays: 8:30am to 6:30pm Monday to Saturday inclusive. Some single yellow lines operate 8am to 6:30pm Monday to Saturday inclusive or 10:30am to 11:30am Monday to Friday inclusive.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ],
+     "unsure": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:00",
+       "to": "08:30"
+      }
+     ]
+    },
+    "LCT": {
+     "name": "Hornchurch (Lodge Court)",
+     "hours": "The permit bays in Lodge Court operate 10:30am to 11:30pm Monday to Friday inclusive.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:30",
+       "to": "11:30"
+      }
+     ],
+     "unsure": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "11:30",
+       "to": "23:30"
+      }
+     ],
+     "note": "The council’s page says 10:30am to 11:30pm; that may be a typo for 11:30am, so 11:30am to 11:30pm is shown as unknown."
+    },
+    "HX1": {
+     "name": "Hornchurch",
+     "hours": "The permit bays in HX1 operate 10:30am to 11:30am Monday to Saturday inclusive. Some single yellow lines operate 10:30am to 11:30pm Monday to Friday inclusive.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "10:30",
+       "to": "11:30"
+      }
+     ],
+     "unsure": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "11:30",
+       "to": "23:30"
+      }
+     ],
+     "note": "Some single yellow lines are given as 10:30am to 11:30pm, which may be a typo; that time is shown as unknown."
+    },
+    "HX2": {
+     "name": "Hornchurch",
+     "hours": "Permit parking is operative in this area 10.30am to 11.30am Monday to Saturday.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "10:30",
+       "to": "11:30"
+      }
+     ]
+    },
+    "HX3": {
+     "name": "Hornchurch",
+     "hours": "Permit parking is operative in this area 8am to 6.30pm Monday to Saturday inclusive.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:00",
+       "to": "18:30"
+      }
+     ]
+    },
+    "RV1": {
+     "name": "Rainham Village",
+     "hours": "Between 8.30am and 6.30pm on Mondays to Saturdays inclusive, any such day not being Christmas day, Good Friday or a Bank holiday.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ]
+    },
+    "RO1": {
+     "name": "Romford",
+     "hours": "Permit bays operate 8:30am to 6:30pm Monday to Saturday in Carlton Road (Junction Road to Lodge Avenue), Eastern Road, Errol Road, Gilbert Road, Ives Gardens, Junction Road, Kingston Road and Sims Close; 8:30am to 10am Monday to Friday in the rest of Carlton Road, Lodge Avenue (Carlton Road to The Ridgeway), Stanley Avenue, The Ridgeway and Glenwood Drive; 9am to 10am Monday to Friday in Lodge Avenue between Main Road and The Ridgeway.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:00",
+       "to": "10:00"
+      }
+     ],
+     "unsure": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "08:30",
+       "to": "09:00"
+      },
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:00",
+       "to": "18:30"
+      },
+      {
+       "days": [
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ]
+    },
+    "RP1": {
+     "name": "Romford",
+     "hours": "Residents only bays: Monday to Friday 8am to 10am and 2pm to 4pm.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "08:00",
+       "to": "10:00"
+      },
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "14:00",
+       "to": "16:00"
+      }
+     ]
+    },
+    "ROST": {
+     "name": "Romford St Andrews (RO2A)",
+     "hours": "Residents only bays: 24 hours a day, 7 days a week (not including Christmas Day, Good Friday or a public/bank holiday).",
+     "periods": [
+      {
+       "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "00:00",
+       "to": "24:00"
+      }
+     ]
+    },
+    "ROS": {
+     "name": "Romford Stadium (RO2A)",
+     "hours": "Residents only bays: 8am to 8pm Monday to Saturday inclusive. Some single yellow lines operate 8am to 8pm Monday to Saturday inclusive.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:00",
+       "to": "20:00"
+      }
+     ]
+    },
+    "ROW": {
+     "name": "Romford West (RO2A)",
+     "hours": "Residents or resident/business bays: 8am to 8pm Monday to Saturday inclusive. Some single yellow lines operate 8am to 8pm Monday to Saturday inclusive.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:00",
+       "to": "20:00"
+      }
+     ]
+    },
+    "RO2B": {
+     "name": "Romford",
+     "hours": "Permit bays operate 8am to 6:30pm Monday to Saturday in most streets, and 8am to 6:30pm Monday to Friday in Cherry Street, Holland Close, Lime Close, Marks Road (20 to 34), Mildmay Road, Oak Street, Palm Road and Pretoria Road.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "08:00",
+       "to": "18:30"
+      }
+     ],
+     "unsure": [
+      {
+       "days": [
+        6
+       ],
+       "from": "08:00",
+       "to": "18:30"
+      }
+     ]
+    },
+    "RO3": {
+     "name": "Romford",
+     "hours": "Permit bays: 8:30am to 6:30pm Monday to Saturday inclusive.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ]
+    },
+    "RO4": {
+     "name": "Romford"
+    },
+    "RO5A": {
+     "name": "Romford Marshalls",
+     "hours": "Permit bays: 8:30am to 6:30pm Monday to Saturday inclusive.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ]
+    },
+    "RO6": {
+     "name": "Romford",
+     "hours": "Permit bays: 8:30am to 6:30pm Monday to Saturday inclusive. Some single yellow lines operate 8:30am to 6:30pm Monday to Saturday inclusive.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ]
+    },
+    "RO7": {
+     "name": "Romford Brooklands",
+     "hours": "Shared use and residents-only permit bays and pay and display bays: 8am to 6:30pm Monday to Saturday inclusive.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:00",
+       "to": "18:30"
+      }
+     ]
+    },
+    "ROR": {
+     "name": "Romford Lake Rise",
+     "hours": "Residents permit bays: Monday to Friday 10am to 11am. Some single yellow lines operate 10am to 11am Monday to Friday and some 8.30am to 6.30pm Monday to Saturday.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:00",
+       "to": "11:00"
+      }
+     ],
+     "unsure": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "08:30",
+       "to": "10:00"
+      },
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "11:00",
+       "to": "18:30"
+      },
+      {
+       "days": [
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ]
+    }
+   },
+   "notes": "Havering publishes each zone as a list of the streets whose residents can have its permits, with the zone’s hours, in its Parking Permit Zones Lookup. Each zone is drawn around those streets in OpenStreetMap, so it shows where the zone is rather than its exact edge. Where only part of a street is listed, only the part near the zone’s other streets is drawn. Where single yellow lines in a zone run longer than its bays, that extra time is shown as unknown. Street names are matched to OpenStreetMap; a few listed streets couldn’t be found there and aren’t drawn, and GP6 (Stanley Close) isn’t drawn because the borough has more than one.",
+   "polygons": {
+    "type": "streets",
+    "lists": "tools/parking_lists/havering.json",
+    "borough": "Havering"
+   },
+   "partial": "Havering"
   },
   "hillingdon": {
    "name": "Hillingdon",
