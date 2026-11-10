@@ -20,6 +20,23 @@ if (window.visualViewport) {
 function buildStyleUrl(dark) {
   return 'mapbox://styles/mapbox/' + (dark ? 'dark-v11' : 'streets-v12');
 }
+// Padding that always leaves some map showing. Mapbox GL v2.15 doesn't guard against padding
+// larger than the map (a tall bottom sheet, or iOS shrinking the page for the keyboard):
+// fitBounds then works out a NaN camera and throws "Invalid LngLat object: (NaN, NaN)".
+function fitPadding(pad) {
+  map.resize();                                      // the canvas can lag the page after iOS resizes it
+  var c = map.getContainer(), keep = 40;
+  function squeeze(a, b, size) {
+    var room = Math.max(0, size - keep);
+    if (a + b <= room) return [a, b];
+    var k = (a + b) ? room / (a + b) : 0;
+    return [Math.floor(a * k), Math.floor(b * k)];
+  }
+  var x = squeeze(pad.left || 0, pad.right || 0, c.clientWidth);
+  var y = squeeze(pad.top || 0, pad.bottom || 0, c.clientHeight);
+  return { left: x[0], right: x[1], top: y[0], bottom: y[1] };
+}
+
 function whenStyleReady(fn) {
   if (map.isStyleLoaded()) { fn(); return; }
   // The style isn't ready yet. `style.load` is a ONE-SHOT event: if it has
@@ -136,7 +153,7 @@ function renderPostcode(geo, pc) {
 
     var bounds = geojsonBounds(geo);
     if (bounds) {
-      map.fitBounds(bounds, { padding: { top: 24, right: 24, bottom: 24, left: 24 }, maxZoom: 16 });
+      map.fitBounds(bounds, { padding: fitPadding({ top: 24, right: 24, bottom: 24, left: 24 }), maxZoom: 16 });
       var ctr = bounds.getCenter();
       if (pendingPlace && pendingPlace.postcode) {
         pendingPlace.lat = ctr.lat;
@@ -264,7 +281,7 @@ function isoFitPadding() {
 function fitIsochroneBounds() {
   if (!isoLayers.length) return;
   var bounds = geojsonBounds(isoLayers[0].data);
-  if (bounds) map.fitBounds(bounds, { padding: isoFitPadding(), maxZoom: 14 });
+  if (bounds) map.fitBounds(bounds, { padding: fitPadding(isoFitPadding()), maxZoom: 14 });
 }
 
 function placeMarker(lat, lng) {
@@ -1265,7 +1282,9 @@ async function lookupFuel(e) {
     var plotted = fuelPoint
       ? Object.assign({}, d, { location: Object.assign({}, d.location, { latitude: fuelPoint.lat, longitude: fuelPoint.lng }) })
       : d;
-    plotFuelResults([{ tool: 'cheapest_fuel_near', data: plotted }]);
+    // The prices are already showing; a problem drawing the pins mustn't replace them with an error.
+    try { plotFuelResults([{ tool: 'cheapest_fuel_near', data: plotted }]); }
+    catch (err) { console.warn('fuel: couldn’t plot the stations', err); }
   } catch (err) {
     fuelMessage('error', err.message || 'Something went wrong.');
   } finally {
@@ -1481,7 +1500,7 @@ function fitFuelBounds() {
   var pad = isMobileView()
     ? { top: 80, right: 32, bottom: fuelSheetVisible() + 24, left: 32 }   // keep pins above the sheet
     : { top: 60, right: 390, bottom: 60, left: 60 };   // keep pins clear of the fuel panel
-  map.fitBounds(b, { padding: pad, maxZoom: 14 });
+  map.fitBounds(b, { padding: fitPadding(pad), maxZoom: 14 });
 }
 
 function showFuelPopup(id, lngLat) {
@@ -1765,9 +1784,9 @@ function parkingFromPostcode() {
 function parkingMapPadding() {
   if (isMobileView()) {
     var vis = window.__parkingSheet ? window.__parkingSheet.visibleAt('compact') : 200;
-    return { top: 60, right: 20, bottom: vis + 20, left: 20 };
+    return fitPadding({ top: 60, right: 20, bottom: vis + 20, left: 20 });
   }
-  return { top: 40, right: 380, bottom: 40, left: 40 };
+  return fitPadding({ top: 40, right: 380, bottom: 40, left: 40 });
 }
 
 /* --- time controls --- */
