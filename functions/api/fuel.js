@@ -56,6 +56,11 @@ function isLookup(params) {
   return params.has('location') || params.has('lat') || params.has('lon');
 }
 
+// A coordinate from the query string, or NaN when it is missing, empty or not a number.
+function coordinate(value) {
+  return value === null || value.trim() === '' ? NaN : Number(value);
+}
+
 // Validate the query string. Returns { args } (location filled in), { args, point }
 // (location still to be found from the point) or { error }.
 export function parseQuery(params) {
@@ -66,7 +71,9 @@ export function parseQuery(params) {
   var args = { location: '', fuel: fuel, radius_miles: radius, limit: LIMIT };
 
   if (params.has('lat') || params.has('lon')) {
-    var lat = Number(params.get('lat')), lon = Number(params.get('lon'));
+    // Number() reads a missing or empty value as 0, and 0° east runs through London.
+    var lat = coordinate(params.get('lat')), lon = coordinate(params.get('lon'));
+    if (isNaN(lat) || isNaN(lon)) return { error: 'A point needs both lat and lon.' };
     // Rough bounding box of the UK, so obviously wrong points fail fast.
     if (!(lat >= 49 && lat <= 61.5 && lon >= -9 && lon <= 2.5)) return { error: 'That point is outside the UK.' };
     return { args: args, point: { lat: lat, lon: lon } };

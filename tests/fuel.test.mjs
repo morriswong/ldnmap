@@ -83,6 +83,12 @@ test('rate limits bursts per IP', async () => {
 test('validates points', () => {
   assert.ok(parseQuery(new URLSearchParams('lat=48.8&lon=2.35')).error);       // Paris
   assert.ok(parseQuery(new URLSearchParams('lat=abc&lon=0')).error);
+  // Half a point is an error, not a point on the Greenwich meridian or the equator.
+  assert.match(parseQuery(new URLSearchParams('lat=51.5')).error, /both lat and lon/);
+  assert.match(parseQuery(new URLSearchParams('lon=-0.14')).error, /both lat and lon/);
+  assert.match(parseQuery(new URLSearchParams('lat=51.5&lon=')).error, /both lat and lon/);
+  assert.match(parseQuery(new URLSearchParams('lat=%20&lon=-0.14')).error, /both lat and lon/);
+  assert.deepEqual(parseQuery(new URLSearchParams('lat=51.5&lon=0')).point, { lat: 51.5, lon: 0 });
   assert.deepEqual(parseQuery(new URLSearchParams('lat=51.5&lon=-0.14')).point, { lat: 51.5, lon: -0.14 });
 });
 
@@ -99,6 +105,13 @@ test('a point is looked up as its nearest postcode', async () => {
   assert.equal(r.status, 200);
   assert.match(calls[0], /lon=-0\.1416&lat=51\.501&radius=2000&limit=1/);
   assert.equal(calls[1], ENV.FUEL_MCP_URL);
+});
+
+test('half a point never reaches postcodes.io or the fuel server', async () => {
+  let calls = 0;
+  const r = await handleFuel(get('?lat=51.5&fuel=E10'), ENV, { fetch: async () => { calls++; return ok(); } });
+  assert.equal(r.status, 400);
+  assert.equal(calls, 0);
 });
 
 test('a point with no postcode nearby is a clear error', async () => {
