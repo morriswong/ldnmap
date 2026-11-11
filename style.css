@@ -1,35 +1,29 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap');
   :root {
-    --bg: #0a0a0a; --panel-bg: rgba(10,10,10,0.92); --panel-border: rgba(255,255,255,0.07);
+    --bg: #0a0a0a; --panel-border: rgba(255,255,255,0.07);
     --text: #fff; --text-soft: #e8e8e8; --text-dim: rgba(255,255,255,0.35); --text-faint: rgba(255,255,255,0.25);
-    --btn-border: rgba(255,255,255,0.08); --btn-hover-bg: rgba(255,255,255,0.03); --btn-hover-border: rgba(255,255,255,0.15);
-    --btn-on-bg: rgba(255,255,255,0.1); --btn-on-border: rgba(255,255,255,0.2);
+    --btn-border: rgba(255,255,255,0.08); --btn-on-border: rgba(255,255,255,0.2);
     --input-bg: rgba(255,255,255,0.04); --input-focus-bg: rgba(255,255,255,0.06); --input-placeholder: rgba(255,255,255,0.2);
-    --divider: rgba(255,255,255,0.06); --slot-bg: rgba(255,255,255,0.02); --slot-border: rgba(255,255,255,0.05); --slot-hover-border: rgba(255,255,255,0.1);
+    --divider: rgba(255,255,255,0.06);
     --zoom-bg: rgba(10,10,10,0.85); --zoom-hover-bg: rgba(30,30,30,0.9);
     --attrib-bg: rgba(0,0,0,0.6); --attrib-text: rgba(255,255,255,0.4); --attrib-link: rgba(255,255,255,0.5);
-    --sbtn-bg: #fff; --sbtn-text: #0a0a0a;
-    --mbtn-text: rgba(255,255,255,0.4); --mbtn-hover-text: rgba(255,255,255,0.7);
     --glass-sheet-bg: rgba(28,28,30,0.55); --glass-pill-bg: rgba(28,28,30,0.55);
     --glass-border: rgba(255,255,255,0.12); --glass-highlight: rgba(255,255,255,0.18);
-    --glass-shadow: 0 -8px 32px rgba(0,0,0,0.32); --glass-fab-bg: rgba(28,28,30,0.6);
+    --glass-fab-bg: rgba(28,28,30,0.6);
     --glass-solid-fallback: rgba(20,20,22,0.96);
     --glass-tile-bg: rgba(255,255,255,0.10); --glass-tile-active: rgba(255,255,255,0.18);
   }
   body.light {
-    --bg: #f0f0f0; --panel-bg: rgba(255,255,255,0.92); --panel-border: rgba(0,0,0,0.08);
+    --bg: #f0f0f0; --panel-border: rgba(0,0,0,0.08);
     --text: #1a1a1a; --text-soft: #2a2a2a; --text-dim: rgba(0,0,0,0.45); --text-faint: rgba(0,0,0,0.3);
-    --btn-border: rgba(0,0,0,0.1); --btn-hover-bg: rgba(0,0,0,0.03); --btn-hover-border: rgba(0,0,0,0.18);
-    --btn-on-bg: rgba(0,0,0,0.08); --btn-on-border: rgba(0,0,0,0.2);
+    --btn-border: rgba(0,0,0,0.1); --btn-on-border: rgba(0,0,0,0.2);
     --input-bg: rgba(0,0,0,0.04); --input-focus-bg: rgba(0,0,0,0.06); --input-placeholder: rgba(0,0,0,0.3);
-    --divider: rgba(0,0,0,0.08); --slot-bg: rgba(0,0,0,0.02); --slot-border: rgba(0,0,0,0.06); --slot-hover-border: rgba(0,0,0,0.12);
+    --divider: rgba(0,0,0,0.08);
     --zoom-bg: rgba(255,255,255,0.9); --zoom-hover-bg: rgba(240,240,240,0.95);
     --attrib-bg: rgba(255,255,255,0.7); --attrib-text: rgba(0,0,0,0.5); --attrib-link: rgba(0,0,0,0.6);
-    --sbtn-bg: #1a1a1a; --sbtn-text: #fff;
-    --mbtn-text: rgba(0,0,0,0.5); --mbtn-hover-text: rgba(0,0,0,0.8);
     --glass-sheet-bg: rgba(255,255,255,0.55); --glass-pill-bg: rgba(255,255,255,0.65);
     --glass-border: rgba(255,255,255,0.55); --glass-highlight: rgba(255,255,255,0.7);
-    --glass-shadow: 0 -8px 32px rgba(0,0,0,0.10); --glass-fab-bg: rgba(255,255,255,0.7);
+    --glass-fab-bg: rgba(255,255,255,0.7);
     --glass-solid-fallback: rgba(250,250,252,0.98);
     --glass-tile-bg: rgba(255,255,255,0.45); --glass-tile-active: rgba(255,255,255,0.75);
   }
@@ -56,8 +50,6 @@
   body[data-state="modepicker"] #search-pill { opacity: 0; pointer-events: none; }
   body[data-state="travel"] #search-pill { padding: 0; width: 48px; justify-content: center; }
   body[data-state="travel"] #search-pill .pill-label { display: none; }
-  #search-pill.icon-only .pill-label { display: none; }
-  #search-pill.icon-only { padding: 0; width: 48px; justify-content: center; }
   .theme-fab {
     display: flex; position: absolute; bottom: 16px; right: 16px; z-index: 1000;
     width: 40px; height: 40px; border-radius: 20px;
@@ -82,9 +74,6 @@
   .sugg-postcode { border-left: 3px solid #8b5cf6; }
   .sugg-pc-icon { color: #8b5cf6; font-size: 14px; margin-right: 4px; }
   .sugg-recent-icon { color: var(--text-dim); font-size: 14px; margin-right: 4px; }
-  .status { margin-top: 14px; font-size: 11px; color: var(--text-dim); text-align: center; line-height: 1.4; }
-  .status.error { color: #e74c3c; }
-  .status.ok { color: #059669; }
   .mapboxgl-ctrl-group { border: none !important; box-shadow: 0 4px 16px rgba(0,0,0,0.3) !important; background: transparent !important; }
   .mapboxgl-ctrl-group button { background: var(--zoom-bg) !important; backdrop-filter: blur(12px) !important; -webkit-backdrop-filter: blur(12px) !important; color: var(--text) !important; border: 1px solid var(--btn-border) !important; width: 36px !important; height: 36px !important; }
   .mapboxgl-ctrl-group button:hover { background: var(--zoom-hover-bg) !important; }
@@ -217,7 +206,6 @@
   body.light .pc-copy-btn--copied { color: #059669; border-color: rgba(5,150,105,0.3); background: rgba(5,150,105,0.08); }
   .postcode-chip-attrib { font-size: 9px; color: var(--text-faint); text-align: right; margin-top: 6px; }
   .postcode-cta-row { margin-top: 10px; margin-bottom: 8px; display: flex; flex-direction: column; gap: 6px; }
-  .postcode-cta-label { font-size: 10px; font-weight: 500; color: var(--text-dim); letter-spacing: 0.02em; }
   .postcode-cta-btns { display: flex; gap: 6px; }
   .postcode-cta-btns .travel-mode-btn {
     flex: 1; font-weight: 600; padding: 10px 0;
@@ -280,7 +268,6 @@
   body.light #postcode-fuel-btn { background: rgba(5, 150, 105, 0.10); border-color: rgba(5, 150, 105, 0.45); color: #047857; }
   body.light #postcode-fuel-btn:hover { background: rgba(5, 150, 105, 0.18); border-color: rgba(5, 150, 105, 0.6); color: #065f46; }
   body.light #postcode-fuel-btn:active { background: rgba(5, 150, 105, 0.28); border-color: rgba(5, 150, 105, 0.75); color: #064e3b; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
   @media (max-width: 768px) {
     #search-pill {
       top: auto; bottom: 16px; left: 50%; transform: translateX(-50%);
