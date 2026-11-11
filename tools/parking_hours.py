@@ -19,7 +19,7 @@ NOISE_RE = re.compile(r'\b(from|between|operates?|operational|hours|controlled|t
 ALL_DAY_RE = re.compile(r'^\s*(?:permit required\s+)?(at any time|at all times|any time|24 ?(?:hours|hrs)(?: a day)?|all day)\b[\s,;]*(.*?)[\s.]*$', re.I)
 
 
-def _minutes(h, m, ampm, other_ampm):
+def _minutes(h, m, ampm):
     h, m = int(h), int(m or 0)
     a = (ampm or '').lower().replace('.', '')
     if a in ('noon', 'midday'):
@@ -34,10 +34,8 @@ def _minutes(h, m, ampm, other_ampm):
         if a == 'am' and h == 12:
             h = 0
         return h * 60 + m
-    if a in ('hrs', 'hours', '') and (m is not None or h > 12 or other_ampm is None):
-        # 24-hour clock, e.g. "08:30-18:30" or "0830"
-        return h * 60 + m if h <= 24 else None
-    return None
+    # 24-hour clock, e.g. "08:30-18:30" or "0830"
+    return h * 60 + m if h <= 24 else None
 
 
 def _hhmm(mins):
@@ -138,14 +136,16 @@ def parse_hours(text):
             prefix[i + 1] = gd
     found = []
     for i, m in enumerate(ranges):
-        start = _minutes(m.group(1), m.group(2), m.group(3), m.group(6))
-        end = _minutes(m.group(4), m.group(5), m.group(6), m.group(3))
+        start = _minutes(m.group(1), m.group(2), m.group(3))
+        end = _minutes(m.group(4), m.group(5), m.group(6))
         if start is None or end is None:
             return None
-        if m.group(3) is None and m.group(6) and m.group(6).lower().replace('.', '') in ('am', 'pm'):
-            # "8.30-6.30pm": the first time takes am/pm so that the range runs forwards.
-            start = int(m.group(1)) * 60 + int(m.group(2) or 0)
-            if start >= end:
+        end_ampm = (m.group(6) or '').lower().replace('.', '')
+        if m.group(3) is None and end_ampm in ('am', 'pm') and int(m.group(1)) <= 12:
+            # Only the second time says am or pm. The first shares it when the range then runs
+            # forwards ("2-4pm" is 2pm to 4pm); otherwise it is a morning time ("8.30-6.30pm").
+            start = int(m.group(1)) % 12 * 60 + int(m.group(2) or 0)
+            if end_ampm == 'pm' and start + 12 * 60 < end:
                 start += 12 * 60
         if not 0 <= start < end <= 24 * 60:
             return None
@@ -173,6 +173,15 @@ if __name__ == '__main__':
         'Every day 8am-midnight': [{'days': ALL, 'from': '08:00', 'to': '24:00'}],
         'Mon - Fri 10am - 12 noon': [{'days': WK, 'from': '10:00', 'to': '12:00'}],
         'Monday to Friday 8.30 - 6.30pm': [{'days': WK, 'from': '08:30', 'to': '18:30'}],
+        'Mon - Fri 2 - 4pm': [{'days': WK, 'from': '14:00', 'to': '16:00'}],      # not 2am to 4pm
+        'Mon - Fri 1 - 2pm': [{'days': WK, 'from': '13:00', 'to': '14:00'}],
+        'Mon - Fri 2 -3 pm': [{'days': WK, 'from': '14:00', 'to': '15:00'}],
+        'Mon - Fri 12 - 1pm': [{'days': WK, 'from': '12:00', 'to': '13:00'}],
+        'Mon - Fri 10 - 12pm': [{'days': WK, 'from': '10:00', 'to': '12:00'}],
+        'Mon - Sat 9 - 5pm': [{'days': [1, 2, 3, 4, 5, 6], 'from': '09:00', 'to': '17:00'}],
+        'Mon - Fri 10 - 11am': [{'days': WK, 'from': '10:00', 'to': '11:00'}],
+        'Mon - Fri 10:30 - 11:30am': [{'days': WK, 'from': '10:30', 'to': '11:30'}],
+        'Mon - Fri 11 - 1am': None,     # runs backwards
         'Mon-Fri 0830-1830': [{'days': WK, 'from': '08:30', 'to': '18:30'}],
         'Mon-Fri 08:30-18:30, Sat 08:30-13:30': [{'days': WK, 'from': '08:30', 'to': '18:30'}, {'days': [6], 'from': '08:30', 'to': '13:30'}],
         'Monday to Friday 11am-12 noon and 3pm-4pm': [{'days': WK, 'from': '11:00', 'to': '12:00'}, {'days': WK, 'from': '15:00', 'to': '16:00'}],
@@ -197,7 +206,6 @@ if __name__ == '__main__':
         'Permit required at all times, Monday to Saturday': [{'days': [1, 2, 3, 4, 5, 6], 'from': '00:00', 'to': '24:00'}],
         'Permit required at all times': [{'days': ALL, 'from': '00:00', 'to': '24:00'}],
         'Monday to Friday, 8:30am and 6:30pm': [{'days': WK, 'from': '08:30', 'to': '18:30'}],
-        'Monday to Friday 11am-12 noon and 3pm-4pm': [{'days': WK, 'from': '11:00', 'to': '12:00'}, {'days': WK, 'from': '15:00', 'to': '16:00'}],
         'See signs': None,
         'Mon-Fri 2 hours': None,
         'Monday to Friday 8.30am to 6.30pm, match days 8.30am to 9.30pm': None,   # ambiguous: left for a person

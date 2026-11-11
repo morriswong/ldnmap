@@ -2,7 +2,7 @@
 // parking-rules.js is a plain browser script, so it runs in a VM context here.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import vm from 'node:vm';
 
 const root = new URL('../', import.meta.url);
@@ -75,13 +75,45 @@ test('every rule in the data is well formed', () => {
     assert.match(key, /^[a-z]+:.+$/, key);
     assert.ok(rules.boroughs[r.borough], key + ' names an unknown borough');
     assert.equal(typeof r.hours, 'string', key + ' has no hours text');
-    for (const p of (r.periods || []).concat(r.permit || [], r.event ? r.event.periods : [])) {
+    for (const p of (r.periods || []).concat(r.permit || [], r.unsure || [], r.event ? r.event.periods : [])) {
       assert.ok(p.days.every((d) => d >= 0 && d <= 6), key);
       assert.match(p.from, /^\d\d:\d\d$/, key);
       assert.match(p.to, /^\d\d:\d\d$/, key);
       assert.ok(ctx.hhmmToMinutes(p.from) < ctx.hhmmToMinutes(p.to), key + ' period ends before it starts');
     }
   }
+});
+
+test('the map files agree with the rules', () => {
+  const zones = JSON.parse(readFileSync(new URL('data/parking/zones.geojson', root), 'utf8')).features;
+  const drawn = new Set();
+  for (const f of zones) {
+    const p = f.properties;
+    assert.ok(rules.boroughs[p.b], 'zone in unknown borough ' + p.b);
+    if (p.outline) continue;
+    assert.ok(rules.rules[p.rule], 'zone without a rule: ' + p.rule);
+    assert.ok(isFinite(p.lx) && isFinite(p.ly), p.rule + ' has no label point');
+    drawn.add(p.b);
+  }
+  for (const [id, b] of Object.entries(rules.boroughs)) {
+    assert.equal(b.bbox.length, 4, id);
+    assert.equal(drawn.has(id), !b.listOnly, id + ': listOnly means no zones are drawn');
+    for (const name of ['streets', 'kerb', 'machines']) {
+      assert.equal(existsSync(new URL('data/parking/' + id + '/' + name + '.geojson', root)), !!b.detail, id + '/' + name);
+    }
+  }
+});
+
+test('a start time with no am/pm shares the end time’s when that runs forwards', () => {
+  // "1 - 2pm" and "2 - 4pm" are afternoon hours, not controls from 1am or 2am.
+  const MON = 1;
+  for (const key of ['enfield:Bush Hill Park', 'enfield:Oakwood', 'haringey:Bruce Grove West', 'harrow:BG', 'harrow:HA']) {
+    assert.equal(isControlled(key, MON, at(9), false), 'free', key + ' at 9am');
+    assert.equal(isControlled(key, MON, at(14, 30), false), key === 'enfield:Bush Hill Park' ? 'free' : 'ctrl', key + ' at 2:30pm');
+  }
+  assert.equal(isControlled('enfield:Bush Hill Park', MON, at(13, 30), false), 'ctrl');
+  assert.equal(isControlled('enfield:Enfield College (Part time)', MON, at(11), false), 'ctrl');
+  assert.equal(isControlled('enfield:Enfield College (Part time)', MON, at(13), false), 'free');
 });
 
 test('unsure periods are unknown, the rest of the week keeps its status', () => {

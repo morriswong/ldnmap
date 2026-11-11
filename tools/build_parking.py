@@ -22,14 +22,15 @@ import io
 import json
 import os
 import re
+import subprocess
 import sys
+import time
 import urllib.parse
-import urllib.request
 import xml.etree.ElementTree as ET
 import zipfile
 
 from pyproj import Transformer
-from shapely.geometry import shape, mapping, Point, LineString, MultiPolygon, Polygon
+from shapely.geometry import shape, mapping, Point, LineString, Polygon
 from shapely.ops import transform, unary_union
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -60,7 +61,6 @@ def fetch(url, name, data=None, ua=UA):
     path = os.path.join(CACHE, name)
     if not os.path.exists(path):
         # curl rather than urllib: the system Python's TLS can't talk to some servers (Overpass).
-        import subprocess
         cmd = ['curl', '-sS', '-L', '--compressed', '-m', '600', '-A', ua, '-H', 'Accept: */*', '-o', path + '.part', url]
         if data is not None:
             cmd += ['--data-binary', '@-']
@@ -78,7 +78,6 @@ def fetch_json(url, name, data=None, ua=UA):
 
 def overpass(query, name):
     """Overpass answers; a busy server returns HTML or an error document, so retry a few times."""
-    import time
     data = urllib.parse.urlencode({'data': query}).encode()
     for attempt in range(4):
         try:
@@ -159,9 +158,11 @@ def load_polygons(bid, src):
                  f"&outSR=4326&resultOffset={offset}&resultRecordCount=1000&f=geojson")
             d = fetch_json(q, f'{bid}-polys-{offset}.geojson')
             feats += d.get('features', [])
-            if not d.get('properties', {}).get('exceededTransferLimit') and len(d.get('features', [])) < 1000:
+            got = len(d.get('features', []))
+            # An empty page ends it even if the server still claims there is more.
+            if not got or (not d.get('properties', {}).get('exceededTransferLimit') and got < 1000):
                 break
-            offset += len(d['features'])
+            offset += got
         epsg = None
     elif kind == 'geojson':
         d = fetch_json(src['url'], f'{bid}-polys.geojson')
@@ -354,8 +355,7 @@ def parse_street_entry(entry):
 
 def street_zones(bid, src):
     """[(zone code, polygon, props)] for zones given as {code: [street entries]} in src['lists']."""
-    import json as _json
-    lists = src['lists'] if isinstance(src['lists'], dict) else _json.load(open(os.path.join(ROOT, src['lists'])))
+    lists = src['lists'] if isinstance(src['lists'], dict) else json.load(open(os.path.join(ROOT, src['lists'])))
     to_bng = Transformer.from_crs('EPSG:4326', 'EPSG:27700', always_xy=True).transform
     to_wgs = Transformer.from_crs('EPSG:27700', 'EPSG:4326', always_xy=True).transform
     boundary = transform(to_bng, borough_boundary(src['borough']))
@@ -698,6 +698,23 @@ def borough_boundary(name):
 
 # ---------------------------------------------------------------------------
 
+ENTRY_KEYS = ('name', 'short', 'hoursUrl', 'checked', 'eventDaysUrl', 'bankHolidayUrl',
+              'mapPdf', 'yellowLines', 'charges', 'notes', 'licence')
+
+
+def borough_entry(b, bounds, **extra):
+    """A borough's entry in rules.json: its descriptive keys from the sources file, its bbox and `extra`."""
+    entry = {k: b[k] for k in ENTRY_KEYS if k in b}
+    entry['bbox'] = [round(v, 4) for v in bounds]
+    entry.update(extra)
+    return entry
+
+
+def outline_feature(bid, outline):
+    """The borough outline drawn where zones are missing; a tap on it lists the borough's zones."""
+    return feature(outline.simplify(0.0002), {'b': bid, 'zone': '', 'rule': f'{bid}:', 'outline': 1})
+
+
 def main(argv):
     src = json.load(open(SOURCES))
     boroughs = src['boroughs']
@@ -722,13 +739,10 @@ def main(argv):
             # No zone polygons published: the borough outline plus its listed zones (no geometry).
             outline = borough_boundary(b['boundaryOnly'])
             rules = build_rules(bid, b, {})
-            all_zones.append(feature(outline.simplify(0.0002), {'b': bid, 'zone': '', 'rule': f'{bid}:', 'outline': 1}))
-            w, s, e, n = outline.bounds
-            entry = {k: b[k] for k in ('name', 'short', 'hoursUrl', 'checked', 'eventDaysUrl', 'bankHolidayUrl',
-                                       'mapPdf', 'yellowLines', 'charges', 'notes', 'licence') if k in b}
-            entry.update({'bbox': [round(w, 4), round(s, 4), round(e, 4), round(n, 4)], 'listOnly': True,
-                          'zoneCount': len(rules), 'knownHours': sum(1 for r in rules.values() if r['periods'] is not None)})
-            all_boroughs[bid] = entry
+            all_zones.append(outline_feature(bid, outline))
+            all_boroughs[bid] = borough_entry(
+                b, outline.bounds, listOnly=True, zoneCount=len(rules),
+                knownHours=sum(1 for r in rules.values() if r['periods'] is not None))
             all_rules.update(rules)
             continue
         polys = load_polygons(bid, b['polygons'])
@@ -744,15 +758,12 @@ def main(argv):
         if b.get('partial'):
             # Some zones couldn't be drawn: the borough outline too, so a tap outside the drawn zones lists them all.
             outline = borough_boundary(b['partial'])
-            all_zones.append(feature(outline.simplify(0.0002), {'b': bid, 'zone': '', 'rule': f'{bid}:', 'outline': 1}))
+            all_zones.append(outline_feature(bid, outline))
         for code, g in sorted(zones.items()):
             pt = g.representative_point()
             all_zones.append(feature(g.simplify(0.00001), {'b': bid, 'zone': code, 'rule': f'{bid}:{code}',
                                                             'lx': round(pt.x, 5), 'ly': round(pt.y, 5)}))
-        w, s, e, n = unary_union(list(zones.values()) + ([outline] if outline else [])).bounds
-        entry = {k: b[k] for k in ('name', 'short', 'hoursUrl', 'checked', 'eventDaysUrl', 'bankHolidayUrl',
-                                   'mapPdf', 'yellowLines', 'charges', 'notes', 'licence') if k in b}
-        entry['bbox'] = [round(w, 4), round(s, 4), round(e, 4), round(n, 4)]
+        entry = borough_entry(b, unary_union(list(zones.values()) + ([outline] if outline else [])).bounds)
         if b.get('partial'):
             entry['partial'] = True
         entry['zoneCount'] = len(zones)
@@ -776,6 +787,10 @@ def main(argv):
                  'boroughs': dict(sorted(all_boroughs.items())), 'rules': dict(sorted(all_rules.items()))}
     with open(rules_path, 'w') as f:
         json.dump(rules_out, f, separators=(',', ':'), ensure_ascii=False)
+    # Boroughs in the order of the sources file, whichever of them were rebuilt this time, so the
+    # same sources always give the same file. (The sort is stable: a borough's own order is kept.)
+    order = {bid: i for i, bid in enumerate(boroughs)}
+    all_zones.sort(key=lambda f: order[f['properties']['b']])
     write(zones_path, all_zones)
     known = sum(b['knownHours'] for b in all_boroughs.values())
     total = sum(b['zoneCount'] for b in all_boroughs.values())
