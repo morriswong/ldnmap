@@ -4,6 +4,21 @@ mapboxgl.accessToken = MAPBOX_TOKEN;
 var COLORS = ['#2ecc71','#3498db','#f39c12','#e74c3c'];
 var MINS = [5,10,15,20];
 var PC_RE = /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i;
+var CACHE_TTL = 30 * 24 * 60 * 60 * 1000; // postcode boundaries, station lists and the last view are kept 30 days
+
+// Cached boundaries and station lists are only read again if the same place comes up,
+// so expired ones would otherwise sit in localStorage until it fills.
+(function pruneCaches() {
+  try {
+    for (var i = localStorage.length - 1; i >= 0; i--) {
+      var k = localStorage.key(i);
+      if (k.indexOf('pc:') !== 0 && k.indexOf('st:') !== 0) continue;
+      var ts = 0;
+      try { ts = JSON.parse(localStorage.getItem(k)).ts; } catch (e) {}
+      if (!(Date.now() - ts < CACHE_TTL)) localStorage.removeItem(k);
+    }
+  } catch (e) {}
+})();
 
 function syncAppHeight() {
   var vv = window.visualViewport;
@@ -36,6 +51,11 @@ function fitPadding(pad) {
   var y = squeeze(pad.top || 0, pad.bottom || 0, c.clientHeight);
   return { left: x[0], right: x[1], top: y[0], bottom: y[1] };
 }
+// The same clearance as a flyTo offset. A padding given to flyTo stays on the map afterwards
+// and shifts every later move; fitBounds only uses its padding for that one fit.
+function paddingOffset(pad) {
+  return [(pad.left - pad.right) / 2, (pad.top - pad.bottom) / 2];
+}
 
 function whenStyleReady(fn) {
   if (map.isStyleLoaded()) { fn(); return; }
@@ -46,8 +66,11 @@ function whenStyleReady(fn) {
   // This is what broke isochrone rendering on shared-permalink cold loads:
   // run()'s draw+fitBounds block deferred here and was never invoked.
   // `idle` re-fires on every render-settle, so it guarantees forward progress.
-  var fired = false;
-  function go() { if (fired) return; fired = true; fn(); }
+  function go() {
+    map.off('style.load', go);   // whichever fires first; the other mustn't linger
+    map.off('idle', go);
+    fn();
+  }
   map.once('style.load', go);
   map.once('idle', go);
 }
@@ -80,76 +103,95 @@ function setState(newState) {
   }
 }
 
+// The newest postcode lookup. It moves on with each lookup and when the card closes, so an
+// answer that arrives late (for a card since closed, or an earlier postcode) is dropped.
+var postcodeSeq = 0;
+
+function cachedPostcode(pc) {
+  try {
+    var entry = JSON.parse(localStorage.getItem('pc:' + pc));
+    return entry && Date.now() - entry.ts < CACHE_TTL ? entry.geojson : null;
+  } catch (e) { return null; }
+}
+
 function searchPostcode(pc) {
   pc = pc.trim().toUpperCase();
   if (!pc) return;
+  var seq = ++postcodeSeq;
   setStatus('Fetching ' + pc + '…');
 
-  var cached = localStorage.getItem('pc:' + pc);
-  if (cached) {
-    var entry = JSON.parse(cached);
-    if (Date.now() - entry.ts < 30 * 24 * 60 * 60 * 1000) {
-      renderPostcode(entry.geojson, pc); return;
-    }
-  }
+  var cached = cachedPostcode(pc);
+  if (cached) { renderPostcode(cached, seq); return; }
 
   var url = 'https://api.os.uk/features/ngd/ofa/v1/collections/asu-gbpcd-postcodeunitarea-1/items'
     + '?filter=' + encodeURIComponent("postcode='" + pc + "'") + '&key=' + OS_TOKEN;
 
   fetch(url)
     .then(function(res) {
-      if (!res.ok) return res.text().then(function(t) { throw new Error('HTTP ' + res.status + ': ' + t); });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
       return res.json();
     })
     .then(function(geo) {
-      if (!geo.features || geo.features.length === 0) {
-        setStatus(pc + ' has no polygon — likely a Large User postcode.', true);
-        return;
-      }
+      if (seq !== postcodeSeq) return;
+      // Postcodes with no area of their own (one large building, a PO box) have no polygon.
+      if (!geo.features || geo.features.length === 0) throw new Error('no polygon');
       try { localStorage.setItem('pc:' + pc, JSON.stringify({ geojson: geo, ts: Date.now() })); } catch(e) {}
-      renderPostcode(geo, pc);
+      renderPostcode(geo, seq);
     })
-    .catch(function() {
-      fetch('https://api.postcodes.io/postcodes/' + pc.replace(/\s+/g, ''))
-        .then(function(res) { return res.json(); })
-        .then(function(data) {
-          var pcSt = document.getElementById('pc-st');
-          if (pcSt) pcSt.classList.remove('is-loading');
-          if (data.status === 200 && data.result && data.result.latitude) {
-            if (pendingPlace) {
-              pendingPlace.lat = data.result.latitude;
-              pendingPlace.lng = data.result.longitude;
-            }
-            var ctaBtn = document.getElementById('postcode-cta-btn');
-            if (ctaBtn) ctaBtn.disabled = false;
-            map.flyTo({ center: [data.result.longitude, data.result.latitude], zoom: 14 });
-            setStatus('Boundary unavailable — showing postcode centre', false);
-          } else {
-            setStatus('Postcode lookup failed.', true);
-          }
-        })
-        .catch(function() {
-          var pcSt = document.getElementById('pc-st');
-          if (pcSt) pcSt.classList.remove('is-loading');
-          setStatus('Postcode lookup failed.', true);
-        });
-    });
+    .catch(function() { postcodeCentre(pc, seq); });
 }
 
-function renderPostcode(geo, pc) {
-  if (postcodeLayer) {
-    if (map.getLayer('postcode-fill')) map.removeLayer('postcode-fill');
-    if (map.getLayer('postcode-line')) map.removeLayer('postcode-line');
-    if (map.getSource('postcode'))     map.removeSource('postcode');
-    postcodeLayer = null;
+// No boundary to draw: find the postcode's centre instead, so its card still works.
+function postcodeCentre(pc, seq) {
+  if (seq !== postcodeSeq) return;
+  function done(msg, isError) {
+    if (seq !== postcodeSeq) return;
+    document.getElementById('pc-st').classList.remove('is-loading');
+    setStatus(msg, isError);
   }
+  fetch('https://api.postcodes.io/postcodes/' + pc.replace(/\s+/g, ''))
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      if (seq !== postcodeSeq) return;
+      if (!(data.status === 200 && data.result && data.result.latitude)) { done('Postcode lookup failed.', true); return; }
+      if (pendingPlace) {
+        pendingPlace.lat = data.result.latitude;
+        pendingPlace.lng = data.result.longitude;
+      }
+      postcodeReady();
+      map.flyTo({ center: [data.result.longitude, data.result.latitude], zoom: 14 });
+      done('Boundary unavailable — showing postcode centre', false);
+    })
+    .catch(function() { done('Postcode lookup failed.', true); });
+}
+
+// The card's place has its coordinates: its buttons can be used.
+function postcodeReady() {
+  document.getElementById('postcode-cta-btn').disabled = false;
+  document.getElementById('postcode-parking-btn').disabled = false;
+}
+
+function removePostcodeLayers() {
+  if (map.getLayer('postcode-fill')) map.removeLayer('postcode-fill');
+  if (map.getLayer('postcode-line')) map.removeLayer('postcode-line');
+  if (map.getSource('postcode'))     map.removeSource('postcode');
+  postcodeLayer = null;
+}
+
+function addPostcodeLayers(geo) {
+  removePostcodeLayers();
+  map.addSource('postcode', { type: 'geojson', data: geo });
+  map.addLayer({ id: 'postcode-fill', type: 'fill', source: 'postcode',
+    paint: { 'fill-color': '#8b5cf6', 'fill-opacity': 0.18 } });
+  map.addLayer({ id: 'postcode-line', type: 'line', source: 'postcode',
+    paint: { 'line-color': '#8b5cf6', 'line-width': 2.5, 'line-opacity': 1 } });
+  postcodeLayer = geo;
+}
+
+function renderPostcode(geo, seq) {
   whenStyleReady(function() {
-    map.addSource('postcode', { type: 'geojson', data: geo });
-    map.addLayer({ id: 'postcode-fill', type: 'fill', source: 'postcode',
-      paint: { 'fill-color': '#8b5cf6', 'fill-opacity': 0.18 } });
-    map.addLayer({ id: 'postcode-line', type: 'line', source: 'postcode',
-      paint: { 'line-color': '#8b5cf6', 'line-width': 2.5, 'line-opacity': 1 } });
-    postcodeLayer = geo;
+    if (seq !== postcodeSeq) return;
+    addPostcodeLayers(geo);
 
     var bounds = geojsonBounds(geo);
     if (bounds) {
@@ -158,8 +200,7 @@ function renderPostcode(geo, pc) {
       if (pendingPlace && pendingPlace.postcode) {
         pendingPlace.lat = ctr.lat;
         pendingPlace.lng = ctr.lng;
-        var ctaBtn = document.getElementById('postcode-cta-btn');
-        if (ctaBtn) ctaBtn.disabled = false;
+        postcodeReady();
       }
     }
 
@@ -170,20 +211,25 @@ function renderPostcode(geo, pc) {
 
 setState('idle');
 
+// The button shows the theme a tap switches to: a moon in light mode, a sun in dark mode.
 function toggleTheme() {
   isDark = !isDark;
   document.body.classList.toggle('light', !isDark);
   var iconHtml = isDark
-    ? '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>'
-    : '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>';
+    ? '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>'
+    : '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
   var fab = document.getElementById('theme-icon-fab');
   if (fab) fab.innerHTML = iconHtml;
-  map.once('style.load', function() {
-    rehydrateLayers();
-    updateMarkerColor();
-  });
   map.setStyle(buildStyleUrl(isDark));
 }
+
+// setStyle() drops every source and layer, so ours go back whenever a style finishes loading.
+// One listener for the map's life: two quick toggles load one style, so a listener per toggle
+// would put the layers back twice.
+map.on('style.load', function() {
+  rehydrateLayers();
+  updateMarkerColor();
+});
 
 var markerEl = (function() {
   var el = document.createElement('div');
@@ -210,25 +256,31 @@ var lastSearchQuery = '';
 function isoFillId(m)  { return 'iso-' + m + '-fill'; }
 function isoLineId(m)  { return 'iso-' + m + '-line'; }
 
-function addIsoLayer(feature, color) {
+function isoSourceId(m) { return 'iso-' + m; }
+
+function removeIsoLayer(m) {
+  if (map.getLayer(isoFillId(m)))    map.removeLayer(isoFillId(m));
+  if (map.getLayer(isoLineId(m)))    map.removeLayer(isoLineId(m));
+  if (map.getSource(isoSourceId(m))) map.removeSource(isoSourceId(m));
+}
+
+// Draw one contour, replacing any already drawn for the same minutes.
+function addIsoLayer(feature) {
   var mins = feature.properties.contour;
-  var sid  = 'iso-' + mins;
-  if (map.getSource(sid)) return;
+  var sid  = isoSourceId(mins);
+  var color = COLORS[MINS.indexOf(mins)] || '#888';
+  removeIsoLayer(mins);
   map.addSource(sid, { type: 'geojson', data: feature });
   map.addLayer({ id: isoFillId(mins), type: 'fill', source: sid,
     paint: { 'fill-color': color, 'fill-opacity': 0.18 } });
   map.addLayer({ id: isoLineId(mins), type: 'line', source: sid,
     paint: { 'line-color': color, 'line-width': 3.5, 'line-opacity': 0.9 } });
-  isoLayers.push({ minutes: mins, sourceId: sid, data: feature });
+  isoLayers = isoLayers.filter(function(l) { return l.minutes !== mins; });
+  isoLayers.push({ minutes: mins, data: feature });
 }
 
 function removeAllIsoLayers() {
-  isoLayers.forEach(function(l) {
-    var m = l.minutes;
-    if (map.getLayer(isoFillId(m)))  map.removeLayer(isoFillId(m));
-    if (map.getLayer(isoLineId(m)))  map.removeLayer(isoLineId(m));
-    if (map.getSource(l.sourceId))   map.removeSource(l.sourceId);
-  });
+  isoLayers.forEach(function(l) { removeIsoLayer(l.minutes); });
   isoLayers = [];
 }
 
@@ -248,25 +300,14 @@ function geojsonBounds(geojson) {
   return b;
 }
 
+// Put every layer of ours back on a freshly loaded style. Safe to run more than once.
 function rehydrateLayers() {
-  var saved = isoLayers.slice();
+  var saved = isoLayers;
   isoLayers = [];
-  saved.forEach(function(l) {
-    var color = COLORS[MINS.indexOf(l.minutes)] || '#888';
-    addIsoLayer(l.data, color);
-  });
+  saved.forEach(function(l) { addIsoLayer(l.data); });
   if (selectedMin !== null) updateIsoHighlight();
 
-  if (postcodeLayer) {
-    var geo = postcodeLayer;
-    postcodeLayer = null;
-    map.addSource('postcode', { type: 'geojson', data: geo });
-    map.addLayer({ id: 'postcode-fill', type: 'fill', source: 'postcode',
-      paint: { 'fill-color': '#8b5cf6', 'fill-opacity': 0.18 } });
-    map.addLayer({ id: 'postcode-line', type: 'line', source: 'postcode',
-      paint: { 'line-color': '#8b5cf6', 'line-width': 2.5, 'line-opacity': 1 } });
-    postcodeLayer = geo;
-  }
+  if (postcodeLayer) addPostcodeLayers(postcodeLayer);
 
   if (stationsData) addStationsLayer(stationsData); // [stations]
   if (fuelData) addFuelLayer(fuelData); // [fuel]
@@ -290,13 +331,10 @@ function placeMarker(lat, lng) {
   marker = markerInstance;
 }
 
-
-
 function pickMode(m) {
   if (!pendingPlace) return;
   mode = m;
   updateModeButtons();
-  removeAllIsoLayers();
   run(pendingPlace.lng, pendingPlace.lat, pendingPlace.name);
 }
 
@@ -344,9 +382,19 @@ function selectBucket(min) {
   updatePermalink(); // [permalink]
 }
 
-function changeMode() {
+// Take the travel view off the map (isochrones, stations, bucket) and drop any lookup for it
+// that is still on its way. Every way out of the view goes through here.
+function clearTravel() {
+  runSeq++;
+  lastRunArgs = null;
   removeAllIsoLayers();
   clearStations(); // [stations]
+  resetBucketSelection();
+}
+
+function changeMode() {
+  clearTravel();
+  clearPermalink(); // [permalink]
   hidePostcodeChip();
   if (pendingPlace && pendingPlace.postcode) {
     showPostcodeChip();
@@ -359,17 +407,15 @@ function changeMode() {
 
 function closeTravelCard() {
   if (marker) { marker.remove(); marker = null; }
-  removeAllIsoLayers();
-  clearStations(); // [stations]
+  clearTravel();
   pendingPlace = null;
-  resetBucketSelection();
   setState('idle');
   clearPermalink(); // [permalink]
 }
 
 function closePostcodeChip() {
   hidePostcodeChip();
-  clearStations(); // [stations]
+  clearTravel();
   if (marker) { marker.remove(); marker = null; }
   pendingPlace = null;
   setState('idle');
@@ -385,61 +431,38 @@ function showPostcodeChip() {
   if (badge) badge.textContent = isBare ? '' : postcode;
   var pcSt = document.getElementById('pc-st');
   if (pcSt) { pcSt.textContent = 'Loading boundary…'; pcSt.classList.add('is-loading'); }
-  var ctaBtn = document.getElementById('postcode-cta-btn');
-  if (ctaBtn) ctaBtn.disabled = true;
+  // Travel times wait for the boundary (they start from its centre); parking only needs a point,
+  // which a bare postcode doesn't have until its boundary loads. postcodeReady() enables both.
+  document.getElementById('postcode-cta-btn').disabled = true;
+  document.getElementById('postcode-parking-btn').disabled = !pendingPlace.lat;
   document.getElementById('postcode-chip').classList.add('postcode-chip-active');
-  document.body.classList.add('postcode-chip-showing');
   postcodeChipVisible = true;
 }
 
 function hidePostcodeChip() {
+  postcodeSeq++;   // a boundary still loading is no longer wanted
   document.getElementById('postcode-chip').classList.remove('postcode-chip-active');
-  document.body.classList.remove('postcode-chip-showing');
   postcodeChipVisible = false;
-  if (postcodeLayer) {
-    if (map.getLayer('postcode-fill')) map.removeLayer('postcode-fill');
-    if (map.getLayer('postcode-line')) map.removeLayer('postcode-line');
-    if (map.getSource('postcode'))     map.removeSource('postcode');
-    postcodeLayer = null;
-  }
+  removePostcodeLayers();
 }
 
 function chipBack() {
   modePickerBack();
 }
 
-function launchFromPostcode(modeKey) {
+function launchFromPostcodeDefault() {
   if (!pendingPlace) return;
   hidePostcodeChip();
-  mode = modeKey;
+  mode = 'walking';
   updateModeButtons();
   setState('travel');
   run(pendingPlace.lng, pendingPlace.lat, pendingPlace.name);
 }
-function launchFromPostcodeDefault() {
-  mode = 'walking';
-  launchFromPostcode('walking');
-}
+
 function copyPostcode() {
   if (!pendingPlace || !pendingPlace.postcode) return;
-  var pc = pendingPlace.postcode;
-  var btn = document.getElementById('pc-copy-btn');
-  navigator.clipboard.writeText(pc).then(function() {
-    if (!btn) return;
-    btn.classList.add('pc-copy-btn--copied');
-    setTimeout(function() { if (btn) btn.classList.remove('pc-copy-btn--copied'); }, 1800);
-  }).catch(function() {
-    var ta = document.createElement('textarea');
-    ta.value = pc;
-    ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
-    document.body.appendChild(ta);
-    ta.select();
-    try { document.execCommand('copy'); } catch(e) {}
-    document.body.removeChild(ta);
-    if (btn) {
-      btn.classList.add('pc-copy-btn--copied');
-      setTimeout(function() { if (btn) btn.classList.remove('pc-copy-btn--copied'); }, 1800);
-    }
+  copyText(pendingPlace.postcode, function() {
+    flashCopied(document.getElementById('pc-copy-btn'), 'pc-copy-btn--copied');
   });
 }
 
@@ -456,8 +479,12 @@ function modePickerBack() {
   pendingPlace = null;
 }
 
-var sessionToken = (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(36).slice(2);
+function newSessionToken() {
+  return (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(36).slice(2);
+}
+var sessionToken = newSessionToken();
 var suggestTimer = null;
+var suggestSeq = 0;   // the newest suggest request; answers to older ones are dropped
 var currentSuggestions = [];
 var activeIdx = -1;
 var pendingPostcode = null;
@@ -466,10 +493,6 @@ var preSearchState = null;
 var overlayInput = document.getElementById('overlay-input');
 var overlaySugg = document.getElementById('overlay-sugg');
 var overlayEl = document.getElementById('search-overlay');
-var suggBox = overlaySugg;
-
-function closeSugg() { activeIdx = -1; }
-function openSugg() { if (currentSuggestions.length || pendingPostcode) renderSuggestions(); }
 
 var SEARCH_HELPER_HTML = '<div class="search-helper"><p class="search-helper-hint">Search for any place, landmark or postcode</p><div class="search-helper-chips"><button class="search-helper-chip" onclick="triggerExampleSearch(\'Big Ben\')">Big Ben</button></div></div>';
 
@@ -512,32 +535,47 @@ function renderHelperContent() {
   });
 }
 
+// Show a searched place: its postcode card when it has a postcode, else its travel times.
+// Whatever travel view was showing belongs to the previous place, so it goes first.
+function goToPlace(place) {
+  clearTravel();
+  pendingPlace = place;
+  map.flyTo({ center: [place.lng, place.lat], zoom: 12, duration: 1000 });
+  placeMarker(place.lat, place.lng);
+  setStatus(place.name);
+  if (place.postcode) {
+    showPostcodeChip();
+    searchPostcode(place.postcode);
+    setState('modepicker');
+  } else {
+    updateModeButtons();
+    setState('travel');
+    run(place.lng, place.lat, place.name);
+  }
+}
+
+// Show a bare postcode: its card and boundary. Its coordinates (0, 0 until then) come from
+// the boundary once that loads.
+function goToPostcode(pc) {
+  clearTravel();
+  if (marker) { marker.remove(); marker = null; }
+  pendingPlace = { lng: 0, lat: 0, name: pc, address: 'UK postcode boundary', postcode: pc };
+  showPostcodeChip();
+  searchPostcode(pc);
+  setState('modepicker');
+}
+
 function launchRecentSearch(idx) {
   var recent = getRecentSearches();
   var r = recent[idx];
   if (!r) return;
   closeSearchOverlay();
   if (r.type === 'place') {
-    pendingPlace = { lng: r.lng, lat: r.lat, name: r.name, address: r.address, postcode: r.postcode };
     lastSearchQuery = r.name;
-    map.flyTo({ center: [r.lng, r.lat], zoom: 12, duration: 1000 });
-    placeMarker(r.lat, r.lng);
-    setStatus(r.name);
-    if (r.postcode) {
-      showPostcodeChip();
-      searchPostcode(r.postcode);
-      setState('modepicker');
-    } else {
-      mode = mode || 'walking';
-      updateModeButtons();
-      setState('travel');
-      run(r.lng, r.lat, r.name);
-    }
+    goToPlace({ lng: r.lng, lat: r.lat, name: r.name, address: r.address, postcode: r.postcode });
   } else {
-    pendingPlace = { lng: 0, lat: 0, name: r.postcode, address: 'UK postcode boundary', postcode: r.postcode };
-    showPostcodeChip();
-    searchPostcode(r.postcode);
-    setState('modepicker');
+    lastSearchQuery = r.postcode;
+    goToPostcode(r.postcode);
   }
 }
 
@@ -556,12 +594,15 @@ function openSearchOverlay() {
   currentSuggestions = [];
   renderHelperContent();
   requestAnimationFrame(function() {
+    if (appState !== 'search') return;   // closed again before the frame came round
     overlayEl.classList.add('open');
     overlayInput.focus();
   });
 }
 
 function closeSearchOverlay() {
+  clearTimeout(suggestTimer);
+  suggestSeq++;   // suggestions still on their way are no longer wanted
   overlayInput.blur();
   overlayEl.classList.remove('open');
   pendingPostcode = null;
@@ -569,6 +610,8 @@ function closeSearchOverlay() {
   overlaySugg.innerHTML = '';
   if (preSearchState === 'modepicker' && pendingPlace) {
     setState('modepicker');
+  } else if (preSearchState === 'travel' && lastRunArgs) {
+    setState('travel');   // the travel view is still on the map: back to its card
   } else {
     setState('idle');
   }
@@ -581,7 +624,7 @@ function formatPostcode(raw) {
 }
 
 function renderSuggestions() {
-  suggBox.innerHTML = '';
+  overlaySugg.innerHTML = '';
   var items = getMergedItems();
 
   items.forEach(function(s, i) {
@@ -598,11 +641,13 @@ function renderSuggestions() {
       item.querySelector('.sugg-addr').textContent = s.place_formatted || s.full_address || '';
     }
     item.addEventListener('mousedown', function(e) { e.preventDefault(); selectSuggestionFromList(i, items); });
-    suggBox.appendChild(item);
+    overlaySugg.appendChild(item);
   });
 }
 
 async function fetchSuggest(q) {
+  var seq = ++suggestSeq;
+  var found = [];
   try {
     var mc = map.getCenter();
     var url = 'https://api.mapbox.com/search/searchbox/v1/suggest?q=' + encodeURIComponent(q)
@@ -611,28 +656,24 @@ async function fetchSuggest(q) {
       + '&access_token=' + MAPBOX_TOKEN;
     var r = await fetch(url);
     var d = await r.json();
-    currentSuggestions = (d.suggestions || []).map(function(s) {
+    found = (d.suggestions || []).map(function(s) {
       return { mapbox_id: s.mapbox_id, name: s.name, place_formatted: s.place_formatted, full_address: s.full_address };
     });
-    activeIdx = -1;
-    renderSuggestions();
-    if (currentSuggestions.length) openSugg(); else closeSugg();
-  } catch (e) {
-    currentSuggestions = [];
-    closeSugg();
-  }
+  } catch (e) {}
+  if (seq !== suggestSeq) return;   // the box has changed or closed since this was asked
+  currentSuggestions = found;
+  activeIdx = -1;
+  renderSuggestions();
 }
 
 function selectSuggestionFromList(i, items) {
   var s = items[i];
   if (!s) return;
   if (s.type === 'postcode') {
+    lastSearchQuery = overlayInput.value;
     closeSearchOverlay();
-    pendingPlace = { lng: 0, lat: 0, name: s.postcode, address: 'UK postcode boundary', postcode: s.postcode };
     saveRecentSearch({ type: 'postcode', name: s.postcode, address: 'UK postcode', postcode: s.postcode });
-    showPostcodeChip();
-    searchPostcode(s.postcode);
-    setState('modepicker');
+    goToPostcode(s.postcode);
     return;
   }
   selectSuggestion(s);
@@ -668,22 +709,9 @@ async function selectSuggestion(s) {
         var pcMatch = fa.match(/\b([A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2})\b/i);
         if (pcMatch) postcode = formatPostcode(pcMatch[1]);
       }
-      pendingPlace = { lng: c[0], lat: c[1], name: name, address: address, postcode: postcode };
       saveRecentSearch({ type: 'place', name: name, address: address, lat: c[1], lng: c[0], postcode: postcode });
-      map.flyTo({ center: [c[0], c[1]], zoom: 12, duration: 1000 });
-      placeMarker(c[1], c[0]);
-      setStatus(name);
-      if (pendingPlace.postcode) {
-        showPostcodeChip();
-        searchPostcode(pendingPlace.postcode);
-        setState('modepicker');
-      } else {
-        mode = mode || 'walking';
-        updateModeButtons();
-        setState('travel');
-        run(pendingPlace.lng, pendingPlace.lat, pendingPlace.name);
-      }
-      sessionToken = (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(36).slice(2);
+      goToPlace({ lng: c[0], lat: c[1], name: name, address: address, postcode: postcode });
+      sessionToken = newSessionToken();
     } else { setStatus('Could not load that location', true); }
   } catch (e) { setStatus('Search failed', true); }
 }
@@ -693,6 +721,7 @@ document.getElementById('search-back-btn').addEventListener('click', closeSearch
 overlayInput.addEventListener('input', function() {
   var q = overlayInput.value.trim();
   clearTimeout(suggestTimer);
+  suggestSeq++;   // an answer for the text as it was is out of date
   if (!q) { pendingPostcode = null; currentSuggestions = []; renderHelperContent(); return; }
   pendingPostcode = PC_RE.test(q) ? formatPostcode(q) : null;
   if (pendingPostcode) renderSuggestions();
@@ -732,7 +761,8 @@ overlayInput.addEventListener('keydown', function(e) {
 
 // [retry] Args of the most recent run(), so a transient failure can be re-attempted
 // — automatically below, or by the user tapping the error status line.
-var lastRunArgs = null;
+var lastRunArgs = null;  // also the sign that a travel view is showing; clearTravel() empties it
+var runSeq = 0;          // the newest run(); an older one's answers are dropped when they arrive late
 var ISO_MAX_RETRIES = 2; // re-attempts for a transient isochrone fetch (network blip / 429 / 5xx)
 
 function isoDelay(ms) { return new Promise(function(res) { setTimeout(res, ms); }); }
@@ -748,6 +778,9 @@ function isoError(lng, lat, msg, retryable) {
 }
 
 async function run(lng, lat, label) {
+  // A newer run() (another mode or place) or clearTravel() moves runSeq on. This run then
+  // stops at its next step, so a slow answer can't draw over, or after, what replaced it.
+  var seq = ++runSeq;
   center = [lng, lat];
   lastRunArgs = { lng: lng, lat: lat, label: label }; // [retry]
   setStatus('Loading isochrones…');
@@ -766,37 +799,34 @@ async function run(lng, lat, label) {
   // "sometimes" fails to appear on first search. Retry those a couple of times with
   // a short backoff before giving up. Permanent errors (bad coords, empty result)
   // fall straight through without retrying.
-  var data = null;
-  for (var attempt = 0; attempt <= ISO_MAX_RETRIES; attempt++) {
+  var data = null, failure = '';
+  for (var attempt = 0; attempt <= ISO_MAX_RETRIES && !data; attempt++) {
+    if (attempt) await isoDelay(400 * attempt);
+    if (seq !== runSeq) return;
     try {
       var r = await fetch(url);
-      if (isoTransientStatus(r.status)) {
-        if (attempt < ISO_MAX_RETRIES) { await isoDelay(400 * (attempt + 1)); continue; }
-        return isoError(lng, lat, 'Map service is busy', true);
-      }
-      data = await r.json();
-      break;
+      if (isoTransientStatus(r.status)) failure = 'Map service is busy';
+      else data = await r.json();
     } catch (e) {
-      if (attempt < ISO_MAX_RETRIES) { await isoDelay(400 * (attempt + 1)); continue; }
-      return isoError(lng, lat, 'Couldn’t reach the map service', true);
+      failure = 'Couldn’t reach the map service';
     }
   }
+  if (seq !== runSeq) return;
 
+  if (!data) { return isoError(lng, lat, failure, true); }
   if (data.message) { return isoError(lng, lat, 'API error: ' + data.message, false); }
   if (!data.features || !data.features.length) { return isoError(lng, lat, 'No travel data for this spot', false); }
 
   var sorted = data.features.slice().sort(function(a, b) { return b.properties.contour - a.properties.contour; });
   whenStyleReady(function() {
-    sorted.forEach(function(f) {
-      var color = COLORS[MINS.indexOf(f.properties.contour)] || '#888';
-      addIsoLayer(f, color);
-    });
+    if (seq !== runSeq) return;
+    sorted.forEach(addIsoLayer);
     fitIsochroneBounds();
   });
 
   setStatus(label || lat.toFixed(4) + '°N, ' + lng.toFixed(4) + '°E');
   updatePermalink(); // [permalink]
-  loadNearbyStations(lat, lng); // [stations]
+  loadNearbyStations(lat, lng, seq); // [stations]
 }
 
 // [retry] Tapping the status line while it shows an error re-runs the last search.
@@ -820,66 +850,6 @@ function haversineMetres(lat1, lng1, lat2, lng2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// Map a TfL mode array to a single primary mode key + short label.
-function stationPrimaryMode(modes) {
-  var order = ['tube', 'elizabeth-line', 'dlr', 'overground', 'national-rail', 'tram', 'cable-car', 'river-bus'];
-  var m = (modes || []).slice().sort(function(a, b) {
-    var ia = order.indexOf(a); var ib = order.indexOf(b);
-    return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
-  })[0] || 'rail';
-  var labels = {
-    'tube': 'Tube', 'elizabeth-line': 'Elizabeth', 'dlr': 'DLR',
-    'overground': 'Overground', 'national-rail': 'Rail', 'tram': 'Tram',
-    'cable-car': 'Cable car', 'river-bus': 'River'
-  };
-  return { key: m, label: labels[m] || 'Rail' };
-}
-
-// Official TfL brand colours, keyed by a normalised line name (see normaliseLineName).
-// Covers Underground lines, the post-2024 Overground line names (Lioness, Mildmay,
-// Windrush, Weaver, Suffragette, Liberty), Elizabeth line, DLR, tram, cable car and
-// river bus. Line names come straight from the TfL StopPoint response (app.js fetch),
-// so no extra dataset or network call is needed — this is a pure name → hex lookup.
-var LINE_COLORS = {
-  // London Underground
-  'bakerloo': '#B36305', 'central': '#E32017', 'circle': '#FFD300',
-  'district': '#00782A', 'hammersmith-city': '#F3A9BB', 'jubilee': '#A0A5A9',
-  'metropolitan': '#9B0056', 'northern': '#000000', 'piccadilly': '#003688',
-  'victoria': '#0098D4', 'waterloo-city': '#95CDBA',
-  // Elizabeth line + DLR
-  'elizabeth': '#6950A1', 'dlr': '#00A4A7',
-  // Overground — legacy single brand + 2024 named lines
-  'london-overground': '#EE7C0E', 'overground': '#EE7C0E',
-  'liberty': '#61686B', 'lioness': '#FAA61A', 'mildmay': '#0077AD',
-  'suffragette': '#5BBD72', 'weaver': '#823A62', 'windrush': '#EE2E24',
-  // Tram, cable car, river bus, Thameslink
-  'tram': '#84B817', 'trams': '#84B817', 'tramlink': '#84B817',
-  'ifs-cloud-cable-car': '#E51937', 'emirates-air-line': '#E51937',
-  'thames-clippers': '#00A0E2', 'uber-boat': '#00A0E2', 'river-bus': '#00A0E2',
-  'thameslink': '#E10080', 'national-rail': '#C00000'
-};
-
-// Colour used when a station resolves to no recognised line (common for National Rail
-// stations, where TfL does not populate a lines[] array). "Train" → red per request.
-var MODE_FALLBACK_COLORS = {
-  'tube': '#7b7b7b', 'national-rail': '#C00000', 'overground': '#EE7C0E',
-  'dlr': '#00A4A7', 'elizabeth-line': '#6950A1', 'tram': '#84B817',
-  'cable-car': '#E51937', 'river-bus': '#00A0E2'
-};
-
-// "Hammersmith & City" → "hammersmith-city", "Elizabeth line" → "elizabeth".
-function normaliseLineName(name) {
-  return String(name || '').toLowerCase().trim()
-    .replace(/\s+line$/, '')
-    .replace(/\s*&\s*/g, '-')
-    .replace(/\s+/g, '-');
-}
-
-// Resolve a single line name to its brand hex, or null if unknown.
-function lineColor(name) {
-  return LINE_COLORS[normaliseLineName(name)] || null;
-}
-
 // Map a walk-time (minutes) to its isochrone bucket colour: ≤5 green, ≤10 blue,
 // ≤15 orange, ≤20 (and anything beyond) red. Mirrors the COLORS/MINS pairing used
 // for the travel slots, so a station's time label matches the ring it falls inside.
@@ -897,38 +867,16 @@ function hexToRgba(hex, a) {
   return 'rgba(' + ((n >> 16) & 255) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
 }
 
-// Build the ordered, de-duplicated list of dot colours for a station. Prefers real
-// line colours; falls back to a single mode-based colour when none are recognised.
-// (Now used only for its COUNT — the dots are recoloured by walk-time bucket — but
-// the per-line dedup is what gives each station the right number of dots.)
-function stationDotColors(st) {
-  var seen = {};
-  var colors = [];
-  (st.lines || []).forEach(function(ln) {
-    var c = lineColor(ln);
-    if (c && !seen[c]) { seen[c] = 1; colors.push(c); }
-  });
-  if (!colors.length) {
-    var pm = stationPrimaryMode(st.modes);
-    colors.push(MODE_FALLBACK_COLORS[pm.key] || '#7b7b7b');
-  }
-  return colors.slice(0, 6); // cap so large interchanges don't overflow the row
-}
-
 // Re-rank a raw station list (no dist) against an exact point: compute walk
 // distance, sort nearest-first, keep the closest 5. Used for both fresh fetches
 // and cache hits, so distances stay accurate even when a cache entry (keyed to a
 // rounded coordinate) is reused for a slightly different pin.
 function rankStations(list, lat, lng) {
   return (list || []).map(function(s) {
-    return {
-      name: s.name, lat: s.lat, lng: s.lng, modes: s.modes || [], lines: s.lines || [],
-      dist: haversineMetres(lat, lng, s.lat, s.lng)
-    };
+    return { name: s.name, lat: s.lat, lng: s.lng, dist: haversineMetres(lat, lng, s.lat, s.lng) };
   }).sort(function(a, b) { return a.dist - b.dist; }).slice(0, 5);
 }
 
-var STATION_CACHE_TTL = 30 * 24 * 60 * 60 * 1000; // 30 days
 function stationCacheKey(lat, lng) {
   // Round to 3 decimals (~110 m grid) so nearby pins share a cache entry.
   return 'st:' + lat.toFixed(3) + ',' + lng.toFixed(3);
@@ -938,7 +886,7 @@ function readStationCache(key) {
     var raw = localStorage.getItem(key);
     if (!raw) return null;
     var e = JSON.parse(raw);
-    if (Date.now() - e.ts > STATION_CACHE_TTL) { localStorage.removeItem(key); return null; }
+    if (Date.now() - e.ts > CACHE_TTL) { localStorage.removeItem(key); return null; }
     return e.stations || null;
   } catch (e) { return null; }
 }
@@ -946,7 +894,8 @@ function writeStationCache(key, stations) {
   try { localStorage.setItem(key, JSON.stringify({ ts: Date.now(), stations: stations })); } catch (e) {}
 }
 
-async function loadNearbyStations(lat, lng) {
+// `seq` is the run() these stations belong to; see runSeq.
+async function loadNearbyStations(lat, lng, seq) {
   var listEl = document.getElementById('travel-stations');
   if (!listEl) return;
 
@@ -966,15 +915,16 @@ async function loadNearbyStations(lat, lng) {
     var url = 'https://api.tfl.gov.uk/StopPoint?stopTypes=NaptanMetroStation,NaptanRailStation&lat='
       + lat + '&lon=' + lng + '&radius=1000&useStopPointHierarchy=false';
     var r = await fetch(url);
+    if (!r.ok) throw new Error('TfL HTTP ' + r.status);   // an error body has no stopPoints: not "no stations"
     var d = await r.json();
+    if (seq !== runSeq) return;
     var pts = (d && d.stopPoints) || [];
     // Cache the raw (dist-less) list; distances are derived per-render via rankStations.
     var raw = pts.filter(function(s) { return typeof s.lat === 'number' && typeof s.lon === 'number'; })
       .map(function(s) {
-        var lines = (s.lines || []).map(function(l) { return l.name; }).filter(Boolean);
         return {
           name: (s.commonName || '').replace(/\s+(Underground|Rail|DLR)\s+Station$/i, '').replace(/\s+Station$/i, ''),
-          lat: s.lat, lng: s.lon, modes: s.modes || [], lines: lines
+          lat: s.lat, lng: s.lon
         };
       });
     writeStationCache(key, raw);
@@ -990,6 +940,7 @@ async function loadNearbyStations(lat, lng) {
     renderStationList(stations);
     renderStationMarkers(stations);
   } catch (e) {
+    if (seq !== runSeq) return;
     stationsData = null;
     clearStationsLayer();
     listEl.innerHTML = '<div class="travel-stations-title">Nearby stations</div>'
@@ -1093,12 +1044,12 @@ function clearStations() {
 // postcode.
 var FUEL_URL = '/api/fuel';
 var FUEL_LAST_KEY = 'ldnmap:fuelLast';  // { location, fuel } remembered per browser
-var fuelBusy = false;
+var fuelSeq = 0;           // the newest lookup; answers to older ones are dropped
 var fuelType = 'E10';
 var fuelEnabled = false;
 var fuelPoint = null;      // { lat, lng } when searching around a point; the input then shows its label
 var fuelData = null;       // GeoJSON FeatureCollection currently plotted (null when none)
-var fuelStations = {};     // node_id → station record, for popups
+var fuelStations = {};     // node_id → station, for popups
 var fuelPopup = null;
 var FUEL_NAMES = { E10: 'E10 petrol', E5: 'E5 super', B7_STANDARD: 'Diesel', B7_PREMIUM: 'Premium diesel', B10: 'B10 diesel', HVO: 'HVO' };
 var FUEL_EXAMPLES = ['SW1A 1AA', 'Hackney', 'Croydon'];
@@ -1255,11 +1206,15 @@ function fuelMessage(kind, text) {
 async function lookupFuel(e) {
   if (e) e.preventDefault();
   var location = fuelInput.value.trim();
-  if ((!location && !fuelPoint) || fuelBusy) return false;
-  fuelBusy = true;
-  document.getElementById('fuel-send').disabled = true;
+  var point = fuelPoint;
+  if (!location && !point) return false;
+  // The newest lookup wins: changing fuel or place while one is running starts another,
+  // and the earlier one's answer is dropped when it arrives.
+  var seq = ++fuelSeq;
+  var sendBtn = document.getElementById('fuel-send');
+  sendBtn.disabled = true;
   if (isMobileView()) fuelInput.blur();               // drop the iOS keyboard so the results are visible
-  if (!fuelPoint) saveFuelLast(location);             // a point's label isn't a searchable place
+  if (!point) saveFuelLast(location);                 // a point's label isn't a searchable place
 
   var pending = fuelMessage('pending', 'Checking prices');
   var slowTimer = setTimeout(function() {
@@ -1267,42 +1222,40 @@ async function lookupFuel(e) {
   }, 4000);
 
   try {
-    var q = (fuelPoint
-      ? '?lat=' + fuelPoint.lat.toFixed(5) + '&lon=' + fuelPoint.lng.toFixed(5)
+    var q = (point
+      ? '?lat=' + point.lat.toFixed(5) + '&lon=' + point.lng.toFixed(5)
       : '?location=' + encodeURIComponent(location)) + '&fuel=' + encodeURIComponent(fuelType);
     var r = await fetch(FUEL_URL + q);
     var d = null;
     try { d = await r.json(); } catch (err) {}
+    if (seq !== fuelSeq) return false;
     if (!r.ok || !d || !Array.isArray(d.stations)) {
       throw new Error((d && d.error) || 'Couldn’t reach the fuel price service.');
     }
-    renderFuelResults(d);
+    // For a point search, name the place as the user saw it and put the origin pin on the point
+    // itself (the server only knows the nearest postcode).
+    renderFuelResults(d, point ? location : ((d.location && d.location.label) || location));
     if (window.__fuelSheet && window.__fuelSheet.snapName() === 'full') fuelSheetTo('half');
-    // For a point search, put the origin pin on the point itself rather than its nearest postcode.
-    var plotted = fuelPoint
-      ? Object.assign({}, d, { location: Object.assign({}, d.location, { latitude: fuelPoint.lat, longitude: fuelPoint.lng }) })
-      : d;
+    var origin = point ? { latitude: point.lat, longitude: point.lng } : d.location;
     // The prices are already showing; a problem drawing the pins mustn't replace them with an error.
-    try { plotFuelResults([{ tool: 'cheapest_fuel_near', data: plotted }]); }
+    try { plotFuelResults(d, origin); }
     catch (err) { console.warn('fuel: couldn’t plot the stations', err); }
   } catch (err) {
-    fuelMessage('error', err.message || 'Something went wrong.');
+    if (seq === fuelSeq) fuelMessage('error', err.message || 'Something went wrong.');
   } finally {
     clearTimeout(slowTimer);
-    fuelBusy = false;
-    document.getElementById('fuel-send').disabled = false;
+    if (seq === fuelSeq) sendBtn.disabled = false;
   }
   return false;
 }
 
-function renderFuelResults(d) {
+// `place` is the name to show for where the search was.
+function renderFuelResults(d, place) {
   fuelResults.innerHTML = '';
   var head = document.createElement('div');
   head.className = 'fuel-summary';
   var where = document.createElement('div');
   where.className = 'fuel-summary-text';
-  // For a point search, name it as the user saw it (the server only knows the nearest postcode).
-  var place = fuelPoint ? fuelInput.value.trim() : ((d.location && d.location.label) || fuelInput.value.trim());
   where.textContent = d.stations.length
     ? (FUEL_NAMES[d.fuel] || d.fuel) + ' within ' + d.radius_miles + ' mi of ' + place
     : 'No stations selling ' + (FUEL_NAMES[d.fuel] || d.fuel) + ' within ' + d.radius_miles + ' mi of ' + place + '.';
@@ -1382,48 +1335,28 @@ function timeAgo(iso) {
   return Math.round(mins / 1440) + 'd ago';
 }
 
-// Turn tool results into one de-duplicated station list plus the searched point,
-// and a node_id → { station, prices } lookup for popups.
-// cheapest_fuel_near / area_summary name one fuel; stations_near lists every price,
-// so its pins are labelled with that same fuel (or E10 when none was named).
-function fuelFeaturesFromResults(results) {
-  var fuel = null, origin = null, byId = {}, order = [];
-  results.forEach(function(r) {
-    var d = r.data || {};
-    if (d.fuel && !fuel) fuel = d.fuel;
-    if (d.location && isFinite(d.location.latitude) && isFinite(d.location.longitude)) origin = d.location;
-    var list = Array.isArray(d.stations) ? d.stations : (d.cheapest ? [d.cheapest] : []);
-    list.forEach(function(s) {
-      if (!s || !s.node_id || !isFinite(s.latitude) || !isFinite(s.longitude)) return;
-      var rec = byId[s.node_id];
-      if (!rec) { rec = byId[s.node_id] = { station: s, prices: {} }; order.push(s.node_id); }
-      if (typeof s.price_ppl === 'number' && s.fuel) rec.prices[s.fuel] = { price: s.price_ppl, updated: s.price_updated };
-      (s.prices || []).forEach(function(p) {
-        if (typeof p.price_ppl === 'number' && p.fuel) rec.prices[p.fuel] = { price: p.price_ppl, updated: p.price_updated };
-      });
-    });
-  });
-  fuel = fuel || 'E10';
-
-  var min = Infinity;
-  order.forEach(function(id) { var p = byId[id].prices[fuel]; if (p && p.price < min) min = p.price; });
-
+// A lookup's stations and its origin ({ latitude, longitude }) as GeoJSON for the map, plus a
+// node_id → station lookup for popups. The cheapest price gets the green pin.
+function fuelFeatures(d, origin) {
   var stations = {};
-  var features = order.map(function(id) {
-    var rec = byId[id], s = rec.station, p = rec.prices[fuel];
-    stations[id] = { station: s, prices: rec.prices };
+  var list = d.stations.filter(function(s) { return s && s.node_id && isFinite(s.latitude) && isFinite(s.longitude); });
+  var min = Infinity;
+  list.forEach(function(s) { if (typeof s.price_ppl === 'number' && s.price_ppl < min) min = s.price_ppl; });
+  var features = list.map(function(s) {
+    var priced = typeof s.price_ppl === 'number';
+    stations[s.node_id] = s;
     return {
       type: 'Feature',
       geometry: { type: 'Point', coordinates: [s.longitude, s.latitude] },
       properties: {
-        kind: 'station', id: id,
-        label: p ? p.price.toFixed(1) + 'p' : '',
-        priced: p ? 1 : 0,
-        cheapest: p && p.price === min ? 1 : 0
+        kind: 'station', id: s.node_id,
+        label: priced ? s.price_ppl.toFixed(1) + 'p' : '',
+        priced: priced ? 1 : 0,
+        cheapest: priced && s.price_ppl === min ? 1 : 0
       }
     };
   });
-  if (origin) {
+  if (origin && isFinite(origin.latitude) && isFinite(origin.longitude)) {
     features.push({
       type: 'Feature',
       geometry: { type: 'Point', coordinates: [origin.longitude, origin.latitude] },
@@ -1433,16 +1366,14 @@ function fuelFeaturesFromResults(results) {
   return { geojson: { type: 'FeatureCollection', features: features }, stations: stations };
 }
 
-// Returns true when something was plotted.
-function plotFuelResults(results) {
-  var built = fuelFeaturesFromResults(results);
-  if (!built.geojson.features.length) return false;
+function plotFuelResults(d, origin) {
+  var built = fuelFeatures(d, origin);
   clearFuel();
+  if (!built.geojson.features.length) return;
   fuelData = built.geojson;
   fuelStations = built.stations;
   addFuelLayer(fuelData);
   fitFuelBounds();
-  return true;
 }
 
 function addFuelLayer(geojson) {
@@ -1504,9 +1435,8 @@ function fitFuelBounds() {
 }
 
 function showFuelPopup(id, lngLat) {
-  var rec = fuelStations[id];
-  if (!rec) return;
-  var s = rec.station;
+  var s = fuelStations[id];
+  if (!s) return;
   var el = document.createElement('div');
   el.className = 'fuel-pop';
   var name = document.createElement('div');
@@ -1517,25 +1447,24 @@ function showFuelPopup(id, lngLat) {
   meta.className = 'fuel-pop-meta';
   meta.textContent = [s.brand, s.address, s.postcode].filter(Boolean).join(' · ');
   el.appendChild(meta);
-  Object.keys(rec.prices).sort().forEach(function(f) {
-    var p = rec.prices[f];
+  if (typeof s.price_ppl === 'number') {
     var row = document.createElement('div');
     row.className = 'fuel-pop-row';
     var left = document.createElement('span');
-    left.textContent = FUEL_NAMES[f] || f;
+    left.textContent = FUEL_NAMES[s.fuel] || s.fuel || '';
     var right = document.createElement('span');
     right.className = 'fuel-pop-price';
-    right.textContent = p.price.toFixed(1) + 'p';
+    right.textContent = s.price_ppl.toFixed(1) + 'p';
     row.appendChild(left);
     row.appendChild(right);
-    if (p.updated) {
+    if (s.price_updated) {
       var ago = document.createElement('span');
       ago.className = 'fuel-pop-ago';
-      ago.textContent = timeAgo(p.updated);
+      ago.textContent = timeAgo(s.price_updated);
       row.appendChild(ago);
     }
     el.appendChild(row);
-  });
+  }
   if (fuelPopup) fuelPopup.remove();
   fuelPopup = new mapboxgl.Popup({ className: 'fuel-popup', closeButton: false, maxWidth: '260px', offset: 12 })
     .setLngLat(lngLat).setDOMContent(el).addTo(map);
@@ -1579,7 +1508,8 @@ var PARKING_YELLOW = {   // used when a borough's own wording isn't in the data
 var parkingOn = false;
 var parkingData = null;        // { zones, labels } once loaded; borough detail is in parkingDetail
 var parkingLoading = null;     // the in-flight load, so double taps share it
-var parkingDetail = {};        // borough id → 'loading' | { streets, kerb, machines }
+var parkingDetail = {};        // borough id → 'loading' | { streets, kerb, machines } (feature arrays)
+var parkingNote = '';          // a one-off message above the hint, until the user moves the map or opens a card
 var parkingNow = true;         // follow the clock, or a day/time picked in the panel
 var parkingWhen = londonDayTime(new Date());
 var parkingEvent = false;
@@ -1659,8 +1589,9 @@ function loadParkingDetail() {
     parkingDetail[id] = 'loading';
     Promise.all(['streets', 'kerb', 'machines'].map(function(n) { return parkingGet(id + '/' + n + '.geojson'); }))
       .then(function(d) {
-        parkingDetail[id] = { streets: d[0], kerb: d[1], machines: d[2] };
+        parkingDetail[id] = { streets: d[0].features, kerb: splitKerbSides(d[1].features), machines: d[2].features };
         refreshParkingDetailSources();
+        if (parkingSel && parkingSel.b === id) renderParkingBody();   // its card was waiting for the machines
       })
       .catch(function() { delete parkingDetail[id]; });
   });
@@ -1671,9 +1602,7 @@ function parkingDetailCollection(name) {
   var features = [];
   Object.keys(parkingDetail).forEach(function(id) {
     var d = parkingDetail[id];
-    if (d === 'loading') return;
-    if (name === 'kerb') features = features.concat(splitKerbSides(d.kerb.features));
-    else features = features.concat(d[name].features);
+    if (d !== 'loading') features = features.concat(d[name]);
   });
   return { type: 'FeatureCollection', features: features };
 }
@@ -1706,6 +1635,7 @@ function toggleParking(on) {
     closeParkingPanel();
     removeParkingLayers();
     parkingSel = null;
+    parkingNote = '';
     clearInterval(parkingTimer);
     return;
   }
@@ -1770,14 +1700,16 @@ function parkingBoroughAt(lng, lat) {
 function parkingFromPostcode() {
   var p = pendingPlace;
   toggleParking(true);
-  (parkingLoading || Promise.resolve()).then(function() {
+  loadParkingData().then(function() {
+    if (!parkingOn) return;
     if (p && p.lat && parkingBoroughAt(p.lng, p.lat)) {
-      map.flyTo({ center: [p.lng, p.lat], zoom: 16, padding: parkingMapPadding() });
+      map.flyTo({ center: [p.lng, p.lat], zoom: 16, offset: paddingOffset(parkingMapPadding()) });
     } else {
       map.fitBounds(PARKING_COVER, { padding: parkingMapPadding() });
-      parkingNotice('No parking data for that place yet. The coloured areas are the boroughs covered.');
+      parkingNote = 'No parking data for that place yet. The coloured areas are the boroughs covered.';
+      renderParkingBody();
     }
-  });
+  }).catch(function() {});   // toggleParking() has already said the data couldn't be loaded
 }
 
 // Keep the place clear of the panel (desktop) or the sheet (mobile).
@@ -1933,9 +1865,7 @@ map.on('click', function(e) {
     // Inside a borough that publishes no zone boundaries: open its zone list at any zoom.
     var outline = map.queryRenderedFeatures(e.point, { layers: ['parking-borough-fill'] })[0];
     if (outline) {
-      parkingSel = { kind: 'borough', b: outline.properties.b, zone: '', rule: outline.properties.rule, lngLat: e.lngLat };
-      if (map.getLayer('parking-streets-sel')) map.setFilter('parking-streets-sel', parkingSelFilter());
-      renderParkingBody();
+      setParkingSel({ kind: 'borough', b: outline.properties.b, zone: '', rule: outline.properties.rule, lngLat: e.lngLat });
       openParkingPanel();
       if (isMobileView() && window.__parkingSheet) window.__parkingSheet.snap('half');
       parkingBody.scrollTop = 0;
@@ -1952,18 +1882,24 @@ map.on('click', function(e) {
   var street = nearestRendered(streets, e.lngLat);
   if (street) {
     var p = street.properties;
-    parkingSel = { kind: 'street', b: p.rule.split(':')[0], zone: p.zone, rule: p.rule, name: p.name, tfl: !!p.tfl, lngLat: e.lngLat };
+    setParkingSel({ kind: 'street', b: p.rule.split(':')[0], zone: p.zone, rule: p.rule, name: p.name, tfl: !!p.tfl, lngLat: e.lngLat });
   } else if (zone) {
-    parkingSel = { kind: 'zone', b: zone.properties.b, zone: zone.properties.zone, rule: zone.properties.rule, lngLat: e.lngLat };
+    setParkingSel({ kind: 'zone', b: zone.properties.b, zone: zone.properties.zone, rule: zone.properties.rule, lngLat: e.lngLat });
   } else {
     return;
   }
-  if (map.getLayer('parking-streets-sel')) map.setFilter('parking-streets-sel', parkingSelFilter());
-  renderParkingBody();
   openParkingPanel();
   if (isMobileView() && window.__parkingSheet && window.__parkingSheet.snapName() === 'peek') window.__parkingSheet.snap('compact');
   parkingBody.scrollTop = 0;
 });
+
+// Open a card (or, with null, close it): the selected street's outline and the panel follow.
+function setParkingSel(sel) {
+  parkingSel = sel;
+  if (sel) parkingNote = '';
+  if (map.getLayer('parking-streets-sel')) map.setFilter('parking-streets-sel', parkingSelFilter());
+  renderParkingBody();
+}
 
 // Of the street pieces under a tap, the one whose line passes closest to it.
 function nearestRendered(features, lngLat) {
@@ -1992,23 +1928,17 @@ function segDist(p, a, b) {
   map.on('mouseleave', id, function() { map.getCanvas().style.cursor = ''; });
 });
 
-function metresBetween(a, b) {
-  var R = 6371000, toRad = Math.PI / 180;
-  var dLat = (b[1] - a[1]) * toRad, dLng = (b[0] - a[0]) * toRad;
-  var h = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(a[1] * toRad) * Math.cos(b[1] * toRad) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
-  return 2 * R * Math.asin(Math.sqrt(h));
-}
-
 function parkingMachines(b) {
   var d = parkingDetail[b];
-  return d && d !== 'loading' ? d.machines.features : [];
+  return d && d !== 'loading' ? d.machines : [];
 }
 
 function nearestMachines(b, lngLat, max, within) {
-  var here = [lngLat.lng, lngLat.lat];
   return parkingMachines(b)
-    .map(function(f) { return { p: f.properties, d: metresBetween(here, f.geometry.coordinates) }; })
+    .map(function(f) {
+      var c = f.geometry.coordinates;
+      return { p: f.properties, d: haversineMetres(lngLat.lat, lngLat.lng, c[1], c[0]) };
+    })
     .filter(function(m) { return m.d <= within; })
     .sort(function(a, b) { return a.d - b.d; })
     .slice(0, max);
@@ -2033,11 +1963,6 @@ function parkingMessage(kind, text) {
   parkingBody.appendChild(pkEl('div', 'fuel-msg fuel-msg--' + kind, text));
 }
 
-function parkingNotice(text) {
-  var n = pkEl('div', 'fuel-msg fuel-msg--warn', text);
-  parkingBody.insertBefore(n, parkingBody.firstChild);
-}
-
 // The borough the panel is about: the open card's, else the one under the map centre.
 function parkingCurrentBorough() {
   if (parkingSel) return parkingSel.b;
@@ -2053,6 +1978,7 @@ function renderParkingBody() {
   parkingBody.innerHTML = '';
   if (parkingSel) parkingBody.appendChild(renderParkingCard(parkingSel));
   else {
+    if (parkingNote) parkingBody.appendChild(pkEl('div', 'fuel-msg fuel-msg--warn', parkingNote));
     var hint = pkEl('div', 'pk-hint');
     hint.appendChild(pkEl('p', '', map.getZoom() < PARKING_STREET_ZOOM
       ? 'Tap a zone to zoom in, then tap a street to see its rules.'
@@ -2081,6 +2007,22 @@ function parkingRow(parent, label, value) {
   parent.appendChild(r);
 }
 
+// A card's title, subtitle and close button.
+function parkingCardHead(title, sub) {
+  var head = pkEl('div', 'pk-card-head');
+  var titles = pkEl('div', 'pk-card-titles');
+  titles.appendChild(pkEl('div', 'pk-card-title', title));
+  titles.appendChild(pkEl('div', 'pk-card-sub', sub));
+  head.appendChild(titles);
+  var close = pkEl('button', 'pk-card-close');
+  close.type = 'button';
+  close.setAttribute('aria-label', 'Close card');
+  close.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+  close.addEventListener('click', function() { setParkingSel(null); });
+  head.appendChild(close);
+  return head;
+}
+
 function renderParkingCard(sel) {
   var borough = parkingRules.boroughs[sel.b] || {};
   if (sel.kind === 'borough') return renderBoroughCard(sel, borough);
@@ -2089,24 +2031,9 @@ function renderParkingCard(sel) {
   var special = rule.streets ? rule : null;
   var card = pkEl('div', 'pk-card');
 
-  var head = pkEl('div', 'pk-card-head');
-  var titles = pkEl('div', 'pk-card-titles');
-  titles.appendChild(pkEl('div', 'pk-card-title', sel.kind === 'zone' ? 'Zone ' + sel.zone : (sel.name || 'Unnamed street')));
   var sub = (sel.kind === 'zone' ? 'Controlled parking zone' : 'Zone ' + sel.zone + (special ? ' · ' + special.name : ''))
     + (borough.name ? ' · ' + borough.name : '');
-  titles.appendChild(pkEl('div', 'pk-card-sub', sub));
-  head.appendChild(titles);
-  var close = pkEl('button', 'pk-card-close');
-  close.type = 'button';
-  close.setAttribute('aria-label', 'Close card');
-  close.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>';
-  close.addEventListener('click', function() {
-    parkingSel = null;
-    if (map.getLayer('parking-streets-sel')) map.setFilter('parking-streets-sel', parkingSelFilter());
-    renderParkingBody();
-  });
-  head.appendChild(close);
-  card.appendChild(head);
+  card.appendChild(parkingCardHead(sel.kind === 'zone' ? 'Zone ' + sel.zone : (sel.name || 'Unnamed street'), sub));
 
   if (sel.tfl) {
     card.appendChild(pkEl('div', 'pk-pill pk-pill--tfl', 'TfL red route'));
@@ -2194,18 +2121,7 @@ function renderParkingCard(sel) {
 // A borough with no zone boundaries: its council's zone list, each with a status pill.
 function renderBoroughCard(sel, borough) {
   var card = pkEl('div', 'pk-card');
-  var head = pkEl('div', 'pk-card-head');
-  var titles = pkEl('div', 'pk-card-titles');
-  titles.appendChild(pkEl('div', 'pk-card-title', borough.name));
-  titles.appendChild(pkEl('div', 'pk-card-sub', borough.partial ? 'Not every zone is drawn' : 'No zone boundaries published'));
-  head.appendChild(titles);
-  var close = pkEl('button', 'pk-card-close');
-  close.type = 'button';
-  close.setAttribute('aria-label', 'Close card');
-  close.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>';
-  close.addEventListener('click', function() { parkingSel = null; renderParkingBody(); });
-  head.appendChild(close);
-  card.appendChild(head);
+  card.appendChild(parkingCardHead(borough.name, borough.partial ? 'Not every zone is drawn' : 'No zone boundaries published'));
   if (borough.notes) card.appendChild(pkEl('p', 'pk-note', borough.notes));
   var keys = Object.keys(parkingRules.rules).filter(function(k) { return parkingRules.rules[k].borough === sel.b; })
     .sort(function(a, b) { return parkingRules.rules[a].zone.localeCompare(parkingRules.rules[b].zone, 'en', { numeric: true }); });
@@ -2299,9 +2215,10 @@ function renderParkingCharges(borough) {
 }
 
 // Load borough detail as the map moves; the hint and borough name follow the view.
-map.on('moveend', function() {
+map.on('moveend', function(e) {
   if (!parkingOn || !parkingRules) return;
   loadParkingDetail();
+  if (e && e.originalEvent) parkingNote = '';   // the user moved the map themselves: the note has been seen
   if (!parkingSel) renderParkingBody();
 });
 /* ===== END PARKING ===== */
@@ -2326,7 +2243,6 @@ function setStatus(msg, isError) {
 // fragment when it relaunches a purged tab, so we also mirror the active view into
 // localStorage and restore from it on cold start when the hash is absent.
 var LAST_VIEW_KEY = 'ldnmap:lastView';
-var LAST_VIEW_TTL = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 // Snapshot of the active travel view, or null when not in a shareable state.
 function currentViewState() {
@@ -2386,7 +2302,7 @@ function readLastView() {
     var raw = localStorage.getItem(LAST_VIEW_KEY);
     if (!raw) return null;
     var entry = JSON.parse(raw);
-    if (!entry || !entry.v || (Date.now() - entry.ts) > LAST_VIEW_TTL) return null;
+    if (!entry || !entry.v || (Date.now() - entry.ts) > CACHE_TTL) return null;
     var v = entry.v;
     if (!isFinite(v.lat) || !isFinite(v.lng)) return null;
     var mode = (v.mode === 'walking' || v.mode === 'cycling' || v.mode === 'driving') ? v.mode : 'walking';
@@ -2412,29 +2328,35 @@ function restoreFromPermalink() {
 
 function shareLink() {
   updatePermalink();
-  var url = location.href;
-  var btn = document.getElementById('share-btn');
-  function feedback() {
-    if (!btn) return;
-    btn.classList.add('share-btn--copied');
-    setTimeout(function() { if (btn) btn.classList.remove('share-btn--copied'); }, 1800);
+  copyText(location.href, function() {
+    flashCopied(document.getElementById('share-btn'), 'share-btn--copied');
+  });
+}
+
+// Copy text, then call done(). Where the clipboard API is missing (an http page, an older
+// browser) or refuses, a hidden textarea and execCommand do the job.
+function copyText(text, done) {
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+    done();
   }
   if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(url).then(feedback).catch(function() { fallbackCopy(url, feedback); });
+    navigator.clipboard.writeText(text).then(done).catch(fallback);
   } else {
-    fallbackCopy(url, feedback);
+    fallback();
   }
 }
 
-function fallbackCopy(text, done) {
-  var ta = document.createElement('textarea');
-  ta.value = text;
-  ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
-  document.body.appendChild(ta);
-  ta.select();
-  try { document.execCommand('copy'); } catch (e) {}
-  document.body.removeChild(ta);
-  if (done) done();
+// Tint a button for a moment to confirm the copy.
+function flashCopied(btn, cls) {
+  btn.classList.add(cls);
+  setTimeout(function() { btn.classList.remove(cls); }, 1800);
 }
 
 // Startup restore — run once after the map and all functions are ready.
