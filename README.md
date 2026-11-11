@@ -10,7 +10,7 @@ A travel-time visualisation tool for London. Pick a point on the map and instant
 - Location search with Mapbox Search Box (suggest + retrieve flow)
 - Postcode boundary lookup via Ordnance Survey NGD API
 - Fuel prices (optional): from a postcode card, the travel card, or **Fuel prices near me** on the search screen; the cheapest stations appear in a list and on the map
-- Parking (Hammersmith & Fulham): the **P** button colours controlled parking zones and streets red (controlled), green (free) or purple (permit holders only) at any day and time, and tapping a street shows its hours, max stay, yellow-line rules, nearby ticket machines and charges
+- Parking (every London borough and the City): the **P** button colours controlled parking zones and streets red (controlled), green (free), purple (permit holders only) or grey (hours not readable) at any day and time, and tapping a street shows its hours, max stay, yellow-line rules, nearby ticket machines and charges. Coverage and sources are in `data/parking/README.md`
 - Light / dark theme toggle
 - Responsive layout: side panel on desktop, bottom sheet on mobile
 
@@ -26,6 +26,8 @@ Static site — no framework, no bundler, no build step for the page itself.
 | `parking-rules.js` | Parking status logic (`isControlled`), loaded before `app.js` and unit-tested |
 | `data/parking/` | Static parking data for the parking layer (see its README) |
 | `functions/api/fuel.js` | Cloudflare Pages Function behind the fuel price lookup (no dependencies) |
+| `tools/` | Scripts that build `data/parking/` (run by hand, not deployed) |
+| `tests/` | `npm test`: the page's logic in a stand-in browser, the function, the parking rules and data |
 
 Built on **Mapbox GL JS** for the map, tiles, isochrones, and geocoding.
 
@@ -38,7 +40,7 @@ python3 -m http.server
 
 ## Deploy
 
-Cloudflare Pages via GitHub Actions. Tokens are injected at build time from repository secrets.
+Cloudflare Pages via GitHub Actions. The workflow runs the tests, then publishes only the page's own files (`index.html`, `style.css`, `app.js`, `parking-rules.js`, `data/`) with the tokens injected from repository secrets.
 
 - `main` branch &rarr; production
 - `dev` branch &rarr; preview
@@ -58,6 +60,6 @@ Set these in Cloudflare Pages → ldnmap → Settings → Variables and Secrets,
 The function caps locations at 60 characters and rate-limits each IP to 30 lookups a minute per isolate.
 
 ```bash
-npm test                       # function tests, no network
+npm test                       # every test, no install and no network
 npx wrangler pages dev . --binding FUEL_ENABLED=true   # runs the function locally
 ```

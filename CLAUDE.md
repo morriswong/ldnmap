@@ -8,19 +8,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture
 
-Three files, all served statically:
+Four files plus `data/`, all served statically:
 
 - **`index.html`** — HTML structure, CDN links, `<link>` to `style.css`, `<script src="app.js">` at bottom of `<body>`
 - **`style.css`** — all CSS: `:root` variables, layout, responsive rules, theme, glass effects
 - **`app.js`** — all JavaScript: map init, isochrone logic, search, UI state, event handlers
+- **`parking-rules.js`** — the parking status logic, a plain script loaded before `app.js`
+- **`data/parking/`** — the parking layer's data, built by `tools/build_parking.py`
 
 Key subsystems in `app.js`:
 
 - **Map layer**: Mapbox GL JS **v2.15.0** (CDN). Vector tile rendering via WebGL. Map style URLs use `mapbox://styles/mapbox/streets-v12` (light) and `mapbox://styles/mapbox/dark-v11` (dark). Style is swapped on theme toggle via `map.setStyle()` + `rehydrateLayers()`.
 - **Isochrones**: Mapbox Isochrone API (`/isochrone/v1/mapbox/<profile>/...`). Profiles: `walking`, `cycling`, `driving-traffic` (mapped from `driving`). Always requests four contours at `[5, 10, 15, 20]` minutes, colours hard-coded in `COLORS`. Each contour is added as a Mapbox GL JS source+layer pair via `addIsoLayer()`.
-- **Search**: Mapbox Search Box API — two-step `suggest` → `retrieve` flow, gated by a `sessionToken` (rotated after each successful retrieve, per Mapbox billing model). UK-biased (`country=gb`, `proximity` set to default centre).
+- **Search**: Mapbox Search Box API — two-step `suggest` → `retrieve` flow, gated by a `sessionToken` (rotated after each successful retrieve, per Mapbox billing model). UK-biased (`country=gb`, `proximity` set to the map centre).
 - **Postcode**: Ordnance Survey NGD API fetches a GeoJSON polygon for a UK postcode. Rendered as a Mapbox GL JS fill + line layer pair. Results are cached in `localStorage` for 30 days.
-- **Theme**: `body.light` class toggles a CSS-variable palette defined in `:root` (dark defaults) and `body.light` (light overrides) in `style.css`. Initial render: dark panel CSS + light map. After first toggle they sync: dark+dark ↔ light+light.
+- **Theme**: `body.light` class toggles a CSS-variable palette defined in `:root` (dark defaults) and `body.light` (light overrides) in `style.css`. The page starts light (`<body class="light">`, light map) and `toggleTheme()` switches panel and map together. The theme button shows the theme a tap switches to (moon in light mode, sun in dark).
 - **State machine**: `appState` is a string variable (`idle`, `search`, `modepicker`, `travel`) managed by `setState()`. `document.body.dataset.state` is set to match, which CSS uses to show/hide panels via `body[data-state="X"]` selectors.
 - **Travel slots**: Four clickable cards (5/10/15/20 min). `selectedMin` tracks which is active. Each card has `--slot-color` as an inline CSS custom property; the left border uses this for color. Active state: glow `box-shadow`. Inactive slots dim to 40% opacity.
 - **Responsive**: `@media (max-width: 768px)` rules in `style.css` switch the panel from a left-side sheet to a bottom sheet on mobile. Search uses a full-screen overlay on mobile (not inline) to avoid iOS keyboard viewport arithmetic.
@@ -28,7 +30,12 @@ Key subsystems in `app.js`:
 
 - **Parking** (`PARKING` section): the P button under the zoom buttons (a custom control) or the postcode card's P button turns the layer on; the panel's close button turns it off. The first time, it fetches `data/parking/rules.json` and `zones.geojson`; a borough's `streets`/`kerb`/`machines` files load when the map is over it at zoom ≥ 14.5 (`loadParkingDetail()` on `moveend`). All of it is built by `tools/build_parking.py` from `tools/parking_sources.json` (per-borough polygon service + the council's hours wording, parsed by `tools/parking_hours.py`; see `data/parking/README.md`). Sources `parking-zones`, `parking-zone-labels`, `parking-streets`, `parking-kerb`, `parking-machines`; layers `parking-zones-fill`, `parking-zones-line`, `parking-zones-label`, `parking-streets` (+ `parking-streets-sel` outline, minzoom 15), `parking-kerb-bay`/`-single`/`-double` (minzoom 16) and `parking-machines` (minzoom 15), re-added in `rehydrateLayers()`. Zones and streets are coloured by `isControlled(ruleKey, day, minutes, eventDay)` → `'ctrl' | 'free' | 'permit' | 'unknown'` at the day/time in the panel (London time; "Now" follows the clock); rule keys are `<borough>:<zone>`, and `unknown` (grey) means the council's hours couldn't be parsed, never a guess. Boroughs with no published zone boundaries (`listOnly`) are drawn as a dashed outline (`parking-borough-fill`/`-outline`); tapping one opens a card listing the council's zones and hours. That function lives in **`parking-rules.js`**, a plain script loaded before `app.js` so `tests/parking.test.mjs` can run it in Node. Below zoom 15 a tap on a zone zooms in; at street level a tap opens a street or zone card in the panel (a draggable sheet on mobile via `makeSnapSheet()`). Opening fuel prices turns parking off and vice versa, since the panels share a spot.
 
-State is held in plain script-level variables: `mode`, `center`, `marker`, `isoLayers`, `isDark`, `selectedMin`, `postcodeLayer`, `pendingPlace`, `postcodeChipVisible`, `lastSearchQuery`, `appState`. No framework, no module system. `app.js` must load synchronously at the bottom of `<body>` (no `defer`/`async`/`type="module"`) because it queries the DOM immediately and inline `onclick` handlers reference its global functions.
+State is held in plain script-level variables: `mode`, `center`, `marker`, `isoLayers`, `isDark`, `selectedMin`, `postcodeLayer`, `pendingPlace`, `postcodeChipVisible`, `lastSearchQuery`, `lastRunArgs`, `appState`. No framework, no module system. `app.js` must load synchronously at the bottom of `<body>` (no `defer`/`async`/`type="module"`) because it queries the DOM immediately and inline `onclick` handlers reference its global functions.
+
+Two conventions hold the state together:
+
+- **The newest request wins.** Every lookup that can be overtaken takes a number from a counter when it starts (`runSeq` for isochrones and stations, `postcodeSeq` for boundaries, `fuelSeq`, `suggestSeq`) and stops when it comes back to find the counter has moved on. Anything that makes an answer unwanted (another search, a closed card) moves the counter. A new async lookup needs the same guard.
+- **One way out of the travel view.** `clearTravel()` removes the isochrones, stations and bucket, cancels a run in flight and empties `lastRunArgs` (which doubles as "a travel view is showing"). Closing the card, going back, and picking another place (`goToPlace()` / `goToPostcode()`) all go through it; don't remove those layers piecemeal.
 
 ## Token injection (important)
 
@@ -36,7 +43,7 @@ State is held in plain script-level variables: `mode`, `center`, `marker`, `isoL
 
 ## Deploy
 
-Pushing to `main` or `dev` triggers `.github/workflows/deploy.yml`, which injects tokens into `app.js` and deploys to Cloudflare Pages (project: `ldnmap`, account `a30a1eec7f8eb1e19439a3bc00d47beb`).
+Pushing to `main` or `dev` triggers `.github/workflows/deploy.yml`, which runs `npm test`, copies the site's files (`index.html`, `style.css`, `app.js`, `parking-rules.js`, `data/`) into `site/`, injects tokens into `site/app.js` and deploys that folder to Cloudflare Pages (project: `ldnmap`, account `a30a1eec7f8eb1e19439a3bc00d47beb`). A new top-level file the page needs must be added to the workflow's copy step.
 
 - `main` → production at `ldnmap.pages.dev`
 - `dev` → preview at `dev.ldnmap.pages.dev`
@@ -45,7 +52,13 @@ Pushing to `main` or `dev` triggers `.github/workflows/deploy.yml`, which inject
 
 ## Local development
 
-No tooling. Serve with `python3 -m http.server` (needed for cross-file loading) after substituting real tokens in `app.js` for `__MAPBOX_TOKEN__` and `__OS_TOKEN__`. There are no tests, lints, or type checks.
+No build tooling. Serve with `python3 -m http.server` (needed for cross-file loading) after substituting real tokens in `app.js` for `__MAPBOX_TOKEN__` and `__OS_TOKEN__`.
+
+`npm test` runs everything, with no install step and no network:
+
+- `tests/app.test.mjs` runs `app.js` in a stand-in browser (`tests/helpers/browser-stub.mjs`: a small DOM, a Mapbox stub that throws on a duplicate source or layer like the real one, and a fake `fetch` whose answers a test can hold back). It checks state and map layers, including late and out-of-order answers. It can't see layout, so visual changes still need the workflow below.
+- `tests/fuel.test.mjs` tests the Pages Function; `tests/parking.test.mjs` tests `parking-rules.js` and the data files.
+- `python3 tools/parking_hours.py` self-tests the hours parser.
 
 ---
 
@@ -81,8 +94,9 @@ Always assign new Linear tickets for this repo to the `ldnmap` project (project 
 
 ### Style reload and layer rehydration
 
-- `map.setStyle()` destroys **all** sources and layers. After calling it, you must call `rehydrateLayers()` inside a `style.load` listener to re-add any GeoJSON sources/layers.
-- `whenStyleReady(fn)` is the helper for this: it calls `fn()` immediately if `map.isStyleLoaded()`, otherwise defers via `map.once('style.load', fn)`. Always use this when adding sources or layers.
+- `map.setStyle()` destroys **all** sources and layers. One permanent `style.load` listener calls `rehydrateLayers()` to re-add ours, so a new GeoJSON source/layer must be added there too. It must stay safe to run twice: each add function removes what it is about to add.
+- `whenStyleReady(fn)` is the helper for adding sources or layers: it calls `fn()` immediately if `map.isStyleLoaded()`, otherwise on the first of `style.load` or `idle`. Always use it.
+- **Never pass `padding` to `flyTo`/`easeTo`/`jumpTo`.** It stays on the map and shifts every later move. Use `offset: paddingOffset(pad)`. `fitBounds` is fine: its padding only applies to that fit (and must go through `fitPadding()`, which keeps it smaller than the map).
 - `style.load` is the correct event in v2 for both initial load and `setStyle()` reloads. Do not use `styledata` or poll `isStyleLoaded()` in a loop.
 
 ### Marker

@@ -13,15 +13,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Nothing is deployed unless the tests pass. They need no install step.
+      - name: Test
+        run: npm test
+
+      # Only the page's own files are published, not tools/, tests/ or the docs. functions/ is
+      # compiled by wrangler from the repository root and is never uploaded as static files.
+      - name: Assemble the site
+        run: |
+          mkdir site
+          cp index.html style.css app.js parking-rules.js site/
+          cp -r data site/data
+
       - name: Inject Mapbox token
-        run: sed -i 's/__MAPBOX_TOKEN__/${{ secrets.MAPBOX_TOKEN }}/g' app.js
+        run: sed -i 's/__MAPBOX_TOKEN__/${{ secrets.MAPBOX_TOKEN }}/g' site/app.js
 
       - name: Inject OS token
-        run: sed -i 's/__OS_TOKEN__/${{ secrets.OS_TOKEN }}/g' app.js
+        run: sed -i 's/__OS_TOKEN__/${{ secrets.OS_TOKEN }}/g' site/app.js
 
       # The fuel lookup's server URL and key live in repo secrets and are copied into the
       # Pages project's environment for this branch (dev -> Preview, main -> Production).
-      # Skipped until FUEL_MCP_TOKEN is set. The null entries remove the old chat's settings.
+      # Skipped until FUEL_MCP_TOKEN is set.
       - name: Configure fuel prices
         env:
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -33,9 +45,7 @@ jobs:
           jq -n '{deployment_configs: {(env.PAGES_ENV): {env_vars: {
             FUEL_ENABLED: {type: "plain_text", value: "true"},
             FUEL_MCP_URL: {type: "plain_text", value: env.FUEL_MCP_URL},
-            FUEL_MCP_TOKEN: {type: "secret_text", value: env.FUEL_MCP_TOKEN},
-            CHAT_ENABLED: null,
-            ANTHROPIC_API_KEY: null
+            FUEL_MCP_TOKEN: {type: "secret_text", value: env.FUEL_MCP_TOKEN}
           }}}}' > body.json
           curl -sf -X PATCH -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json" \
             --data @body.json \
@@ -48,4 +58,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: a30a1eec7f8eb1e19439a3bc00d47beb
-          command: pages deploy . --project-name=ldnmap --branch=${{ github.ref_name }}
+          command: pages deploy site --project-name=ldnmap --branch=${{ github.ref_name }}
