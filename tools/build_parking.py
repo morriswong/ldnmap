@@ -566,7 +566,8 @@ def build_rules(bid, b, zone_info):
             if periods is None:
                 log(f'  {bid}:{code}: could not read hours {hours!r}; shown as unknown')
         rule = {'borough': bid, 'zone': code, 'hours': hours, 'periods': periods}
-        for k in ('maxStay', 'pdf', 'note', 'permit', 'permitOnly', 'event', 'url', 'name', 'unsure'):
+        for k in ('maxStay', 'pdf', 'note', 'permit', 'permitOnly', 'event', 'url', 'name', 'unsure',
+                  'bankHolidays', 'bankHolidayExcept', 'price', 'payCode'):
             if z.get(k) not in (None, ''):
                 rule[k] = z[k]
         if rule.get('event') and 'periods' not in rule['event']:
@@ -576,7 +577,7 @@ def build_rules(bid, b, zone_info):
         periods = s['periods'] if 'periods' in s else parse_hours(s['hours'])
         rule = {'borough': bid, 'zone': s['zone'], 'name': s['name'], 'streets': s['streets'],
                 'hours': s['hours'], 'periods': periods}
-        for k in ('maxStay', 'note', 'permit', 'permitOnly', 'pdf'):
+        for k in ('maxStay', 'note', 'permit', 'permitOnly', 'pdf', 'bankHolidays', 'bankHolidayExcept', 'price', 'payCode'):
             if s.get(k) not in (None, ''):
                 rule[k] = s[k]
         rules[f'{bid}:{key}'] = rule
@@ -699,7 +700,7 @@ def borough_boundary(name):
 # ---------------------------------------------------------------------------
 
 ENTRY_KEYS = ('name', 'short', 'hoursUrl', 'checked', 'eventDaysUrl', 'bankHolidayUrl',
-              'mapPdf', 'yellowLines', 'charges', 'notes', 'licence')
+              'mapPdf', 'yellowLines', 'charges', 'notes', 'licence', 'bankHolidays', 'maxStayDefault')
 
 
 def borough_entry(b, bounds, **extra):
@@ -727,6 +728,8 @@ def main(argv):
     rules_path = os.path.join(OUT, 'rules.json')
     zones_path = os.path.join(OUT, 'zones.geojson')
     old_rules = json.load(open(rules_path)) if os.path.exists(rules_path) and argv else {'boroughs': {}, 'rules': {}}
+    if not argv and os.path.exists(rules_path):
+        old_rules['bankHolidays'] = json.load(open(rules_path)).get('bankHolidays', [])
     old_zones = json.load(open(zones_path))['features'] if os.path.exists(zones_path) and argv else []
     all_rules = {k: v for k, v in old_rules.get('rules', {}).items() if v['borough'] not in wanted}
     all_boroughs = {k: v for k, v in old_rules.get('boroughs', {}).items() if k not in wanted}
@@ -784,6 +787,7 @@ def main(argv):
                 entry['detail'] = True
 
     rules_out = {'checked': max(b.get('checked', '') for b in all_boroughs.values()),
+                 'bankHolidays': old_rules.get('bankHolidays', []),   # kept; refreshed by tools/update_bank_holidays.py
                  'boroughs': dict(sorted(all_boroughs.items())), 'rules': dict(sorted(all_rules.items()))}
     with open(rules_path, 'w') as f:
         json.dump(rules_out, f, separators=(',', ':'), ensure_ascii=False)

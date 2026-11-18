@@ -80,7 +80,11 @@
       }
      ],
      "maxStay": "2 hours",
-     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_1_d_cpz_a.pdf"
+     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_1_d_cpz_a.pdf",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "17515"
+     }
     },
     "AA": {
      "hours": "Mon–Fri 9am–5pm",
@@ -98,7 +102,11 @@
       }
      ],
      "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_27_d_cpz_aa.pdf",
-     "maxStay": "8 hours"
+     "maxStay": "8 hours",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "17712"
+     }
     },
     "B": {
      "hours": "Mon–Sun 8:30am–11pm",
@@ -118,7 +126,11 @@
       }
      ],
      "maxStay": "90 minutes",
-     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-03/88632_46_2_c_cpz-b.pdf"
+     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-03/88632_46_2_c_cpz-b.pdf",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "17710"
+     }
     },
     "C": {
      "hours": "Mon–Sun 8:30am–11pm",
@@ -138,7 +150,11 @@
       }
      ],
      "maxStay": "90 minutes",
-     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-03/88632_46_3_c_cpz-c.pdf"
+     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-03/88632_46_3_c_cpz-c.pdf",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "17731"
+     }
     },
     "D": {
      "hours": "Mon–Sun 8:30am–10pm",
@@ -159,7 +175,11 @@
      ],
      "maxStay": "1 hour",
      "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_4_d_cpz_d.pdf",
-     "note": "Includes Beaumont Crescent and Beaumont Avenue. D (East) is Mon–Fri 9am–5pm and isn’t marked separately on this map."
+     "note": "Includes Beaumont Crescent and Beaumont Avenue. D (East) is Mon–Fri 9am–5pm and isn’t marked separately on this map.",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "57754"
+     }
     },
     "E": {
      "hours": "Mon–Sun 8:30am–11pm",
@@ -179,7 +199,11 @@
       }
      ],
      "maxStay": "90 minutes",
-     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-03/88632_46_5_c_cpz-e.pdf"
+     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-03/88632_46_5_c_cpz-e.pdf",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "17500"
+     }
     },
     "F": {
      "hours": "Mon–Sun 8:30am–10pm",
@@ -200,7 +224,11 @@
      ],
      "maxStay": "2 hours",
      "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-03/88632_46_6_c_cpz-f.pdf",
-     "note": "Some bays are for permit holders only at certain times. Check the signs."
+     "note": "Some bays are for permit holders only at certain times. Check the signs.",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "17501"
+     }
     },
     "G": {
      "hours": "Mon–Sun 9am–10pm, including bank holidays except Christmas Day and Easter Sunday. Permit holders only 6:30pm–8pm.",
@@ -235,6 +263,14 @@
        "from": "18:30",
        "to": "20:00"
       }
+     ],
+     "payCode": {
+      "provider": "RingGo",
+      "code": "17726"
+     },
+     "bankHolidays": "charged",
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "H": {
@@ -256,7 +292,11 @@
      ],
      "maxStay": "2 hours",
      "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-11/zone-h-tm-map-updated-nov-26.pdf",
-     "note": "Extended from Mon–Fri 9am–5pm on 11 November 2026, single yellow lines included (traffic order: https://www.thegazette.co.uk/notice/5245983)."
+     "note": "Extended from Mon–Fri 9am–5pm on 11 November 2026, single yellow lines included (traffic order: https://www.thegazette.co.uk/notice/5245983).",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "17714"
+     }
     },
     "I": {
      "hours": "Mon–Fri 9am–5pm",
@@ -274,7 +314,11 @@
       }
      ],
      "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_9_d_cpz_i.pdf",
-     "maxStay": "8 hours"
+     "maxStay": "8 hours",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "17717"
+     }
     },
     "J": {
      "hours": "Mon–Fri 9am–5pm",
@@ -292,7 +336,11 @@
       }
      ],
      "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_10_d_cpz_j.pdf",
-     "maxStay": "8 hours"
+     "maxStay": "8 hours",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "17711"
+     }
     },
     "JJ": {
      "hours": "Mon–Sun 9am–9pm",
@@ -312,7 +360,11 @@
       }
      ],
      "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_10_d_cpz_j.pdf",
-     "maxStay": "8 hours"
+     "maxStay": "8 hours",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "17723"
+     }
     },
     "K": {
      "hours": "Mon–Fri 9am–5pm",
@@ -330,7 +382,11 @@
       }
      ],
      "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_11_d_cpz_k.pdf",
-     "maxStay": "8 hours"
+     "maxStay": "8 hours",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "17734"
+     }
     },
     "L": {
      "hours": "Mon–Fri 9am–5pm",
@@ -348,7 +404,11 @@
       }
      ],
      "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_12_d_cpz_l.pdf",
-     "maxStay": "8 hours"
+     "maxStay": "8 hours",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "17728"
+     }
     },
     "M": {
      "hours": "Mon–Fri 9am–5pm",
@@ -366,7 +426,11 @@
       }
      ],
      "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-08/zone-m-ticket-machines-map-updated-21-aug-26.pdf",
-     "maxStay": "8 hours"
+     "maxStay": "8 hours",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "17713"
+     }
     },
     "N": {
      "hours": "Mon–Fri 9am–5pm",
@@ -384,7 +448,11 @@
       }
      ],
      "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_14_d_cpz_n.pdf",
-     "maxStay": "8 hours"
+     "maxStay": "8 hours",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "17729"
+     }
     },
     "NN": {
      "hours": "Mon–Sat 9am–5pm",
@@ -403,7 +471,11 @@
       }
      ],
      "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_14_d_cpz_n.pdf",
-     "maxStay": "8 hours"
+     "maxStay": "8 hours",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "17528"
+     }
     },
     "O": {
      "hours": "Mon–Sat 9am–5pm",
@@ -422,7 +494,11 @@
       }
      ],
      "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_15_d_cpz_o.pdf",
-     "maxStay": "8 hours"
+     "maxStay": "8 hours",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "17716"
+     }
     },
     "OO": {
      "hours": "Mon–Sun 9am–10pm",
@@ -442,7 +518,11 @@
       }
      ],
      "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_15_d_cpz_o.pdf",
-     "maxStay": "8 hours"
+     "maxStay": "8 hours",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "17482"
+     }
     },
     "Q": {
      "hours": "Mon–Sat 9am–5pm",
@@ -461,7 +541,11 @@
       }
      ],
      "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_17_d_cpz_q.pdf",
-     "maxStay": "8 hours"
+     "maxStay": "8 hours",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "17719"
+     }
     },
     "QQ": {
      "hours": "Mon–Sat 9am–5pm. No pay and display: permit and visitor permit holders only.",
@@ -499,7 +583,11 @@
      ],
      "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_18_d_cpz_r.pdf",
      "note": "Since 18 November 2026, single yellow lines across zone R are controlled Mon–Sun 8:30am–10pm, longer than the bays. Shottendane, Harbledown and Elmstone Roads follow those hours too (traffic order: https://www.thegazette.co.uk/notice/5250484).",
-     "maxStay": "8 hours"
+     "maxStay": "8 hours",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "17727"
+     }
     },
     "S": {
      "hours": "Mon–Sun 8:30am–10pm",
@@ -520,7 +608,11 @@
      ],
      "maxStay": "1 hour",
      "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-03/88632_46_19_c_cpz-s.pdf",
-     "note": "Some bays are for permit holders only at certain times. Check the signs."
+     "note": "Some bays are for permit holders only at certain times. Check the signs.",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "17730"
+     }
     },
     "T": {
      "hours": "Mon–Fri 9am–5pm",
@@ -557,7 +649,11 @@
       ],
       "maxStay": "2 hours"
      },
-     "maxStay": "8 hours"
+     "maxStay": "8 hours",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "17722"
+     }
     },
     "U": {
      "hours": "Mon–Sat 9am–5pm",
@@ -576,7 +672,11 @@
       }
      ],
      "pdf": "https://www.lbhf.gov.uk/sites/default/files/section_attachments/ticket_machine_locations_cpz_u.pdf",
-     "maxStay": "8 hours"
+     "maxStay": "8 hours",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "17503"
+     }
     },
     "V": {
      "hours": "Mon–Fri 9am–5pm",
@@ -594,7 +694,11 @@
       }
      ],
      "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_22_d_cpz_v.pdf",
-     "maxStay": "8 hours"
+     "maxStay": "8 hours",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "17735"
+     }
     },
     "VV": {
      "hours": "Mon–Fri 9am–5pm. No pay and display: permit and visitor permit holders only.",
@@ -630,7 +734,11 @@
       }
      ],
      "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_23_d_cpz_w.pdf",
-     "maxStay": "8 hours"
+     "maxStay": "8 hours",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "17736"
+     }
     },
     "X": {
      "hours": "Mon–Sat 9am–5pm",
@@ -668,7 +776,11 @@
       ],
       "maxStay": "1 hour"
      },
-     "maxStay": "8 hours"
+     "maxStay": "8 hours",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "17511"
+     }
     },
     "Y": {
      "hours": "Mon–Sat 9am–5pm",
@@ -706,7 +818,11 @@
       ],
       "maxStay": "1 hour"
      },
-     "maxStay": "8 hours"
+     "maxStay": "8 hours",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "17505"
+     }
     },
     "Z": {
      "hours": "Mon–Sat 9am–5pm",
@@ -725,7 +841,11 @@
       }
      ],
      "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-03/88632_46_26_c_cpz-z.pdf",
-     "maxStay": "8 hours"
+     "maxStay": "8 hours",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "17509"
+     }
     }
    },
    "specialStreets": {
@@ -774,7 +894,15 @@
       }
      ],
      "maxStay": "2 hours (pay and display bays)",
-     "note": "Blue Badge holders can’t park in the permit bays in Macfarlane Road and Hopgood Street without a zone G visitor permit."
+     "note": "Blue Badge holders can’t park in the permit bays in Macfarlane Road and Hopgood Street without a zone G visitor permit.",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "17488"
+     },
+     "bankHolidays": "charged",
+     "bankHolidayExcept": [
+      "12-25"
+     ]
     },
     "K-Richford": {
      "zone": "K",
@@ -828,7 +956,11 @@
       }
      ],
      "maxStay": "2 hours",
-     "note": "Rivercourt Road and Weltje Road north of the Great West Road only."
+     "note": "Rivercourt Road and Weltje Road north of the Great West Road only.",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "57766"
+     }
     },
     "H-long": {
      "zone": "H",
@@ -855,7 +987,11 @@
       }
      ],
      "maxStay": "6 hours in the new pay and display bays on parts of these roads; 2 hours in other bays",
-     "note": "Parts of these roads have pay and display bays with a 6-hour limit, and there are zone H permit-holder bays outside 60–118 St Dunstan’s Road (from 11 November 2026; traffic order: https://www.thegazette.co.uk/notice/5245983). Check the bay’s sign."
+     "note": "Parts of these roads have pay and display bays with a 6-hour limit, and there are zone H permit-holder bays outside 60–118 St Dunstan’s Road (from 11 November 2026; traffic order: https://www.thegazette.co.uk/notice/5245983). Check the bay’s sign.",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "17706"
+     }
     },
     "R-ext": {
      "zone": "R",
@@ -882,11 +1018,55 @@
       }
      ],
      "maxStay": "2 hours (resident and business visitor permits exempt)",
-     "note": "Extended from the rest of zone R’s Mon–Sat 9am–5pm on 18 November 2026 (traffic order: https://www.thegazette.co.uk/notice/5250484). Zone R permit holders can still park here."
+     "note": "Extended from the rest of zone R’s Mon–Sat 9am–5pm on 18 November 2026 (traffic order: https://www.thegazette.co.uk/notice/5250484). Zone R permit holders can still park here.",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "57769"
+     }
     }
    },
    "streetHook": "hf_river",
-   "licence": "Zones: LBHF. Streets, kerbs and machines: © OpenStreetMap contributors (ODbL)."
+   "licence": "Zones: LBHF. Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
+   "bankHolidays": "free",
+   "maxStayDefault": "8 hours",
+   "ringgo": {
+    "slug": "lbhf",
+    "locations": {
+     "17482": null,
+     "17488": "03 October 2025",
+     "17500": "18 June 2025",
+     "17501": null,
+     "17503": null,
+     "17505": "11 February 2026",
+     "17509": null,
+     "17511": "11 February 2026",
+     "17515": "11 September 2025",
+     "17528": null,
+     "17706": "20 October 2026",
+     "17710": "18 June 2025",
+     "17711": null,
+     "17712": null,
+     "17713": null,
+     "17714": "20 October 2026",
+     "17716": null,
+     "17717": "06 December 2024",
+     "17719": null,
+     "17722": "06 December 2024",
+     "17723": null,
+     "17726": null,
+     "17727": null,
+     "17728": null,
+     "17729": null,
+     "17730": null,
+     "17731": "18 June 2025",
+     "17734": null,
+     "17735": null,
+     "17736": null,
+     "57754": "27 January 2025",
+     "57766": "27 January 2025",
+     "57769": "27 January 2025"
+    }
+   }
   },
   "enfield": {
    "name": "Enfield",

@@ -11,7 +11,7 @@ vm.createContext(ctx);
 vm.runInContext(readFileSync(new URL('parking-rules.js', root), 'utf8'), ctx);
 const rules = JSON.parse(readFileSync(new URL('data/parking/rules.json', root), 'utf8'));
 ctx.setParkingRules(rules);
-const { isControlled, londonDayTime, parkingCost } = ctx;
+const { isControlled, londonDayTime, parkingCost, nextChange, bankHolidayOn, londonDate } = ctx;
 
 const SUN = 0, SAT = 6;
 const at = (h, m = 0) => h * 60 + m;
@@ -142,4 +142,50 @@ test('London time follows British Summer Time', () => {
 test('cost adds the surcharge per hour', () => {
   assert.equal(parkingCost(4.5, 90, false, 1), 6.75);
   assert.equal(parkingCost(4.5, 90, true, 1), 8.25);
+});
+
+const MON = 1, FRI = 5;
+
+test('bank holiday list covers this year and next', () => {
+  assert.ok(rules.bankHolidays.includes('2026-12-25'));
+  assert.ok(rules.bankHolidays.some((d) => d.startsWith('2027-')));
+  assert.equal(bankHolidayOn(new Date('2026-12-25T12:00:00Z')), '12-25');
+  assert.equal(bankHolidayOn(new Date('2026-12-23T12:00:00Z')), false);
+  assert.equal(londonDate(new Date('2026-06-30T23:30:00Z')), '2026-07-01');   // BST
+});
+
+test('H&F bank holidays: most zones free, zone G charged except Christmas Day', () => {
+  // 2026-12-25 is a Friday; 2026-12-28 (Monday) is the Boxing Day substitute.
+  assert.equal(isControlled('hf:H', FRI, at(12), false, '12-25'), 'free');
+  assert.equal(isControlled('hf:H', FRI, at(12), false, false), 'ctrl');
+  assert.equal(isControlled('hf:G', MON, at(12), false, '12-28'), 'ctrl');
+  assert.equal(isControlled('hf:G', FRI, at(12), false, '12-25'), 'free');
+  assert.equal(isControlled('hf:G', FRI, at(19), false, '12-28'), 'permit');
+  assert.equal(isControlled('hf:G-permit', MON, at(12), false, true), 'permit');
+});
+
+test('bank holiday on an event day uses event hours (hf:T)', () => {
+  assert.equal(isControlled('hf:T', MON, at(15), true, '12-28'), 'ctrl');
+  assert.equal(isControlled('hf:T', MON, at(15), false, '12-28'), 'free');
+});
+
+test('a borough with no bank holiday rules is unknown on a bank holiday, never a guess', () => {
+  const key = Object.keys(rules.rules).find((k) => {
+    const r = rules.rules[k];
+    return !rules.boroughs[r.borough].bankHolidays && !r.bankHolidays && r.periods &&
+      r.periods.some((p) => p.days.includes(MON) && p.from <= '12:00' && p.to > '12:00');
+  });
+  assert.ok(key, 'found a rule controlled on Monday noon');
+  assert.equal(isControlled(key, MON, at(12), false, false), 'ctrl');
+  assert.equal(isControlled(key, MON, at(12), false, '12-28'), 'unknown');
+  assert.equal(isControlled(key, MON, at(3), false, '12-28'), 'free');   // outside its hours anyway
+});
+
+test('nextChange: zone H is free from 10pm, then pay to park from 8:30am', () => {
+  assert.deepEqual({ ...nextChange('hf:H', SAT, at(15), false, false) }, { day: SAT, minutes: at(22), status: 'free', inDays: 0 });
+  assert.deepEqual({ ...nextChange('hf:H', SAT, at(23), false, false) }, { day: SUN, minutes: at(8, 30), status: 'ctrl', inDays: 1 });
+  // zone I (Mon–Fri 9–5) on Saturday: next paid time is Monday 9am
+  assert.deepEqual({ ...nextChange('hf:I', SAT, at(10), false, false) }, { day: MON, minutes: at(9), status: 'ctrl', inDays: 2 });
+  // a bank holiday only counts for the starting day
+  assert.deepEqual({ ...nextChange('hf:H', FRI, at(12), false, '12-25') }, { day: SAT, minutes: at(8, 30), status: 'ctrl', inDays: 1 });
 });

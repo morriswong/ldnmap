@@ -538,6 +538,7 @@
   }
   .pk-card-close svg { width: 14px; height: 14px; }
   .pk-pill { align-self: flex-start; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; color: #fff; }
+  .pk-headline { margin: 6px 0 2px; font-size: 13px; font-weight: 600; color: var(--text); }
   .pk-pill--ctrl { background: #e74c3c; } .pk-pill--free { background: #16a34a; } .pk-pill--permit { background: #8e44ad; } .pk-pill--unknown { background: #6b7280; } .pk-pill--tfl { background: #7f1d1d; }
   .pk-row { display: flex; gap: 10px; font-size: 12px; line-height: 1.4; }
   .pk-row-label { flex: 0 0 96px; color: var(--text-dim); }

@@ -1497,7 +1497,8 @@ var PARKING_COVER = [[-0.52, 51.28], [0.34, 51.70]];   // Greater London, SW and
 var PARKING_STREET_ZOOM = 15;
 var PARKING_DETAIL_ZOOM = 14.5;                        // start loading a borough's streets a little early
 var PARKING_COLORS = { ctrl: '#e74c3c', free: '#2ecc71', permit: '#8e44ad', unknown: '#9ca3af', tfl: '#7f1d1d' };
-var PARKING_PILLS = { ctrl: 'Controlled', free: 'Free', permit: 'Permit only', unknown: 'Hours unknown' };
+var PARKING_PILLS = { ctrl: 'Pay to park', free: 'Free', permit: 'Permit holders only', unknown: 'Hours unknown' };
+var PARKING_NEXT = { ctrl: 'pay to park', free: 'free', permit: 'permit holders only' };
 var PARKING_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 var PARKING_STAYS = [30, 60, 90, 120, 180, 240];
 var PARKING_YELLOW = {   // used when a borough's own wording isn't in the data
@@ -1513,6 +1514,7 @@ var parkingNote = '';          // a one-off message above the hint, until the us
 var parkingNow = true;         // follow the clock, or a day/time picked in the panel
 var parkingWhen = londonDayTime(new Date());
 var parkingEvent = false;
+var parkingBH = false;          // false, true (ticked by hand) or today's 'MM-DD' when following the clock on a bank holiday
 var parkingSel = null;         // the open card: { kind: 'zone'|'street', b, zone, rule, name, tfl, lngLat }
 var parkingTimer = null;
 
@@ -1523,6 +1525,7 @@ var parkingDay = document.getElementById('parking-day');
 var parkingTime = document.getElementById('parking-time');
 var parkingNowBtn = document.getElementById('parking-now');
 var parkingEventBox = document.getElementById('parking-event');
+var parkingBHBox = document.getElementById('parking-bh');
 var parkingCalc = { band: null, minutes: 60, surcharge: false };
 
 // The P button under the zoom buttons.
@@ -1644,7 +1647,7 @@ function toggleParking(on) {
   parkingMessage('pending', 'Loading parking zones');
   loadParkingData().then(function() {
     if (!parkingOn) return;
-    if (parkingNow) parkingWhen = londonDayTime(new Date());
+    if (parkingNow) followParkingClock();
     syncParkingWhen();
     addParkingLayers();
     loadParkingDetail();
@@ -1652,9 +1655,7 @@ function toggleParking(on) {
     clearInterval(parkingTimer);
     parkingTimer = setInterval(function() {
       if (!parkingNow) return;
-      var w = londonDayTime(new Date());
-      if (w.day === parkingWhen.day && w.minutes === parkingWhen.minutes) return;
-      parkingWhen = w;
+      if (!followParkingClock()) return;
       syncParkingWhen();
       recolourParking();
     }, 30000);
@@ -1722,12 +1723,23 @@ function parkingMapPadding() {
 }
 
 /* --- time controls --- */
+// Set the day, time and bank holiday from the clock; true when anything changed.
+function followParkingClock() {
+  var now = new Date();
+  var w = londonDayTime(now), bh = bankHolidayOn(now);
+  if (w.day === parkingWhen.day && w.minutes === parkingWhen.minutes && bh === parkingBH) return false;
+  parkingWhen = w;
+  parkingBH = bh;
+  return true;
+}
+
 function syncParkingWhen() {
   parkingDay.value = String(parkingWhen.day);
   var h = Math.floor(parkingWhen.minutes / 60), m = parkingWhen.minutes % 60;
   parkingTime.value = (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
   parkingNowBtn.setAttribute('aria-pressed', parkingNow ? 'true' : 'false');
   parkingEventBox.checked = parkingEvent;
+  parkingBHBox.checked = !!parkingBH;
 }
 
 function onParkingWhenChange() {
@@ -1741,7 +1753,14 @@ parkingDay.addEventListener('change', onParkingWhenChange);
 parkingTime.addEventListener('change', onParkingWhenChange);
 parkingNowBtn.addEventListener('click', function() {
   parkingNow = true;
-  parkingWhen = londonDayTime(new Date());
+  followParkingClock();
+  syncParkingWhen();
+  recolourParking();
+});
+parkingBHBox.addEventListener('change', function() {
+  // A "what if": stop following the clock, which would reset it.
+  parkingBH = parkingBHBox.checked;
+  parkingNow = false;
   syncParkingWhen();
   recolourParking();
 });
@@ -1751,13 +1770,69 @@ parkingEventBox.addEventListener('change', function() {
 });
 
 function parkingStatus(rule) {
-  return isControlled(rule, parkingWhen.day, parkingWhen.minutes, parkingEvent);
+  return isControlled(rule, parkingWhen.day, parkingWhen.minutes, parkingEvent, parkingBH);
 }
 
 // 'Controlled now' or 'Controlled at Sat 10:00'.
 function parkingWhenLabel() {
-  if (parkingNow) return 'now';
-  return 'at ' + PARKING_DAYS[parkingWhen.day] + ' ' + parkingTime.value;
+  var bh = parkingBH ? ' (bank holiday)' : '';
+  if (parkingNow) return 'now' + bh;
+  return 'at ' + PARKING_DAYS[parkingWhen.day] + ' ' + parkingTime.value + bh;
+}
+
+// '10pm', '8:30am', '12pm', 'midnight'.
+function parkingClock(minutes) {
+  if (minutes === 0) return 'midnight';
+  var h = Math.floor(minutes / 60), m = minutes % 60;
+  var ap = h < 12 ? 'am' : 'pm';
+  h = h % 12 || 12;
+  return h + (m ? ':' + (m < 10 ? '0' : '') + m : '') + ap;
+}
+
+// '£2.80', '£4'.
+function parkingMoney(x) {
+  return '£' + (Math.round(x * 100) % 100 ? x.toFixed(2) : String(Math.round(x)));
+}
+
+// The hourly price for a rule: its own `price`, else the borough's charges (lowest rate). '' if unknown.
+function parkingPriceLabel(rule, borough) {
+  if (rule.price && rule.price.perHour != null) return parkingMoney(rule.price.perHour) + '/hour';
+  var c = borough.charges;
+  if (!c) return '';
+  if (c.model === 'flat' && c.perHour != null) return parkingMoney(c.perHour) + '/hour';
+  var rates = [];
+  if (c.bands) rates = c.bands.map(function(b) { return b.perHour; });
+  else if (c.model === 'fuel' && c.byFuel) rates = Object.keys(c.byFuel).map(function(k) { return c.byFuel[k]; });
+  rates = rates.filter(function(x) { return typeof x === 'number'; });
+  if (!rates.length) return '';
+  var lo = Math.min.apply(null, rates), hi = Math.max.apply(null, rates);
+  return (lo === hi ? '' : 'from ') + parkingMoney(lo) + '/hour';
+}
+
+// A rule's max stay, or the borough's default ('8 hours (council default)'); '' if neither.
+function parkingMaxStay(rule, borough, usingEvent) {
+  var own = usingEvent ? rule.event.maxStay : rule.maxStay;
+  if (own) return own;
+  return borough.maxStayDefault ? borough.maxStayDefault + ' (council default)' : '';
+}
+
+// The line under a card's pill: 'Up to 2 hours · from £2.80/hour · free from 10pm'.
+function parkingHeadline(ruleKey, rule, borough, status, usingEvent) {
+  var bits = [];
+  if (status === 'ctrl') {
+    var max = parkingMaxStay(rule, borough, usingEvent).replace(/ \(council default\)$/, '');
+    if (max && max.length <= 16) bits.push('up to ' + max);
+    var price = parkingPriceLabel(rule, borough);
+    if (price) bits.push(price);
+  }
+  if (status !== 'unknown') {
+    var nx = nextChange(ruleKey, parkingWhen.day, parkingWhen.minutes, parkingEvent, parkingBH);
+    if (nx && PARKING_NEXT[nx.status]) {
+      bits.push(PARKING_NEXT[nx.status] + ' from ' + (nx.inDays ? PARKING_DAYS[nx.day] + ' ' : '') + parkingClock(nx.minutes));
+    }
+  }
+  var s = bits.join(' · ');
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
 }
 
 /* --- map layers --- */
@@ -2042,6 +2117,8 @@ function renderParkingCard(sel) {
     var status = parkingStatus(sel.rule);
     card.appendChild(pkEl('div', 'pk-pill pk-pill--' + status, PARKING_PILLS[status] + ' ' + parkingWhenLabel()));
     var usingEvent = parkingEvent && rule.event;
+    var headline = parkingHeadline(sel.rule, rule, borough, status, usingEvent);
+    if (headline) card.appendChild(pkEl('p', 'pk-headline', headline));
     parkingRow(card, usingEvent ? 'Event-day hours' : 'Hours', usingEvent ? rule.event.hours : rule.hours);
     if (rule.event && !usingEvent) parkingRow(card, 'Event days', rule.event.hours.replace(/^Event days: /, ''));
     if (rule.event && usingEvent) parkingRow(card, 'Other days', rule.hours);
@@ -2051,7 +2128,12 @@ function renderParkingCard(sel) {
       if (borough.hoursUrl) { u.appendChild(pkLink('the council’s parking page', borough.hoursUrl)); u.appendChild(document.createTextNode('.')); }
       card.appendChild(u);
     }
-    parkingRow(card, 'Max stay', (usingEvent ? rule.event.maxStay : rule.maxStay) || (rule.periods ? 'No limit listed' : ''));
+    parkingRow(card, 'Max stay', parkingMaxStay(rule, borough, usingEvent) || (rule.periods ? 'No limit listed' : ''));
+    var bhPolicy = bankHolidayPolicy(rule);
+    if (bhPolicy) parkingRow(card, 'Bank holidays', bhPolicy === 'free' ? 'Free'
+      : 'Normal hours' + (rule.bankHolidayExcept && rule.bankHolidayExcept.indexOf('12-25') !== -1 ? ', except Christmas Day' : ''));
+    var pay = rule.payCode || zoneRule.payCode;
+    if (pay && pay.code) parkingRow(card, 'Pay by ' + pay.provider, 'Location ' + pay.code);
     if (special) parkingRow(card, 'Rest of zone ' + sel.zone, zoneRule.hours);
     if (rule.note) card.appendChild(pkEl('p', 'pk-note', rule.note));
     if (rule.event && borough.eventDaysUrl) {
@@ -2157,6 +2239,28 @@ function renderParkingCharges(borough) {
   box.addEventListener('toggle', function() { parkingCalc.open = box.open; });
   box.appendChild(pkEl('summary', '', 'Charges · ' + borough.name));
   if (!c.bands || !c.bands.length) {
+    // Flat rate or by fuel type (as RingGo lists them): a small table, no band picker.
+    var rows = [];
+    if (c.model === 'flat' && c.perHour != null) rows.push(['Per hour', c.perHour]);
+    if (c.model === 'fuel' && c.byFuel) {
+      [['electric', 'Electric'], ['petrol', 'Petrol'], ['diesel', 'Diesel']].forEach(function(f) {
+        if (c.byFuel[f[0]] != null) rows.push([f[1], c.byFuel[f[0]]]);
+      });
+    }
+    var own = parkingSel && !parkingSel.tfl && (parkingRule(parkingSel.rule) || {}).price;
+    if (own && own.perHour != null) rows.unshift(['This zone', own.perHour]);
+    if (rows.length) {
+      var t = pkEl('table', 'pk-bands');
+      rows.forEach(function(r) {
+        var tr = pkEl('tr', '');
+        tr.appendChild(pkEl('td', '', r[0]));
+        tr.appendChild(pkEl('td', '', parkingMoney(r[1]) + ' an hour'));
+        t.appendChild(tr);
+      });
+      box.appendChild(t);
+    }
+    if (c.dieselPerHour) box.appendChild(pkEl('p', 'pk-small', 'Diesel: +' + parkingMoney(c.dieselPerHour) + ' an hour.'));
+    if (c.visitorFromPerHour) box.appendChild(pkEl('p', 'pk-small', 'Resident visitor permits from ' + parkingMoney(c.visitorFromPerHour) + ' an hour.'));
     if (c.note) box.appendChild(pkEl('p', 'pk-small', c.note));
     if (c.url) box.appendChild(pkLink('Council parking charges', c.url)).className = 'pk-pdf';
     return box;
@@ -2208,7 +2312,9 @@ function renderParkingCharges(borough) {
   if (borough.bankHolidayUrl) {
     var bh = pkEl('p', 'pk-small');
     bh.appendChild(pkLink('Bank holidays', borough.bankHolidayUrl));
-    bh.appendChild(document.createTextNode(': see the council’s rules.'));
+    bh.appendChild(document.createTextNode(borough.bankHolidays === 'free'
+      ? ': pay and display is free in most zones; the card says where it isn’t.'
+      : ': see the council’s rules.'));
     box.appendChild(bh);
   }
   return box;
