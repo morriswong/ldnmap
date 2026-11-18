@@ -237,21 +237,25 @@
      ]
     },
     "H": {
-     "hours": "Mon–Fri 9am–5pm",
+     "hours": "Mon–Sun 8:30am–10pm",
      "periods": [
       {
        "days": [
+        0,
         1,
         2,
         3,
         4,
-        5
+        5,
+        6
        ],
-       "from": "09:00",
-       "to": "17:00"
+       "from": "08:30",
+       "to": "22:00"
       }
      ],
-     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_8_d_cpz_h.pdf"
+     "maxStay": "2 hours",
+     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_8_d_cpz_h.pdf",
+     "note": "Extended from Mon–Fri 9am–5pm on 11 November 2026, single yellow lines included (traffic order: https://www.thegazette.co.uk/notice/5245983). The council’s zone map predates the change."
     },
     "I": {
      "hours": "Mon–Fri 9am–5pm",
@@ -481,7 +485,8 @@
        "to": "17:00"
       }
      ],
-     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_18_d_cpz_r.pdf"
+     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_18_d_cpz_r.pdf",
+     "note": "Since 18 November 2026, single yellow lines across zone R are controlled Mon–Sun 8:30am–10pm, longer than the bays. Shottendane, Harbledown and Elmstone Roads follow those hours too (traffic order: https://www.thegazette.co.uk/notice/5250484)."
     },
     "S": {
      "hours": "Mon–Sun 8:30am–10pm",
@@ -803,6 +808,60 @@
      ],
      "maxStay": "2 hours",
      "note": "Rivercourt Road and Weltje Road north of the Great West Road only."
+    },
+    "H-long": {
+     "zone": "H",
+     "name": "Claybrook Road, Margravine Road and St Dunstan’s Road",
+     "streets": [
+      "Claybrook Road",
+      "Margravine Road",
+      "St Dunstan's Road"
+     ],
+     "hours": "Mon–Sun 8:30am–10pm",
+     "periods": [
+      {
+       "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "22:00"
+      }
+     ],
+     "maxStay": "6 hours in the new pay and display bays on parts of these roads; 2 hours in other bays",
+     "note": "Parts of these roads have pay and display bays with a 6-hour limit, and there are zone H permit-holder bays outside 60–118 St Dunstan’s Road (from 11 November 2026; traffic order: https://www.thegazette.co.uk/notice/5245983). Check the bay’s sign."
+    },
+    "R-ext": {
+     "zone": "R",
+     "name": "Shottendane Road, Harbledown Road and Elmstone Road",
+     "streets": [
+      "Shottendane Road",
+      "Harbledown Road",
+      "Elmstone Road"
+     ],
+     "hours": "Mon–Sun 8:30am–10pm",
+     "periods": [
+      {
+       "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "22:00"
+      }
+     ],
+     "maxStay": "2 hours (resident and business visitor permits exempt)",
+     "note": "Extended from the rest of zone R’s Mon–Sat 9am–5pm on 18 November 2026 (traffic order: https://www.thegazette.co.uk/notice/5250484). Zone R permit holders can still park here."
     }
    },
    "streetHook": "hf_river",

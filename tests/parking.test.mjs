@@ -21,8 +21,17 @@ test('H&F zone E: Sunday 10:00 is controlled, 23:00 is free', () => {
   assert.equal(isControlled('hf:E', SUN, at(23), false), 'free');
 });
 
-test('H&F zone H: Saturday 10:00 is free', () => {
-  assert.equal(isControlled('hf:H', SAT, at(10), false), 'free');
+test('H&F zone H (extended 11 Nov 2026): controlled Mon–Sun 8:30am–10pm', () => {
+  assert.equal(isControlled('hf:H', SAT, at(10), false), 'ctrl');
+  assert.equal(isControlled('hf:H', SUN, at(21, 59), false), 'ctrl');
+  assert.equal(isControlled('hf:H', SUN, at(22), false), 'free');
+  assert.equal(isControlled('hf:H', SAT, at(8, 29), false), 'free');
+  assert.equal(isControlled('hf:H-long', SUN, at(12), false), 'ctrl');
+});
+
+test('H&F zone R roads extended 18 Nov 2026 (hf:R-ext): Sunday 12:00 is controlled, rest of R free', () => {
+  assert.equal(isControlled('hf:R-ext', SUN, at(12), false), 'ctrl');
+  assert.equal(isControlled('hf:R', SUN, at(12), false), 'free');
 });
 
 test('H&F zone T: Sunday 15:00 is free normally and controlled on an event day', () => {
