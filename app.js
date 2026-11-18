@@ -1744,7 +1744,9 @@ function syncParkingWhen() {
 
 function onParkingWhenChange() {
   var t = parkingTime.value ? hhmmToMinutes(parkingTime.value) : parkingWhen.minutes;
-  parkingWhen = { day: Number(parkingDay.value), minutes: t };
+  var day = Number(parkingDay.value);
+  if (typeof parkingBH === 'string' && day !== parkingWhen.day) parkingBH = false;   // today's holiday, not the picked day's
+  parkingWhen = { day: day, minutes: t };
   parkingNow = false;
   syncParkingWhen();
   recolourParking();
