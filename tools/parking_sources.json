@@ -10,7 +10,7 @@
     "zoneField": "ZONE"
    },
    "hoursUrl": "https://www.lbhf.gov.uk/parking/pay-and-display/parking-zone-times-and-charges",
-   "checked": "2026-11-08",
+   "checked": "2026-11-18",
    "eventDaysUrl": "https://www.lbhf.gov.uk/parking/pay-and-display/match-day-parking",
    "bankHolidayUrl": "https://www.lbhf.gov.uk/parking/pay-and-display/bank-holiday-parking",
    "mapPdf": "https://www.lbhf.gov.uk/sites/default/files/2025-12/parking-zone-map-and-charges-dec-2025.pdf",
@@ -97,7 +97,8 @@
        "to": "17:00"
       }
      ],
-     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_27_d_cpz_aa.pdf"
+     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_27_d_cpz_aa.pdf",
+     "maxStay": "8 hours"
     },
     "B": {
      "hours": "Mon–Sun 8:30am–11pm",
@@ -254,8 +255,8 @@
       }
      ],
      "maxStay": "2 hours",
-     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_8_d_cpz_h.pdf",
-     "note": "Extended from Mon–Fri 9am–5pm on 11 November 2026, single yellow lines included (traffic order: https://www.thegazette.co.uk/notice/5245983). The council’s zone map predates the change."
+     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-11/zone-h-tm-map-updated-nov-26.pdf",
+     "note": "Extended from Mon–Fri 9am–5pm on 11 November 2026, single yellow lines included (traffic order: https://www.thegazette.co.uk/notice/5245983)."
     },
     "I": {
      "hours": "Mon–Fri 9am–5pm",
@@ -272,7 +273,8 @@
        "to": "17:00"
       }
      ],
-     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_9_d_cpz_i.pdf"
+     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_9_d_cpz_i.pdf",
+     "maxStay": "8 hours"
     },
     "J": {
      "hours": "Mon–Fri 9am–5pm",
@@ -289,7 +291,8 @@
        "to": "17:00"
       }
      ],
-     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_10_d_cpz_j.pdf"
+     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_10_d_cpz_j.pdf",
+     "maxStay": "8 hours"
     },
     "JJ": {
      "hours": "Mon–Sun 9am–9pm",
@@ -308,7 +311,8 @@
        "to": "21:00"
       }
      ],
-     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_10_d_cpz_j.pdf"
+     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_10_d_cpz_j.pdf",
+     "maxStay": "8 hours"
     },
     "K": {
      "hours": "Mon–Fri 9am–5pm",
@@ -325,7 +329,8 @@
        "to": "17:00"
       }
      ],
-     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_11_d_cpz_k.pdf"
+     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_11_d_cpz_k.pdf",
+     "maxStay": "8 hours"
     },
     "L": {
      "hours": "Mon–Fri 9am–5pm",
@@ -342,7 +347,8 @@
        "to": "17:00"
       }
      ],
-     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_12_d_cpz_l.pdf"
+     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_12_d_cpz_l.pdf",
+     "maxStay": "8 hours"
     },
     "M": {
      "hours": "Mon–Fri 9am–5pm",
@@ -359,7 +365,8 @@
        "to": "17:00"
       }
      ],
-     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-08/zone-m-ticket-machines-map-updated-21-aug-26.pdf"
+     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-08/zone-m-ticket-machines-map-updated-21-aug-26.pdf",
+     "maxStay": "8 hours"
     },
     "N": {
      "hours": "Mon–Fri 9am–5pm",
@@ -376,7 +383,8 @@
        "to": "17:00"
       }
      ],
-     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_14_d_cpz_n.pdf"
+     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_14_d_cpz_n.pdf",
+     "maxStay": "8 hours"
     },
     "NN": {
      "hours": "Mon–Sat 9am–5pm",
@@ -394,7 +402,8 @@
        "to": "17:00"
       }
      ],
-     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_14_d_cpz_n.pdf"
+     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_14_d_cpz_n.pdf",
+     "maxStay": "8 hours"
     },
     "O": {
      "hours": "Mon–Sat 9am–5pm",
@@ -412,7 +421,8 @@
        "to": "17:00"
       }
      ],
-     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_15_d_cpz_o.pdf"
+     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_15_d_cpz_o.pdf",
+     "maxStay": "8 hours"
     },
     "OO": {
      "hours": "Mon–Sun 9am–10pm",
@@ -431,7 +441,8 @@
        "to": "22:00"
       }
      ],
-     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_15_d_cpz_o.pdf"
+     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_15_d_cpz_o.pdf",
+     "maxStay": "8 hours"
     },
     "Q": {
      "hours": "Mon–Sat 9am–5pm",
@@ -449,7 +460,8 @@
        "to": "17:00"
       }
      ],
-     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_17_d_cpz_q.pdf"
+     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_17_d_cpz_q.pdf",
+     "maxStay": "8 hours"
     },
     "QQ": {
      "hours": "Mon–Sat 9am–5pm. No pay and display: permit and visitor permit holders only.",
@@ -486,7 +498,8 @@
       }
      ],
      "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_18_d_cpz_r.pdf",
-     "note": "Since 18 November 2026, single yellow lines across zone R are controlled Mon–Sun 8:30am–10pm, longer than the bays. Shottendane, Harbledown and Elmstone Roads follow those hours too (traffic order: https://www.thegazette.co.uk/notice/5250484)."
+     "note": "Since 18 November 2026, single yellow lines across zone R are controlled Mon–Sun 8:30am–10pm, longer than the bays. Shottendane, Harbledown and Elmstone Roads follow those hours too (traffic order: https://www.thegazette.co.uk/notice/5250484).",
+     "maxStay": "8 hours"
     },
     "S": {
      "hours": "Mon–Sun 8:30am–10pm",
@@ -543,7 +556,8 @@
        }
       ],
       "maxStay": "2 hours"
-     }
+     },
+     "maxStay": "8 hours"
     },
     "U": {
      "hours": "Mon–Sat 9am–5pm",
@@ -561,7 +575,8 @@
        "to": "17:00"
       }
      ],
-     "pdf": "https://www.lbhf.gov.uk/sites/default/files/section_attachments/ticket_machine_locations_cpz_u.pdf"
+     "pdf": "https://www.lbhf.gov.uk/sites/default/files/section_attachments/ticket_machine_locations_cpz_u.pdf",
+     "maxStay": "8 hours"
     },
     "V": {
      "hours": "Mon–Fri 9am–5pm",
@@ -578,7 +593,8 @@
        "to": "17:00"
       }
      ],
-     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_22_d_cpz_v.pdf"
+     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_22_d_cpz_v.pdf",
+     "maxStay": "8 hours"
     },
     "VV": {
      "hours": "Mon–Fri 9am–5pm. No pay and display: permit and visitor permit holders only.",
@@ -613,7 +629,8 @@
        "to": "17:00"
       }
      ],
-     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_23_d_cpz_w.pdf"
+     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-04/88632_46_23_d_cpz_w.pdf",
+     "maxStay": "8 hours"
     },
     "X": {
      "hours": "Mon–Sat 9am–5pm",
@@ -650,7 +667,8 @@
        }
       ],
       "maxStay": "1 hour"
-     }
+     },
+     "maxStay": "8 hours"
     },
     "Y": {
      "hours": "Mon–Sat 9am–5pm",
@@ -687,7 +705,8 @@
        }
       ],
       "maxStay": "1 hour"
-     }
+     },
+     "maxStay": "8 hours"
     },
     "Z": {
      "hours": "Mon–Sat 9am–5pm",
@@ -705,7 +724,8 @@
        "to": "17:00"
       }
      ],
-     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-03/88632_46_26_c_cpz-z.pdf"
+     "pdf": "https://www.lbhf.gov.uk/sites/default/files/2026-03/88632_46_26_c_cpz-z.pdf",
+     "maxStay": "8 hours"
     }
    },
    "specialStreets": {
@@ -780,7 +800,8 @@
        "from": "09:00",
        "to": "20:00"
       }
-     ]
+     ],
+     "maxStay": "8 hours"
     },
     "M-river": {
      "zone": "M",
