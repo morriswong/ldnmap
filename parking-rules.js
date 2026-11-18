@@ -59,7 +59,8 @@ function isControlled(ruleKey, day, minutes, eventDay, bankHoliday) {
   if (inPeriods(rule.permit, day, minutes)) status = 'permit';
   else if (!inPeriods(periods, day, minutes)) status = 'free';
   else status = rule.permitOnly ? 'permit' : 'ctrl';
-  if (holidayRules && !bankHolidayPolicy(rule) && status !== 'free') return 'unknown';
+  // No policy, or 'unknown' (a council that varies by zone or day): never guess.
+  if (holidayRules && bankHolidayPolicy(rule) !== 'charged' && status !== 'free') return 'unknown';
   return status;
 }
 

@@ -189,3 +189,25 @@ test('nextChange: zone H is free from 10pm, then pay to park from 8:30am', () =>
   // a bank holiday only counts for the starting day
   assert.deepEqual({ ...nextChange('hf:H', FRI, at(12), false, '12-25') }, { day: SAT, minutes: at(8, 30), status: 'ctrl', inDays: 1 });
 });
+
+test('bank holidays: unknown policy never guesses, exceptions are free', () => {
+  // Brent varies by zone and has no borough policy: a controlled time is unknown, but a charged zone keeps its hours.
+  assert.equal(isControlled('brent:E', 1, at(12), false, '05-25'), isControlled('brent:E', 1, at(12), false, false));
+  // Greenwich's charged zones are free on Christmas Day, Boxing Day and New Year's Day only.
+  const g = Object.keys(rules.rules).find(k => k.startsWith('greenwich:') && rules.rules[k].bankHolidays === 'charged');
+  assert.ok(g);
+  assert.equal(isControlled(g, 5, at(12), false, '12-26'), 'free');
+  // Havering is charged on bank holidays except Christmas Day.
+  const h = Object.keys(rules.rules).find(k => k.startsWith('havering:') && rules.rules[k].periods && rules.rules[k].periods.length);
+  assert.equal(isControlled(h, 4, at(12), false, '12-25'), 'free');
+});
+
+test('H&F zone D (East) streets are Mon–Fri 9am–5pm, the rest of zone D every day', () => {
+  assert.equal(isControlled('hf:D-east', SAT, at(12), false), 'free');
+  assert.equal(isControlled('hf:D', SAT, at(12), false), 'ctrl');
+});
+
+test('event-day-only zones: free normally, controlled on event days', () => {
+  assert.equal(isControlled('richmond:R', SAT, at(15), false), 'free');
+  assert.equal(isControlled('richmond:R', SAT, at(15), true), 'ctrl');
+});

@@ -30,12 +30,17 @@ exclusive. Each rule has:
   `payCode` (`{provider: "RingGo", code}`: the pay-by-phone location code)
 
 Borough `charges` take one of three shapes: emissions `bands` (`[{band, co2, perHour}]`, with
-`dieselPerHour`), `{model: "flat", perHour}`, or `{model: "fuel", byFuel: {electric, petrol, diesel}}`
-(per hour, as RingGo lists them). All can carry `visitorFromPerHour`, `note` and `url`.
+`dieselPerHour`), `{model: "flat", perHour}`, `{model: "fuel", byFuel: {electric, petrol, diesel, other}}`
+(per hour, as RingGo lists them), `{model: "zone"}` (each rule has its own `price`) or `{model: "note"}`
+(prices set street by street; only the `note` and link). All can carry `visitorFromPerHour`, `note`,
+`url` and `checked` (the date the prices were read). Borough `payProvider` names the pay-by-phone
+service (`"RingGo"` or `"PayByPhone"`), and `ringgo` in `parking_sources.json`
+(`{slug, locations: {code: lastTariffUpdate}}`) is what `tools/check_parking_sources.py` watches.
 
 On a bank holiday (`isControlled(…, bankHoliday)`, where `bankHoliday` is the date's `'MM-DD'` or
 `true`), event-day hours win on an event day; otherwise a `"free"` policy is free, `"charged"` keeps
-the normal hours, and with no policy anything that would be controlled shows as unknown.
+the normal hours, and with no policy (or `"unknown"`, for a zone whose council says it varies) anything
+that would be controlled shows as unknown.
 
 `parking-rules.js` turns these into `'ctrl'`, `'free'`, `'permit'` or `'unknown'`
 (`isControlled(ruleKey, day, minutes, eventDay, bankHoliday)`) and finds the next change

@@ -1023,6 +1023,43 @@
       "provider": "RingGo",
       "code": "57769"
      }
+    },
+    "D-east": {
+     "zone": "D",
+     "name": "Zone D (East)",
+     "streets": [
+      "Aisgill Avenue",
+      "Bellamy Close",
+      "Dieppe Close",
+      "Franklin Square",
+      "Ivatt Place",
+      "Lerry Close",
+      "Marchbank Road",
+      "Mund Street",
+      "Stanier Close",
+      "Telephone Place",
+      "Thaxton Road"
+     ],
+     "hours": "Mon–Fri 9am–5pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:00",
+       "to": "17:00"
+      }
+     ],
+     "maxStay": "8 hours",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "17738"
+     },
+     "note": "The council lists D (East) as Mon–Fri 9am–5pm but publishes no street list; these streets are the block east of North End Road that its borough map shades as Monday to Friday. Check the signs."
     }
    },
    "streetHook": "hf_river",
@@ -1087,7 +1124,87 @@
     ]
    },
    "notes": "Zone boundaries and hours come from the council’s own CPZ map data (KML). “Excluded area” polygons refer to traffic orders and have no hours.",
-   "bankHolidayUrl": "https://www.enfield.gov.uk/services/parking/controlled-parking-zones"
+   "bankHolidayUrl": "https://www.enfield.gov.uk/services/parking/controlled-parking-zones",
+   "charges": {
+    "model": "flat",
+    "perHour": 3.3,
+    "note": "Same tariff in all areas, Monday to Saturday (and Sunday in Enfield Town): 15 min 90p, 30 min £1.70, 1 hour £3.30, 2 hours £6.50; North Middlesex Hospital area 3h £8, 4h £9. No emissions or diesel element. Event-day visitor permits: books of 10 for £21.",
+    "url": "https://www.enfield.gov.uk/services/parking/pay-to-park-on-street",
+    "checked": "2026-11-18"
+   },
+   "maxStayDefault": "2 hours",
+   "zones": {
+    "North Middlesex Hospital": {
+     "maxStay": "4 hours"
+    },
+    "SOUTH EDMONTON CPZ": {
+     "hours": "Event days only",
+     "periods": [],
+     "event": {
+      "hours": "Event days: 12 noon–9pm",
+      "periods": [
+       {
+        "days": [
+         0,
+         1,
+         2,
+         3,
+         4,
+         5,
+         6
+        ],
+        "from": "12:00",
+        "to": "21:00"
+       }
+      ]
+     }
+    },
+    "South Edmonton Event Day CPZ": {
+     "hours": "Event days only",
+     "periods": [],
+     "event": {
+      "hours": "Event days: 12 noon–9pm",
+      "periods": [
+       {
+        "days": [
+         0,
+         1,
+         2,
+         3,
+         4,
+         5,
+         6
+        ],
+        "from": "12:00",
+        "to": "21:00"
+       }
+      ]
+     }
+    },
+    "Sunnyside CPZ": {
+     "hours": "Event days only",
+     "periods": [],
+     "event": {
+      "hours": "Event days: 12 noon–9pm",
+      "periods": [
+       {
+        "days": [
+         0,
+         1,
+         2,
+         3,
+         4,
+         5,
+         6
+        ],
+        "from": "12:00",
+        "to": "21:00"
+       }
+      ]
+     }
+    }
+   },
+   "payProvider": "PayByPhone"
   },
   "greenwich": {
    "name": "Royal Greenwich",
@@ -1120,7 +1237,158 @@
      ]
     ]
    },
-   "notes": "The council says its map is a guide only and may not be up to date. Zones marked * are run by a neighbouring borough. Most zones don’t apply on bank holidays; see each zone’s council page."
+   "notes": "The council says its map is a guide only and may not be up to date. Zones marked * are run by a neighbouring borough. Most zones don’t apply on bank holidays; see each zone’s council page.",
+   "zones": {
+    "BS": {
+     "bankHolidays": "charged",
+     "bankHolidayExcept": [
+      "12-25",
+      "12-26",
+      "01-01"
+     ]
+    },
+    "CT": {
+     "bankHolidays": "charged",
+     "bankHolidayExcept": [
+      "12-25",
+      "12-26",
+      "01-01"
+     ]
+    },
+    "C": {
+     "bankHolidays": "charged",
+     "bankHolidayExcept": [
+      "12-25",
+      "12-26",
+      "01-01"
+     ]
+    },
+    "CS": {
+     "bankHolidays": "charged",
+     "bankHolidayExcept": [
+      "12-25",
+      "12-26",
+      "01-01"
+     ]
+    },
+    "EG": {
+     "bankHolidays": "charged",
+     "bankHolidayExcept": [
+      "12-25",
+      "12-26",
+      "01-01"
+     ]
+    },
+    "G": {
+     "bankHolidays": "charged",
+     "bankHolidayExcept": [
+      "12-25",
+      "12-26",
+      "01-01"
+     ]
+    },
+    "KE": {
+     "bankHolidays": "charged",
+     "bankHolidayExcept": [
+      "12-25",
+      "12-26",
+      "01-01"
+     ]
+    },
+    "PC": {
+     "bankHolidays": "charged",
+     "bankHolidayExcept": [
+      "12-25",
+      "12-26",
+      "01-01"
+     ]
+    },
+    "W": {
+     "bankHolidays": "charged",
+     "bankHolidayExcept": [
+      "12-25",
+      "12-26",
+      "01-01"
+     ]
+    },
+    "WA": {
+     "hours": "Mon–Sun 8:30am–6:30pm",
+     "periods": [
+      {
+       "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ]
+    },
+    "WB": {
+     "hours": "Mon–Sun 8:30am–6:30pm",
+     "periods": [
+      {
+       "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ]
+    },
+    "WM": {
+     "hours": "Mon–Sun 8:30am–6:30pm",
+     "periods": [
+      {
+       "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ]
+    },
+    "WD": {
+     "hours": "Mon–Fri 9am–5pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:00",
+       "to": "17:00"
+      }
+     ]
+    }
+   },
+   "charges": {
+    "model": "note",
+    "note": "Three location tariffs with base (pay-and-display / highest-emission) 1-hour prices £3.10, £6.20 and £8.30; pay-by-phone discounts for vehicles under 255 g/km CO2, down to £1.10/hour for 0 g/km on the cheapest tariff (e.g. 76–90 g/km: £1.60 / £3.10 / £4.20). Which zones use which tariff isn't stated (price shown in the PayByPhone app). Visitor vouchers: typically £26 for 5 all-day / £13.50 for 5 half-day in daytime zones, £13.50 for 10 in short-hours zones.",
+    "url": "https://www.royalgreenwich.gov.uk/parking-transport-and-streets/find-and-pay-parking/check-pay-phone-and-pay-and-display-parking",
+    "checked": "2026-11-18"
+   },
+   "payProvider": "PayByPhone"
   },
   "hackney": {
    "name": "Hackney",
@@ -1141,7 +1409,153 @@
     "noteAfter": "<br>"
    },
    "notes": "Outside the controlled hours you don’t need a permit, but yellow lines and disabled bays still apply. Some streets have different restrictions; match-day and bank holiday rules differ. Check the sign on the street.",
-   "eventDaysUrl": "https://hackney.gov.uk/parking-zones/"
+   "eventDaysUrl": "https://hackney.gov.uk/parking-zones/",
+   "bankHolidays": "free",
+   "zones": {
+    "G": {
+     "bankHolidays": "unknown",
+     "price": {
+      "perHour": 4.65
+     }
+    },
+    "G2": {
+     "bankHolidays": "unknown",
+     "price": {
+      "perHour": 4.65
+     }
+    },
+    "M": {
+     "bankHolidays": "unknown",
+     "price": {
+      "perHour": 3.85
+     }
+    },
+    "K": {
+     "bankHolidays": "unknown",
+     "price": {
+      "perHour": 3.85
+     }
+    },
+    "N": {
+     "bankHolidays": "unknown",
+     "price": {
+      "perHour": 3.85
+     }
+    },
+    "Q": {
+     "bankHolidays": "unknown",
+     "price": {
+      "perHour": 3.85
+     }
+    },
+    "A": {
+     "price": {
+      "perHour": 5.7
+     }
+    },
+    "B (1)": {
+     "price": {
+      "perHour": 5.7
+     }
+    },
+    "B (2)": {
+     "price": {
+      "perHour": 5.7
+     }
+    },
+    "C": {
+     "price": {
+      "perHour": 4.65
+     }
+    },
+    "E (1)": {
+     "price": {
+      "perHour": 4.65
+     }
+    },
+    "E (2)": {
+     "price": {
+      "perHour": 4.65
+     }
+    },
+    "F": {
+     "price": {
+      "perHour": 4.65
+     }
+    },
+    "H": {
+     "price": {
+      "perHour": 4.65
+     }
+    },
+    "J (1)": {
+     "price": {
+      "perHour": 4.65
+     }
+    },
+    "J (2)": {
+     "price": {
+      "perHour": 4.65
+     }
+    },
+    "L": {
+     "price": {
+      "perHour": 3.85
+     }
+    },
+    "P (1)": {
+     "price": {
+      "perHour": 3.85
+     }
+    },
+    "P (2)": {
+     "price": {
+      "perHour": 3.85
+     }
+    },
+    "R": {
+     "price": {
+      "perHour": 3.85
+     }
+    },
+    "S": {
+     "price": {
+      "perHour": 3.85
+     }
+    },
+    "T": {
+     "price": {
+      "perHour": 3.85
+     }
+    },
+    "U (1)": {
+     "price": {
+      "perHour": 3.85
+     }
+    },
+    "U (2)": {
+     "price": {
+      "perHour": 3.85
+     }
+    },
+    "W": {
+     "price": {
+      "perHour": 3.85
+     }
+    },
+    "Y": {
+     "price": {
+      "perHour": 3.85
+     }
+    }
+   },
+   "charges": {
+    "model": "zone",
+    "note": "Hackney charges by price band (zone) and vehicle type. Band 1 = A, B; Band 2 = C, D (central), E, F, G, G2, H, J; Band 3 = D (south), K–Y. Band 4 around Homerton Hospital (part of N): £1.95 / £2.50 / £3.65 / £4.65. One-hour minimum charge. Zone D left out because the app's D (1)/D (2) don't map clearly to the council's D (central)/D (south) price bands.",
+    "url": "https://www.hackney.gov.uk/parking-streets-and-transport/where-park/paying-short-stay-parking",
+    "checked": "2026-11-18"
+   },
+   "payProvider": "RingGo"
   },
   "haringey": {
    "name": "Haringey",
@@ -1162,12 +1576,360 @@
     "noteRegex": ",?\\s+(and|or)\\s+(on|for|in)\\s.*$"
    },
    "charges": {
-    "bands": [],
-    "note": "On-street pay-and-display parking is £2.60 an hour in Haringey CPZs, per the council’s CPZ hours page. Parking is free outside CPZ hours and on bank holidays (except event-day zones).",
-    "url": "https://www.haringey.gov.uk/parking/cpzs/all-cpz-hours"
+    "model": "zone",
+    "note": "Diesel vehicles pay a 30% surcharge. The event-day-only CPZs have no on-street price listed.",
+    "url": "https://haringey.gov.uk/parking/ringgo-parking-pay-by-phone",
+    "checked": "2026-11-18"
    },
    "eventDaysUrl": "https://www.haringey.gov.uk/parking/where-you-can-park-haringey/tottenham-hotspur-stadium-event-day-parking-restrictions",
-   "notes": "Zones near Tottenham Hotspur Stadium and Finsbury Park have extra restrictions on event days."
+   "notes": "Zones near Tottenham Hotspur Stadium and Finsbury Park have extra restrictions on event days.",
+   "bankHolidays": "free",
+   "zones": {
+    "Bruce Castle": {
+     "bankHolidays": "unknown",
+     "price": {
+      "perHour": 1.6
+     }
+    },
+    "Bruce Grove North": {
+     "bankHolidays": "unknown",
+     "price": {
+      "perHour": 2.6
+     }
+    },
+    "Northumberland Park West": {
+     "bankHolidays": "unknown",
+     "price": {
+      "perHour": 1.6
+     },
+     "hours": "Mon–Fri 8am–8pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "08:00",
+       "to": "20:00"
+      }
+     ]
+    },
+    "The Hale": {
+     "bankHolidays": "unknown",
+     "price": {
+      "perHour": 2.6
+     }
+    },
+    "Tottenham Hale North": {
+     "bankHolidays": "unknown",
+     "price": {
+      "perHour": 1.6
+     }
+    },
+    "Tottenham Hale North Event Day": {
+     "bankHolidays": "unknown",
+     "hours": "Event days only",
+     "periods": [],
+     "event": {
+      "hours": "Event days: Mon–Fri 5pm–8:30pm, Sat–Sun and bank holidays 12pm–8pm",
+      "periods": [
+       {
+        "days": [
+         1,
+         2,
+         3,
+         4,
+         5
+        ],
+        "from": "17:00",
+        "to": "20:30"
+       },
+       {
+        "days": [
+         0,
+         6
+        ],
+        "from": "12:00",
+        "to": "20:00"
+       }
+      ]
+     }
+    },
+    "Tottenham Event Day": {
+     "bankHolidays": "unknown",
+     "hours": "Event days only",
+     "periods": [],
+     "event": {
+      "hours": "Event days: Mon–Fri 5pm–8:30pm, Sat–Sun and bank holidays 12pm–8pm",
+      "periods": [
+       {
+        "days": [
+         1,
+         2,
+         3,
+         4,
+         5
+        ],
+        "from": "17:00",
+        "to": "20:30"
+       },
+       {
+        "days": [
+         0,
+         6
+        ],
+        "from": "12:00",
+        "to": "20:00"
+       }
+      ]
+     }
+    },
+    "Tottenham North": {
+     "bankHolidays": "unknown",
+     "price": {
+      "perHour": 1.6
+     },
+     "hours": "Mon–Sat 8am–6.30pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:00",
+       "to": "18:30"
+      }
+     ]
+    },
+    "Tower Gardens": {
+     "bankHolidays": "charged",
+     "price": {
+      "perHour": 1.6
+     }
+    },
+    "Tower Gardens Event Day": {
+     "bankHolidays": "unknown",
+     "hours": "Event days only",
+     "periods": [],
+     "event": {
+      "hours": "Event days: Mon–Fri 5pm–8:30pm, Sat–Sun and bank holidays 12pm–8pm",
+      "periods": [
+       {
+        "days": [
+         1,
+         2,
+         3,
+         4,
+         5
+        ],
+        "from": "17:00",
+        "to": "20:30"
+       },
+       {
+        "days": [
+         0,
+         6
+        ],
+        "from": "12:00",
+        "to": "20:00"
+       }
+      ]
+     }
+    },
+    "White Hart Lane": {
+     "bankHolidays": "unknown",
+     "price": {
+      "perHour": 1.6
+     }
+    },
+    "Willoughby Lane": {
+     "bankHolidays": "unknown",
+     "price": {
+      "perHour": 1.6
+     }
+    },
+    "Finsbury Park": {
+     "bankHolidays": "unknown",
+     "price": {
+      "perHour": 2.6
+     }
+    },
+    "Finsbury Park B": {
+     "bankHolidays": "unknown",
+     "price": {
+      "perHour": 2.6
+     }
+    },
+    "Finsbury Park C": {
+     "bankHolidays": "unknown",
+     "price": {
+      "perHour": 2.6
+     }
+    },
+    "Alexandra Palace": {
+     "price": {
+      "perHour": 2.6
+     }
+    },
+    "Belmont": {
+     "price": {
+      "perHour": 2.6
+     }
+    },
+    "Bounds Green": {
+     "price": {
+      "perHour": 2.6
+     }
+    },
+    "Bounds Green East": {
+     "price": {
+      "perHour": 1.6
+     }
+    },
+    "Bruce Grove West": {
+     "price": {
+      "perHour": 2.6
+     }
+    },
+    "Crouch End A": {
+     "price": {
+      "perHour": 4.1
+     }
+    },
+    "Crouch End B": {
+     "price": {
+      "perHour": 4.1
+     }
+    },
+    "Fortis Green": {
+     "price": {
+      "perHour": 4.1
+     }
+    },
+    "Green Lanes A": {
+     "price": {
+      "perHour": 4.1
+     }
+    },
+    "Green Lanes B": {
+     "price": {
+      "perHour": 4.1
+     }
+    },
+    "Highgate A": {
+     "price": {
+      "perHour": 4.1
+     }
+    },
+    "Highgate Station A": {
+     "price": {
+      "perHour": 4.1
+     }
+    },
+    "Highgate Station Outer": {
+     "price": {
+      "perHour": 4.1
+     }
+    },
+    "Highgate Station Outer Zone": {
+     "price": {
+      "perHour": 4.1
+     }
+    },
+    "Hornsey North": {
+     "price": {
+      "perHour": 2.6
+     }
+    },
+    "Hornsey North East": {
+     "price": {
+      "perHour": 2.6
+     }
+    },
+    "Hornsey South": {
+     "price": {
+      "perHour": 2.6
+     }
+    },
+    "Jarrow Road": {
+     "price": {
+      "perHour": 2.6
+     }
+    },
+    "Muswell Hill": {
+     "price": {
+      "perHour": 4.1
+     }
+    },
+    "Muswell Hill West": {
+     "price": {
+      "perHour": 4.1
+     }
+    },
+    "Myddleton Road S&S": {
+     "price": {
+      "perHour": 2.6
+     }
+    },
+    "Seven Sisters": {
+     "price": {
+      "perHour": 2.6
+     }
+    },
+    "Seven Sisters South": {
+     "price": {
+      "perHour": 1.6
+     }
+    },
+    "South Tottenham": {
+     "price": {
+      "perHour": 2.6
+     }
+    },
+    "St Anns": {
+     "price": {
+      "perHour": 2.6
+     }
+    },
+    "St Luke's": {
+     "price": {
+      "perHour": 4.1
+     }
+    },
+    "Stroud Green": {
+     "price": {
+      "perHour": 2.6
+     }
+    },
+    "Wood Green Inner Zone": {
+     "price": {
+      "perHour": 4.1
+     }
+    },
+    "Wood Green Outer Zone": {
+     "price": {
+      "perHour": 4.1
+     }
+    },
+    "Woodside": {
+     "price": {
+      "perHour": 2.6
+     }
+    },
+    "Woodside West": {
+     "price": {
+      "perHour": 1.6
+     }
+    }
+   },
+   "payProvider": "RingGo"
   },
   "harrow": {
    "name": "Harrow",
@@ -1186,7 +1948,173 @@
      "TRANSPORTATION_USER.CPZ_ZONE_BOUNDARIES.TIMES"
     ]
    },
-   "notes": "Harrow: normal parking and CPZ rules apply on bank holidays. The exact hours are on the entry signs of each zone."
+   "notes": "Harrow: normal parking and CPZ rules apply on bank holidays. The exact hours are on the entry signs of each zone.",
+   "bankHolidays": "charged",
+   "charges": {
+    "model": "zone",
+    "note": "Harrow prices each street by tariff zone (from 1 July 2026): Metropolitan £3.30, Major £2.20, District £1.50, Local £1.10 per hour. First hour free once a day at one on-street location (session must be started). Some District streets have a capped rate (e.g. £11.90 over 3 or 6 hours). Many streets are 'Pay and Display Zone' outside CPZs.",
+    "url": "https://www.harrow.gov.uk/downloads/file/23743/parking-charges-on-street-pay-and-display-guide.pdf",
+    "checked": "2026-11-18"
+   },
+   "zones": {
+    "B": {
+     "price": {
+      "perHour": 1.5
+     }
+    },
+    "C": {
+     "price": {
+      "perHour": 1.5
+     }
+    },
+    "C1": {
+     "price": {
+      "perHour": 1.5
+     }
+    },
+    "CS": {
+     "price": {
+      "perHour": 1.1
+     }
+    },
+    "DA": {
+     "price": {
+      "perHour": 1.1
+     }
+    },
+    "E": {
+     "price": {
+      "perHour": 3.3
+     }
+    },
+    "E1": {
+     "price": {
+      "perHour": 3.3
+     }
+    },
+    "H": {
+     "price": {
+      "perHour": 1.1
+     }
+    },
+    "HH": {
+     "price": {
+      "perHour": 1.5
+     }
+    },
+    "J": {
+     "price": {
+      "perHour": 1.5
+     },
+     "hours": "7am–midnight (days not stated)",
+     "periods": null
+    },
+    "KR": {
+     "price": {
+      "perHour": 1.5
+     }
+    },
+    "L": {
+     "price": {
+      "perHour": 1.5
+     }
+    },
+    "M": {
+     "price": {
+      "perHour": 1.5
+     }
+    },
+    "M1": {
+     "price": {
+      "perHour": 1.5
+     }
+    },
+    "M3": {
+     "price": {
+      "perHour": 1.5
+     },
+     "hours": "Mon–Sat 8am–6.30pm (permit holders); pay and display 10am–6.30pm",
+     "periods": null
+    },
+    "N": {
+     "price": {
+      "perHour": 1.1
+     }
+    },
+    "P": {
+     "price": {
+      "perHour": 1.5
+     }
+    },
+    "R": {
+     "price": {
+      "perHour": 3.3
+     }
+    },
+    "S": {
+     "price": {
+      "perHour": 1.5
+     }
+    },
+    "SM": {
+     "price": {
+      "perHour": 1.1
+     }
+    },
+    "TA": {
+     "price": {
+      "perHour": 2.2
+     }
+    },
+    "TB": {
+     "price": {
+      "perHour": 2.2
+     }
+    },
+    "U": {
+     "price": {
+      "perHour": 1.1
+     }
+    },
+    "W1": {
+     "price": {
+      "perHour": 1.1
+     }
+    },
+    "WH": {
+     "price": {
+      "perHour": 1.1
+     }
+    },
+    "X": {
+     "price": {
+      "perHour": 1.1
+     }
+    },
+    "Z": {
+     "price": {
+      "perHour": 1.1
+     }
+    },
+    "GL": {
+     "hours": "Mon–Sat 8am–6.30pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:00",
+       "to": "18:30"
+      }
+     ]
+    }
+   },
+   "payProvider": "PayByPhone"
   },
   "lambeth": {
    "name": "Lambeth",
@@ -1210,7 +2138,198 @@
     "fields": [
      "HOURS"
     ]
-   }
+   },
+   "bankHolidays": "free",
+   "charges": {
+    "bands": [
+     {
+      "band": "A",
+      "co2": "0 g/km",
+      "perHour": 5.68
+     },
+     {
+      "band": "B",
+      "co2": "1–50 g/km",
+      "perHour": 5.96
+     },
+     {
+      "band": "C",
+      "co2": "51–75 g/km",
+      "perHour": 6.25
+     },
+     {
+      "band": "D",
+      "co2": "76–90 g/km",
+      "perHour": 6.55
+     },
+     {
+      "band": "E",
+      "co2": "91–100 g/km",
+      "perHour": 6.85
+     },
+     {
+      "band": "F",
+      "co2": "101–110 g/km",
+      "perHour": 7.17
+     },
+     {
+      "band": "G",
+      "co2": "111–130 g/km",
+      "perHour": 7.49
+     },
+     {
+      "band": "H",
+      "co2": "131–150 g/km",
+      "perHour": 7.96
+     },
+     {
+      "band": "I",
+      "co2": "151–170 g/km",
+      "perHour": 8.53
+     },
+     {
+      "band": "J",
+      "co2": "171–190 g/km",
+      "perHour": 9.15
+     },
+     {
+      "band": "K",
+      "co2": "191–225 g/km",
+      "perHour": 9.82
+     },
+     {
+      "band": "L",
+      "co2": "226–255 g/km",
+      "perHour": 10.49
+     },
+     {
+      "band": "M",
+      "co2": "over 255 g/km",
+      "perHour": 11.2
+     }
+    ],
+    "note": "From 26 March 2026. Price depends on zone group, CO2 band (A–M, same bands as resident permits) and time: peak 10am–1pm costs about 10% more. Diesel vehicles pay a surcharge of about 75% (e.g. Central band A £9.94/hour instead of £5.68). First 15 minutes is charged at 25% of the hourly rate. Robertson Street/Cavendish Road (shared with Wandsworth) is cheaper: band A £3.84 off-peak.",
+    "url": "https://www.lambeth.gov.uk/parking/emission-based-parking-charges/street-parking-charges",
+    "checked": "2026-11-18"
+   },
+   "zones": {
+    "W": {
+     "price": {
+      "perHour": 7.55
+     }
+    },
+    "K": {
+     "price": {
+      "perHour": 6.3
+     }
+    },
+    "KS": {
+     "price": {
+      "perHour": 6.3
+     }
+    },
+    "A": {
+     "price": {
+      "perHour": 5.68
+     }
+    },
+    "B": {
+     "price": {
+      "perHour": 5.68
+     }
+    },
+    "BI": {
+     "price": {
+      "perHour": 5.68
+     }
+    },
+    "C": {
+     "price": {
+      "perHour": 5.68
+     }
+    },
+    "D": {
+     "price": {
+      "perHour": 5.68
+     }
+    },
+    "E": {
+     "price": {
+      "perHour": 5.68
+     }
+    },
+    "F": {
+     "price": {
+      "perHour": 5.68
+     }
+    },
+    "N": {
+     "price": {
+      "perHour": 5.68
+     }
+    },
+    "P": {
+     "price": {
+      "perHour": 5.68
+     }
+    },
+    "Q": {
+     "price": {
+      "perHour": 5.68
+     }
+    },
+    "S": {
+     "price": {
+      "perHour": 5.68
+     }
+    },
+    "V": {
+     "price": {
+      "perHour": 5.68
+     }
+    },
+    "L": {
+     "price": {
+      "perHour": 4.66
+     }
+    },
+    "G": {
+     "price": {
+      "perHour": 4.66
+     }
+    },
+    "M": {
+     "price": {
+      "perHour": 4.66
+     }
+    },
+    "H": {
+     "price": {
+      "perHour": 4.66
+     }
+    },
+    "O": {
+     "price": {
+      "perHour": 4.66
+     }
+    },
+    "R": {
+     "price": {
+      "perHour": 4.66
+     }
+    },
+    "I": {
+     "price": {
+      "perHour": 4.66
+     }
+    },
+    "SW": {
+     "price": {
+      "perHour": 4.66
+     }
+    }
+   },
+   "payProvider": "PayByPhone"
   },
   "merton": {
    "name": "Merton",
@@ -1233,7 +2352,333 @@
      "Summary_Notice"
     ]
    },
-   "notes": "Pay-and-display-only areas without a zone code are not shown."
+   "notes": "Pay-and-display-only areas without a zone code are not shown.",
+   "bankHolidays": "free",
+   "zones": {
+    "W3": {
+     "bankHolidays": "charged"
+    },
+    "W4": {
+     "bankHolidays": "charged"
+    },
+    "2F": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "3E": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "3F": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "5F": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "A1": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "CW": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "CW1": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "CW2": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "CW4": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "CW5": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "H1": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "H2": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "H3": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "P1": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "P2": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "P2s": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "P3": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "RP": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "RPC": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "RPC1": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "RPE": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "RPN": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "RPS": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "RPW": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "S2": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "S3": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "SW": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "SW1": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "VC": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "VN": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "VNE": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "VNS": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "VOn": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "VOt": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "VSW1": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "VSW2": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "W5": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "W6": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "W7": {
+     "price": {
+      "perHour": 3.6
+     }
+    },
+    "CH": {
+     "price": {
+      "perHour": 1.8
+     }
+    },
+    "CW3": {
+     "price": {
+      "perHour": 1.8
+     }
+    },
+    "FG1": {
+     "price": {
+      "perHour": 1.8
+     }
+    },
+    "FG2": {
+     "price": {
+      "perHour": 1.8
+     }
+    },
+    "GC": {
+     "price": {
+      "perHour": 1.8
+     }
+    },
+    "GC1": {
+     "price": {
+      "perHour": 1.8
+     }
+    },
+    "GC2": {
+     "price": {
+      "perHour": 1.8
+     }
+    },
+    "GC3": {
+     "price": {
+      "perHour": 1.8
+     }
+    },
+    "LS": {
+     "price": {
+      "perHour": 1.8
+     }
+    },
+    "M1": {
+     "price": {
+      "perHour": 1.8
+     }
+    },
+    "M2": {
+     "price": {
+      "perHour": 1.8
+     }
+    },
+    "M3": {
+     "price": {
+      "perHour": 1.8
+     }
+    },
+    "M4": {
+     "price": {
+      "perHour": 1.8
+     }
+    },
+    "MP1": {
+     "price": {
+      "perHour": 1.8
+     }
+    },
+    "MP2": {
+     "price": {
+      "perHour": 1.8
+     }
+    },
+    "MP3": {
+     "price": {
+      "perHour": 1.8
+     }
+    },
+    "MP4": {
+     "price": {
+      "perHour": 1.8
+     }
+    },
+    "MT": {
+     "price": {
+      "perHour": 1.8
+     }
+    },
+    "MTC": {
+     "price": {
+      "perHour": 1.8
+     }
+    },
+    "MTC1": {
+     "price": {
+      "perHour": 1.8
+     }
+    },
+    "MTC2": {
+     "price": {
+      "perHour": 1.8
+     }
+    },
+    "WB1": {
+     "price": {
+      "perHour": 1.8
+     }
+    },
+    "WB2": {
+     "price": {
+      "perHour": 1.8
+     }
+    }
+   },
+   "charges": {
+    "model": "zone",
+    "note": "From 21 April 2026: Wimbledon town centre roads £5.40/hour, most northern zones £3.60, the south of the borough and Wimbledon Common roads £1.80. Paying by phone/internet adds a 20p fee. Some RingGo locations give the first 20 minutes free. No per-hour emissions or diesel surcharge found for on-street parking.",
+    "url": "https://www.merton.gov.uk/sites/default/files/2026-03/Parking%20Charges%202026%20-%20On%20Street%20North_0.pdf",
+    "checked": "2026-11-18"
+   },
+   "payProvider": "RingGo"
   },
   "newham": {
    "name": "Newham",
@@ -1261,7 +2706,59 @@
      "CPZ_Status"
     ]
    },
-   "notes": "Zones marked “Event Day Parking Zone” have extra restrictions on event days at the London Stadium."
+   "notes": "Zones marked “Event Day Parking Zone” have extra restrictions on event days at the London Stadium.",
+   "bankHolidays": "free",
+   "zones": {
+    "S": {
+     "bankHolidays": "charged"
+    },
+    "SNW": {
+     "bankHolidays": "charged"
+    },
+    "SSW": {
+     "bankHolidays": "charged"
+    },
+    "SSE": {
+     "bankHolidays": "charged"
+    },
+    "W": {
+     "bankHolidays": "charged"
+    }
+   },
+   "charges": {
+    "bands": [
+     {
+      "band": "1",
+      "co2": "0–50 g/km (or 1–900cc)",
+      "perHour": 2.0
+     },
+     {
+      "band": "2",
+      "co2": "51–110 g/km (or 901–1399cc)",
+      "perHour": 2.9
+     },
+     {
+      "band": "3",
+      "co2": "111–170 g/km (or 1400–1850cc)",
+      "perHour": 3.8
+     },
+     {
+      "band": "4",
+      "co2": "171–225 g/km (or 1851–2500cc)",
+      "perHour": 4.7
+     },
+     {
+      "band": "5",
+      "co2": "226+ g/km (or 2501cc+)",
+      "perHour": 5.6
+     }
+    ],
+    "dieselPerHour": 1.0,
+    "note": "Short-stay rates per hour; 30-minute-max bays charge half (Tier 1 £1.00 to Tier 5 £2.80 per 30 min, diesel +£0.50). Engine size is used where CO2 isn't on the V5C.",
+    "url": "https://www.newham.gov.uk/parking-permits/find-park-newham/4",
+    "checked": "2026-11-18"
+   },
+   "payProvider": "PayByPhone"
   },
   "redbridge": {
    "name": "Redbridge",
@@ -1295,7 +2792,49 @@
      ]
     ]
    },
-   "notes": "Permit parking doesn’t apply on bank holidays in Redbridge, but waiting restrictions and pay-and-display do. Check the signs: operating times change."
+   "notes": "Permit parking doesn’t apply on bank holidays in Redbridge, but waiting restrictions and pay-and-display do. Check the signs: operating times change.",
+   "charges": {
+    "model": "note",
+    "note": "First hour free once per day in on-street pay and display bays, then a per-location RingGo tariff. No emissions or diesel tiers shown on the sampled RingGo pages.",
+    "url": "https://www.myringgo.com/parkinglocator/6081228",
+    "checked": "2026-11-18"
+   },
+   "maxStayDefault": "2 hours",
+   "payProvider": "RingGo",
+   "zones": {
+    "WB": {
+     "hours": "Mon–Fri 8:30am–6:30pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ]
+    },
+    "WFA (2)": {
+     "hours": "Mon–Fri 8:30am–6:30pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ]
+    }
+   }
   },
   "sutton": {
    "name": "Sutton",
@@ -1328,7 +2867,34 @@
      ]
     ]
    },
-   "notes": "Only Sutton’s controlled parking zones are shown; its permit parking areas (permit holders only, street by street) are not."
+   "notes": "Only Sutton’s controlled parking zones are shown; its permit parking areas (permit holders only, street by street) are not.",
+   "bankHolidays": "free",
+   "charges": {
+    "model": "note",
+    "note": "Sutton town centre on-street pay and display uses RingGo tariff areas 'Central Zone' (£3.00 per 30 min / £6.00 per hour) and 'Outer Zone' (£2.00 per 30 min / £4.00 per hour). No diesel or emissions tiers on the sampled RingGo pages. The Central tariff page was last updated 16 May 2024 and the Outer one 1 June 2026.",
+    "url": "https://www.myringgo.com/parkinglocator/16323",
+    "checked": "2026-11-18"
+   },
+   "payProvider": "RingGo",
+   "zones": {
+    "CH1 - Mon-Sat 8am-6.30pm": {
+     "hours": "Mon–Sat 8am–6:30pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:00",
+       "to": "18:30"
+      }
+     ]
+    }
+   }
   },
   "towerhamlets": {
    "name": "Tower Hamlets",
@@ -1344,70 +2910,162 @@
    "zones": {
     "A1": {
      "hours": "Monday to Friday, 8.30am to 5.30pm; Sunday, 8.30am to 2pm.",
-     "name": "Zone A (Bethnal Green area)"
+     "name": "Zone A (Bethnal Green area)",
+     "price": {
+      "perHour": 6.8
+     }
     },
     "A2": {
      "hours": "Monday to Friday, 8.30am to 5.30pm; Sunday, 8.30am to 2pm.",
-     "name": "Zone A (Bethnal Green area)"
+     "name": "Zone A (Bethnal Green area)",
+     "price": {
+      "perHour": 6.8
+     }
     },
     "A3": {
      "hours": "Monday to Saturday, 8.30am to 5.30pm.",
-     "name": "Zone A"
+     "name": "Zone A",
+     "price": {
+      "perHour": 6.0
+     }
     },
     "A4": {
      "hours": "Monday to Friday, 8.30am to 5.30pm.",
-     "name": "Zone A"
+     "name": "Zone A",
+     "price": {
+      "perHour": 6.0
+     }
     },
     "A5": {
-     "hours": "Monday from midnight to 7pm, Tuesday and Wednesday from 8.30am to 7pm, Thursday from 8.30am to midnight and all-day Friday, Saturday, and Sunday.",
-     "name": "Zone A"
+     "hours": "Thu 8:30am through to Mon 7pm (continuous), Tue–Wed 8:30am–7pm",
+     "name": "Zone A",
+     "price": {
+      "perHour": 6.8
+     },
+     "periods": null
     },
     "A6": {
-     "hours": "Monday to Sunday, 8.30am to 10pm in RESIDENT permit holders parking bays only in streets to the west of Brick Lane, otherwise restrictions apply Monday to Friday, 8.30am to 7pm; Sunday, 8.30am to 2pm.",
-     "name": "Zone A"
+     "hours": "Mon–Fri 8:30am–7pm, Sun 8:30am–2pm",
+     "name": "Zone A",
+     "price": {
+      "perHour": 6.8
+     },
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "08:30",
+       "to": "19:00"
+      },
+      {
+       "days": [
+        0
+       ],
+       "from": "08:30",
+       "to": "14:00"
+      }
+     ]
     },
     "B1": {
      "hours": "Monday to Saturday, 8.30am to 5.30pm.",
-     "name": "Zone B (Bow area)"
+     "name": "Zone B (Bow area)",
+     "price": {
+      "perHour": 5.5
+     },
+     "maxStay": "4 hours"
     },
     "B3": {
      "hours": "Monday to Friday, 8.30am to 5.30pm.",
-     "name": "Zone B"
+     "name": "Zone B",
+     "price": {
+      "perHour": 5.5
+     }
     },
     "B2": {
      "hours": "Monday to Friday, 8.30am to 5.30pm.",
-     "name": "Zone B"
+     "name": "Zone B",
+     "price": {
+      "perHour": 5.5
+     }
     },
     "B4": {
-     "hours": "Monday to Saturday, 8.30am to 7.30pm. Event days only sun 8.30am to 7.30pm. Event days only sun 8.30am to 7.30pm",
-     "name": "Zone B (Fish Island)"
+     "hours": "Mon–Sat 8:30am–7:30pm (also Sun 8:30am–7:30pm on London Stadium event days)",
+     "name": "Zone B (Fish Island)",
+     "price": {
+      "perHour": 5.5
+     },
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "19:30"
+      }
+     ]
     },
     "C1": {
      "hours": "Monday to Friday, 8.30am to 5.30pm",
-     "name": "Zone C (Shadwell and Stepney)"
+     "name": "Zone C (Shadwell and Stepney)",
+     "price": {
+      "perHour": 6.8
+     }
     },
     "C2": {
      "hours": "Monday to Saturday, 8.30am to 5.30pm; Sunday, 8.30am to 2pm.",
-     "name": "Zone C"
+     "name": "Zone C",
+     "price": {
+      "perHour": 6.8
+     }
     },
     "C3": {
      "hours": "Monday to Friday, 8.30am to 5.30pm",
-     "name": "Zone C (Shadwell and Stepney)"
+     "name": "Zone C (Shadwell and Stepney)",
+     "price": {
+      "perHour": 6.0
+     }
     },
     "C4": {
      "hours": "Monday to Friday, 8.30am to 5.30pm",
-     "name": "Zone C (Shadwell and Stepney)"
+     "name": "Zone C (Shadwell and Stepney)",
+     "price": {
+      "perHour": 6.0
+     }
     },
     "D1": {
      "hours": "Monday to Friday, 8.30am to 5.30pm.",
-     "name": "Zone D (Poplar and Crossharbour)"
+     "name": "Zone D (Poplar and Crossharbour)",
+     "price": {
+      "perHour": 5.5
+     }
     },
     "D2": {
      "hours": "Monday to Friday, 8.30am to 5.30pm.",
-     "name": "Zone D (Poplar and Crossharbour)"
+     "name": "Zone D (Poplar and Crossharbour)",
+     "price": {
+      "perHour": 5.5
+     }
     }
    },
-   "notes": "Hours are from the council’s parking zones page; the map data itself has none."
+   "notes": "Hours are from the council’s parking zones page; the map data itself has none.",
+   "bankHolidays": "free",
+   "charges": {
+    "model": "zone",
+    "note": "2026/27 cashless on-street rates (page published 25 Aug 2026). Diesel vehicles pay a higher total rate (a £3.00–£3.40/hr surcharge). Resident visitor vouchers are £3.90 per day (not hourly). RingGo for B1 Roman Road still shows diesel at £8.30/hr (last updated 15 Aug 2025), so RingGo may lag the council table for diesel. One hour free parking around markets on market days (book via RingGo).",
+    "url": "https://www.towerhamlets.gov.uk/lgnl/transport_and_streets/Parking/Parking-charges-2026-to-2027-New.aspx",
+    "checked": "2026-11-18"
+   },
+   "payProvider": "RingGo"
   },
   "city": {
    "name": "City of London",
@@ -1427,7 +3085,22 @@
      "note": "At some locations different times apply. A wall or post mounted time plate will display the restricted hours for that specific location."
     }
    },
-   "notes": "The whole City of London is one controlled parking zone."
+   "notes": "The whole City of London is one controlled parking zone.",
+   "bankHolidays": "free",
+   "charges": {
+    "model": "fuel",
+    "byFuel": {
+     "electric": 5.0,
+     "petrol": 7.2,
+     "diesel": 7.2,
+     "other": 10.0
+    },
+    "note": "Mon–Fri 8am–7pm. 'electric' = electric, hydrogen or hybrid; 'petrol' = petrol registered from 2005; 'diesel' = diesel registered from 2015; older vehicles (and anything else) £10.00/hour. Saturday 8am–11am £2 for any duration; free after 11am Saturday, Sundays and bank holidays. Page updated 19/10/2026; a consultation proposes Mon–Sat 7am–8pm charging from May 2027.",
+    "url": "https://www.cityoflondon.gov.uk/services/parking/on-street-parking",
+    "checked": "2026-11-18"
+   },
+   "maxStayDefault": "4 hours",
+   "payProvider": "RingGo"
   },
   "rbkc": {
    "name": "Kensington & Chelsea",
@@ -1445,7 +3118,52 @@
    "hoursFromData": {
     "template": "{c1}; {c2}; {c3}"
    },
-   "notes": "These are the borough’s resident parking control areas (Control 1 to 8). Single yellow lines follow the borough’s two larger CPZ areas instead; check the signs."
+   "notes": "These are the borough’s resident parking control areas (Control 1 to 8). Single yellow lines follow the borough’s two larger CPZ areas instead; check the signs.",
+   "bankHolidays": "free",
+   "charges": {
+    "model": "fuel",
+    "byFuel": {
+     "electric": 1.9,
+     "petrol": 2.5,
+     "diesel": 2.9
+    },
+    "note": "Hourly PayByPhone rates depend on the street's tariff area (Basic/Low/Medium/High, shown on the council's March 2026 tariff-area map; these areas are not the residents' control areas) and fuel type. Diesel costs £0.40–£1.00/hr more than petrol depending on tier. PayByPhone adds 10p per session. No visitor vouchers are issued.",
+    "url": "https://www.rbkc.gov.uk/parking-permissions/visitor-parking-and-pay-phone/paybyphone",
+    "checked": "2026-11-18"
+   },
+   "payProvider": "PayByPhone",
+   "zones": {
+    "6": {
+     "hours": "Mon–Fri 8:30am–10pm, Sat 8:30am–6:30pm, Sun 1pm–5pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "08:30",
+       "to": "22:00"
+      },
+      {
+       "days": [
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      },
+      {
+       "days": [
+        0
+       ],
+       "from": "13:00",
+       "to": "17:00"
+      }
+     ]
+    }
+   }
   },
   "camden": {
    "name": "Camden",
@@ -1465,7 +3183,15 @@
      "control_no"
     ]
    },
-   "notes": "Hours come from the council’s CPZ map data, last edited October 2026."
+   "notes": "Hours come from the council’s CPZ map data, last edited October 2026.",
+   "bankHolidays": "free",
+   "charges": {
+    "model": "note",
+    "note": "Camden charges paid-for parking by street-based tariff area (not by CPZ) and by vehicle emissions, plus an air-quality surcharge for older petrol/diesel cars. New rates took effect 1 April 2026 and a further rise 1 October 2026 (notice TMO2526-0040 dated 12 March 2026). The official figures could not be read (see gaps), so no numbers are given.",
+    "url": "https://www.camden.gov.uk/documents/d/guest/fees-and-charges-2026-27-april-2-",
+    "checked": "2026-11-18"
+   },
+   "payProvider": "RingGo"
   },
   "brent": {
    "name": "Brent",
@@ -1491,7 +3217,445 @@
     ]
    },
    "eventDaysUrl": "https://www.brent.gov.uk/parking-roads-and-travel/parking/where-you-can-park/controlled-parking-zones",
-   "notes": "Zones near Wembley Stadium have extra event-day restrictions."
+   "notes": "Zones near Wembley Stadium have extra event-day restrictions.",
+   "zones": {
+    "E": {
+     "bankHolidays": "charged",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5021, 5032, 25021"
+     }
+    },
+    "W": {
+     "bankHolidays": "charged",
+     "maxStay": "2 hours",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5043"
+     }
+    },
+    "T": {
+     "bankHolidays": "charged",
+     "hours": "At any time (Mon–Sun, 24 hours)",
+     "periods": [
+      {
+       "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "00:00",
+       "to": "24:00"
+      }
+     ]
+    },
+    "BV": {
+     "bankHolidays": "charged"
+    },
+    "KM": {
+     "bankHolidays": "charged",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5016, 5070"
+     }
+    },
+    "KG": {
+     "bankHolidays": "charged",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5038, 5067"
+     }
+    },
+    "KC": {
+     "bankHolidays": "charged",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5014, 5065"
+     }
+    },
+    "KR_1": {
+     "bankHolidays": "charged",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5042, 5073, 25044"
+     }
+    },
+    "KR_2": {
+     "bankHolidays": "charged",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5042, 5073, 25044"
+     }
+    },
+    "KQ": {
+     "bankHolidays": "charged",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5017, 5041, 5066"
+     }
+    },
+    "QH": {
+     "maxStay": "2 hours",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "25006"
+     }
+    },
+    "PH": {
+     "maxStay": "2 hours",
+     "hours": "Mon–Sat 10am–9pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "10:00",
+       "to": "21:00"
+      }
+     ]
+    },
+    "Bridge Rd Pay&Display": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5087"
+     }
+    },
+    "C": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5020, 5031"
+     }
+    },
+    "CH": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "25019"
+     }
+    },
+    "G": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5010"
+     }
+    },
+    "GA": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5027, 5052"
+     }
+    },
+    "GB": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5053"
+     }
+    },
+    "GC": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5011, 5028, 5054"
+     }
+    },
+    "GD": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5029, 5055"
+     }
+    },
+    "GH": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5056"
+     }
+    },
+    "GM": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5030, 5057"
+     }
+    },
+    "GS": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5058"
+     }
+    },
+    "H": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5012, 5033, 5059"
+     }
+    },
+    "HC": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "25062"
+     }
+    },
+    "HS": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5060"
+     }
+    },
+    "HW": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5061"
+     }
+    },
+    "HY": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5062"
+     }
+    },
+    "K": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5034, 5063"
+     }
+    },
+    "KB": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5013, 5035, 5064"
+     }
+    },
+    "KD": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5015, 5036, 5071"
+     }
+    },
+    "KH": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5039"
+     }
+    },
+    "KL": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5040, 5069"
+     }
+    },
+    "KS": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5018, 5094, 5072"
+     }
+    },
+    "Kenton Pay&Display": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5037"
+     }
+    },
+    "MA_1": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5022, 5019, 5074"
+     }
+    },
+    "MA_2": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5022, 5019, 5074"
+     }
+    },
+    "MK": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5023, 5076"
+     }
+    },
+    "MW": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5024, 5077"
+     }
+    },
+    "NC1": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5083, 5045, 25022"
+     }
+    },
+    "NC2": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5083, 5045, 25022"
+     }
+    },
+    "NS": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5078"
+     }
+    },
+    "NT": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5079"
+     }
+    },
+    "Preston Rd Pay&Display": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5049"
+     }
+    },
+    "QA": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5046"
+     }
+    },
+    "SA": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5025, 5080"
+     }
+    },
+    "SH": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5081"
+     }
+    },
+    "ST": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5047, 5082"
+     }
+    },
+    "VF": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "25049"
+     }
+    },
+    "WB": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "25061"
+     }
+    },
+    "Waxlow Road": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "25015"
+     }
+    },
+    "Y": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "5048"
+     }
+    }
+   },
+   "charges": {
+    "model": "flat",
+    "perHour": 2.0,
+    "note": "Same rate in every zone checked: 20p minimum for up to 15 minutes, then 10p per 3 minutes (= £2.00/hour, £4.00 for 2 hours). No emissions or diesel variation on the RingGo tariffs. A 2026–27 opposition budget amendment proposing emissions-based charges is not adopted policy.",
+    "url": "https://publicnoticeportal.uk/notice/traffic-and-roads/6a75fadd784dfb43356740dd",
+    "checked": "2026-11-18"
+   },
+   "payProvider": "RingGo",
+   "ringgo": {
+    "slug": "brent",
+    "locations": {
+     "25006": null,
+     "25015": null,
+     "25019": null,
+     "25021": null,
+     "25022": null,
+     "25044": null,
+     "25049": null,
+     "25061": null,
+     "25062": null,
+     "5010": null,
+     "5011": null,
+     "5012": null,
+     "5013": null,
+     "5014": null,
+     "5015": null,
+     "5016": null,
+     "5017": null,
+     "5018": null,
+     "5019": null,
+     "5020": null,
+     "5021": null,
+     "5022": null,
+     "5023": null,
+     "5024": null,
+     "5025": null,
+     "5027": null,
+     "5028": null,
+     "5029": null,
+     "5030": null,
+     "5031": null,
+     "5032": null,
+     "5033": null,
+     "5034": null,
+     "5035": null,
+     "5036": null,
+     "5037": null,
+     "5038": null,
+     "5039": null,
+     "5040": null,
+     "5041": null,
+     "5042": null,
+     "5043": null,
+     "5045": null,
+     "5046": null,
+     "5047": null,
+     "5048": null,
+     "5049": null,
+     "5052": null,
+     "5053": null,
+     "5054": null,
+     "5055": null,
+     "5056": null,
+     "5057": null,
+     "5058": null,
+     "5059": null,
+     "5060": null,
+     "5061": null,
+     "5062": null,
+     "5063": null,
+     "5064": null,
+     "5065": null,
+     "5066": null,
+     "5067": null,
+     "5069": null,
+     "5070": null,
+     "5071": null,
+     "5072": null,
+     "5073": null,
+     "5074": null,
+     "5076": null,
+     "5077": null,
+     "5078": null,
+     "5079": null,
+     "5080": null,
+     "5081": null,
+     "5082": null,
+     "5083": null,
+     "5087": null,
+     "5094": null
+    }
+   }
   },
   "bd": {
    "name": "Barking & Dagenham",
@@ -1522,7 +3686,66 @@
      ]
     ]
    },
-   "notes": "Hours come from the council’s map data; there is no hours list on its website. School zones have no hours in the data."
+   "notes": "Hours come from the council’s map data; there is no hours list on its website. School zones have no hours in the data.",
+   "bankHolidays": "free",
+   "charges": {
+    "model": "note",
+    "note": "As of the July 2024 amendment: first hour free in all on-street pay-by-phone bays (must still be registered with PayByPhone; one free session per day). Beyond that, 7 CO2 bands; Band 1 (0–50 g/km) £0. Tariff TC1 (town centre): up to 2h £5.50–£6.60, up to 4h £12.00–£13.00 by band. Tariff TC2: up to 2h £2.20–£2.80, up to 4h £3.40–£4.50. Non-Euro-6 diesel surcharge £0.20–£1.10 per session. Which zones use TC1 vs TC2 not established. Could not confirm these are unchanged in 2026.",
+    "url": "https://www.thegazette.co.uk/notice/4659488",
+    "checked": "2026-11-18"
+   },
+   "maxStayDefault": "4 hours",
+   "payProvider": "PayByPhone",
+   "zones": {
+    "RCS": {
+     "hours": "Mon–Fri 8:30am–5:30pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "08:30",
+       "to": "17:30"
+      }
+     ]
+    },
+    "WBS": {
+     "hours": "Mon–Fri 8:30am–5:30pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "08:30",
+       "to": "17:30"
+      }
+     ]
+    },
+    "STR": {
+     "hours": "Mon–Fri 8:30am–5:30pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "08:30",
+       "to": "17:30"
+      }
+     ]
+    }
+   }
   },
   "islington": {
    "name": "Islington",
@@ -1538,51 +3761,101 @@
      "hours": "Mon-Fri 8.30am to 6.30pm; Saturday 8.30am to 1.30pm"
     },
     "C": {
-     "hours": "Mon-Fri 24 hours a day; Saturday and Sunday All Saturday, until 6am Sunday"
+     "hours": "Mon–Fri 24 hours; Sat all day until 6am Sun",
+     "periods": null
     },
     "D": {
      "hours": "Mon-Fri 9.30am to 4.30pm"
     },
     "E": {
      "hours": "Mon-Fri 8.30am to 6.30pm; Saturday 8.30am to 1.30pm",
-     "note": "Different restrictions on Emirates Stadium match days: see the council page."
+     "note": "Different restrictions on Emirates Stadium match days: see the council page.",
+     "bankHolidays": "unknown"
     },
     "F": {
      "hours": "Mon-Fri 8.30am to 6.30pm; Saturday 8.30am to 1.30pm",
-     "note": "Different restrictions on Emirates Stadium match days: see the council page."
+     "note": "Different restrictions on Emirates Stadium match days: see the council page.",
+     "bankHolidays": "unknown"
     },
     "G": {
-     "hours": "Mon-Fri 10am to 2pm; Only on match days Only on match days",
-     "note": "Different restrictions on Emirates Stadium match days: see the council page."
+     "hours": "Mon–Fri 10am–2pm (weekends on match days only)",
+     "note": "Different restrictions on Emirates Stadium match days: see the council page.",
+     "bankHolidays": "unknown",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:00",
+       "to": "14:00"
+      }
+     ]
     },
     "H": {
      "hours": "Mon-Fri 8.30am to 6.30pm; Saturday 8.30am to 6.30pm",
-     "note": "Different restrictions on Emirates Stadium match days: see the council page."
+     "note": "Different restrictions on Emirates Stadium match days: see the council page.",
+     "bankHolidays": "unknown"
     },
     "HE": {
      "hours": "Mon-Fri 10am to 2pm"
     },
     "J": {
      "hours": "Mon-Fri 8.30am to 6.30pm; Saturday 8.30am to 6.30pm",
-     "note": "Different restrictions on Emirates Stadium match days: see the council page."
+     "note": "Different restrictions on Emirates Stadium match days: see the council page.",
+     "bankHolidays": "unknown"
     },
     "K": {
-     "hours": "Mon-Fri 24 hours a day; Saturday and Sunday Any time"
+     "hours": "At any time (24 hours, 7 days)",
+     "periods": [
+      {
+       "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "00:00",
+       "to": "24:00"
+      }
+     ]
     },
     "L": {
      "hours": "Mon-Fri 8.30am to 6.30pm; Saturday 8.30am to 1.30pm",
-     "note": "Different restrictions on Emirates Stadium match days: see the council page."
+     "note": "Different restrictions on Emirates Stadium match days: see the council page.",
+     "bankHolidays": "unknown"
     },
     "N": {
      "hours": "Mon-Fri 8.30am to 6.30pm; Saturday 8.30am to 1.30pm",
-     "note": "Different restrictions on Emirates Stadium match days: see the council page."
+     "note": "Different restrictions on Emirates Stadium match days: see the council page.",
+     "bankHolidays": "unknown"
     },
     "P": {
      "hours": "Mon-Fri 8.30am to 6.30pm; Saturday 8.30am to 1.30pm"
     },
     "Q": {
-     "hours": "Mon-Fri 8.30am to 6.30pm; Only on match days Only on match days",
-     "note": "Different restrictions on Emirates Stadium match days: see the council page."
+     "hours": "Mon–Fri 8.30am–6.30pm (weekends on match days only)",
+     "note": "Different restrictions on Emirates Stadium match days: see the council page.",
+     "bankHolidays": "unknown",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ]
     },
     "R": {
      "hours": "Mon-Fri 8.30am to 6.30pm"
@@ -1601,14 +3874,16 @@
     },
     "V": {
      "hours": "Mon-Fri 8.30am to 6.30pm; Saturday 8.30am to 1.30pm",
-     "note": "Different restrictions on Emirates Stadium match days: see the council page."
+     "note": "Different restrictions on Emirates Stadium match days: see the council page.",
+     "bankHolidays": "unknown"
     },
     "W": {
      "hours": "Mon-Fri 8.30am to 6.30pm"
     },
     "Y": {
      "hours": "Mon-Fri 8.30am to 6.30pm; Saturday 8.30am to 1.30pm",
-     "note": "Different restrictions on Emirates Stadium match days: see the council page."
+     "note": "Different restrictions on Emirates Stadium match days: see the council page.",
+     "bankHolidays": "unknown"
     },
     "Z": {
      "hours": "Mon-Fri 10am to 2pm"
@@ -1620,7 +3895,17 @@
     "type": "file",
     "path": "islington.geojson",
     "zoneField": "zone"
-   }
+   },
+   "bankHolidays": "free",
+   "charges": {
+    "model": "note",
+    "dieselPerHour": 7.45,
+    "visitorFromPerHour": 2.25,
+    "note": "Base price is £4.25–£7.30/hour depending on location (per-street RingGo tariffs; e.g. Agdon Street 61001 is £7.30/hour). Mon–Fri 10am–1pm adds up to £1.05 peak surcharge (not in zones G, HE, TW, U, Z). Fuel surcharge per hour on top: petrol/hybrid 1–185g/km £2.30, 186–225g/km £2.85, over 226g/km £4.26, diesel £7.45; EVs pay the base price. Zone C standard tariff £6.90/hour. Match-day controlled bays £14.15/hour. Visitor e-vouchers £4.55/hour (£2.25 discounted for residents) plus fuel surcharge.",
+    "url": "https://www.islington.gov.uk/parking/where-to-park/pay-for-short-stay-parking",
+    "checked": "2026-11-18"
+   },
+   "payProvider": "RingGo"
   },
   "lewisham": {
    "name": "Lewisham",
@@ -1639,19 +3924,51 @@
     },
     "DP": {
      "hours": "Mon–Fri 9am-5pm",
-     "name": "Deptford"
+     "name": "Deptford",
+     "price": {
+      "perHour": 2.32
+     },
+     "maxStay": "4 hours",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "809239"
+     }
     },
     "DS": {
      "hours": "Mon–Fri 9am-5pm",
-     "name": "Deptford South"
+     "name": "Deptford South",
+     "price": {
+      "perHour": 2.32
+     },
+     "maxStay": "4 hours",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "803788"
+     }
     },
     "E": {
      "hours": "Mon–Fri 9am-7pm",
-     "name": "Rushey Green West"
+     "name": "Rushey Green West",
+     "price": {
+      "perHour": 2.32
+     },
+     "maxStay": "4 hours",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "803767, 804487"
+     }
     },
     "EN": {
      "hours": "Mon-Fri 9am-5pm",
-     "name": "Evelyn"
+     "name": "Evelyn",
+     "price": {
+      "perHour": 2.32
+     },
+     "maxStay": "4 hours",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "810293"
+     }
     },
     "F": {
      "hours": "Mon–Fri 9am-7pm",
@@ -1659,43 +3976,123 @@
     },
     "G": {
      "hours": "Mon–Fri 9am-7pm",
-     "name": "Elverson"
+     "name": "Elverson",
+     "price": {
+      "perHour": 2.32
+     },
+     "maxStay": "4 hours",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "803769"
+     }
     },
     "H": {
      "hours": "Mon–Fri 9am-7pm",
-     "name": "Hither Green West"
+     "name": "Hither Green West",
+     "price": {
+      "perHour": 2.32
+     },
+     "maxStay": "4 hours",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "803770, 804484"
+     }
     },
     "HO": {
      "hours": "Mon–Fri 9am-5pm",
-     "name": "Honor Oak"
+     "name": "Honor Oak",
+     "price": {
+      "perHour": 2.32
+     },
+     "maxStay": "4 hours",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "809237"
+     }
     },
     "J": {
      "hours": "Mon–Fri 9am-7pm",
-     "name": "Canadian Avenue"
+     "name": "Canadian Avenue",
+     "price": {
+      "perHour": 2.32
+     },
+     "maxStay": "4 hours",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "803771"
+     }
     },
     "K": {
      "hours": "Mon–Fri 9am-7pm",
-     "name": "Catford West"
+     "name": "Catford West",
+     "price": {
+      "perHour": 2.32
+     },
+     "maxStay": "4 hours",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "803772"
+     }
     },
     "L": {
      "hours": "Mon–Fri 9am-7pm",
-     "name": "Rushey Green East"
+     "name": "Rushey Green East",
+     "price": {
+      "perHour": 3.36
+     },
+     "maxStay": "4 hours",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "803773"
+     }
     },
     "LG": {
      "hours": "Mon–Fri 10am-12 noon",
-     "name": "Lee Green"
+     "name": "Lee Green",
+     "price": {
+      "perHour": 2.32
+     },
+     "maxStay": "2 hours",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "803774"
+     }
     },
     "LW": {
      "hours": "Mon–Fri 10am-12 noon",
-     "name": "Ladywell West"
+     "name": "Ladywell West",
+     "price": {
+      "perHour": 2.32
+     },
+     "maxStay": "2 hours",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "803775"
+     }
     },
     "M": {
      "hours": "Mon–Fri 9am-7pm",
-     "name": "Barmeston Road"
+     "name": "Barmeston Road",
+     "price": {
+      "perHour": 2.32
+     },
+     "maxStay": "4 hours",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "803776, 804489"
+     }
     },
     "MH": {
      "hours": "Mon–Fri 10am-12 noon",
-     "name": "Manor House"
+     "name": "Manor House",
+     "price": {
+      "perHour": 2.32
+     },
+     "maxStay": "2 hours",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "803777"
+     }
     },
     "MT/E": {
      "hours": "Mon–Fri 9am-7pm",
@@ -1703,32 +4100,87 @@
     },
     "N": {
      "hours": "Mon–Fri 9am-5pm",
-     "name": "Davids Road"
+     "name": "Davids Road",
+     "price": {
+      "perHour": 2.32
+     },
+     "maxStay": "4 hours",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "803778, 804485"
+     }
     },
     "P": {
      "hours": "Mon–Fri 10am-12 noon",
-     "name": "Hither Green East"
+     "name": "Hither Green East",
+     "price": {
+      "perHour": 2.32
+     },
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "803780, 804491, 804493"
+     }
     },
     "R": {
      "hours": "Mon–Fri 9am-7pm",
-     "name": "Rushey Green South"
+     "name": "Rushey Green South",
+     "price": {
+      "perHour": 2.32
+     },
+     "maxStay": "4 hours",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "803781, 804488"
+     }
     },
     "RP": {
      "hours": "Mon–Fri 9am-5pm",
-     "name": "Ravensbourne Park"
+     "name": "Ravensbourne Park",
+     "price": {
+      "perHour": 2.32
+     },
+     "maxStay": "4 hours",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "809238"
+     }
     },
     "S": {
      "hours": "Mon–Fri 9am-6pm; Sat 9am-1.30pm",
      "name": "Deptford Central",
-     "note": "cells read 'Mon–Fri Sat' / '9am-6pm 9am-1.30pm'"
+     "note": "cells read 'Mon–Fri Sat' / '9am-6pm 9am-1.30pm'",
+     "price": {
+      "perHour": 3.36
+     },
+     "maxStay": "4 hours",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "803782"
+     }
     },
     "T": {
      "hours": "Mon–Fri 9am-7pm",
-     "name": "Ladywell"
+     "name": "Ladywell",
+     "price": {
+      "perHour": 2.32
+     },
+     "maxStay": "4 hours",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "803783, 804486, 804492"
+     }
     },
     "V": {
      "hours": "Mon–Fri 10am-12 noon",
-     "name": "Lee"
+     "name": "Lee",
+     "price": {
+      "perHour": 2.32
+     },
+     "maxStay": "4 hours",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "803784, 804490"
+     }
     },
     "W": {
      "hours": "Mon–Fri 9am-7pm",
@@ -1760,12 +4212,28 @@
        "to": "13:30"
       }
      ],
-     "note": "The council’s map shows B1 and B2 as one area. B2 is also controlled on Sundays 9am–1.30pm, so Sunday mornings show as unknown here."
+     "note": "The council’s map shows B1 and B2 as one area. B2 is also controlled on Sundays 9am–1.30pm, so Sunday mornings show as unknown here.",
+     "price": {
+      "perHour": 3.36
+     },
+     "maxStay": "4 hours",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "803787, 811425"
+     }
     },
     "BHA/OB": {
      "hours": "Mon–Sat 9am-7pm",
      "name": "Blackheath (BHA) and Old Road/Bankwell (OB)",
-     "note": "The council’s map doesn’t separate BHA and OB; both have the same hours."
+     "note": "The council’s map doesn’t separate BHA and OB; both have the same hours.",
+     "price": {
+      "perHour": 3.36
+     },
+     "maxStay": "4 hours",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "803785, 803779"
+     }
     }
    },
    "notes": "Zone boundaries traced from the council’s “Parking restrictions in Lewisham” map (vector PDF), placed by fitting its ward boundaries to Lewisham’s (median error under 1 m); zone edges follow the map’s dotted lines. Hours from the council’s table published 15 January 2026.",
@@ -1773,7 +4241,48 @@
     "type": "file",
     "path": "lewisham.geojson",
     "zoneField": "zone"
-   }
+   },
+   "bankHolidays": "free",
+   "charges": {
+    "bands": [
+     {
+      "band": "0",
+      "co2": "0 g/km (electric only)",
+      "perHour": 1.74
+     },
+     {
+      "band": "1",
+      "co2": "1–100 g/km",
+      "perHour": 2.32
+     },
+     {
+      "band": "2",
+      "co2": "101–130 g/km",
+      "perHour": 2.78
+     },
+     {
+      "band": "3",
+      "co2": "131–165 g/km",
+      "perHour": 3.35
+     },
+     {
+      "band": "4",
+      "co2": "166–200 g/km",
+      "perHour": 3.83
+     },
+     {
+      "band": "5",
+      "co2": "201+ g/km",
+      "perHour": 4.64
+     }
+    ],
+    "dieselPerHour": 2.62,
+    "note": "PayByPhone, by CO2 band. Standard CPZs: band 0 (EV) £1.74 up to band 5 £4.64/hour. Town centres (Lewisham Central B1/B2, Blackheath Village BHA, Rushey Green East L, Deptford Town Centre S) since 1 April 2025: £2.79–£5.69. Diesel that isn't Euro 6 compliant pays £2.62/hour more in every band. Charged pro rata in 15-minute steps up to 1 hour.",
+    "url": "https://lewisham.gov.uk/myservices/parking/changes-to-pay-and-display-parking",
+    "checked": "2026-11-18"
+   },
+   "maxStayDefault": "4 hours",
+   "payProvider": "PayByPhone"
   },
   "southwark": {
    "name": "Southwark",
@@ -1784,143 +4293,254 @@
    "zones": {
     "B": {
      "hours": "Monday to Saturday, 8:30am to 6:30pm",
-     "name": "Peckham"
+     "name": "Peckham",
+     "price": {
+      "perHour": 5.7
+     }
     },
     "C1": {
      "hours": "every day from 8am to 11pm",
-     "name": "Bankside"
+     "name": "Bankside",
+     "bankHolidays": "unknown",
+     "price": {
+      "perHour": 8.6
+     }
     },
     "C2": {
      "hours": "Monday to Friday, 8:30am and 6:30pm",
      "name": "Borough",
-     "note": "sic ('and')"
+     "note": "sic ('and')",
+     "price": {
+      "perHour": 8.6
+     }
     },
     "D": {
      "hours": "Monday to Friday, 8:30am to 6:30pm",
-     "name": "Newington"
+     "name": "Newington",
+     "price": {
+      "perHour": 8.6
+     }
     },
     "DV": {
      "hours": "Monday to Friday, 8am to 9.30am and 3pm to 5pm",
-     "name": "Dulwich Village"
+     "name": "Dulwich Village",
+     "price": {
+      "perHour": 5.7
+     }
     },
     "E": {
      "hours": "Monday to Friday, 8:30am to 6:30pm",
-     "name": "West Walworth"
+     "name": "West Walworth",
+     "price": {
+      "perHour": 5.7
+     }
     },
     "EC": {
      "hours": "Monday to Friday, 8:30am to 6:30pm",
-     "name": "East Camberwell"
+     "name": "East Camberwell",
+     "price": {
+      "perHour": 5.7
+     }
     },
     "ED": {
      "hours": "Monday to Friday, 8:30am to 6:30pm",
-     "name": "East Dulwich"
+     "name": "East Dulwich",
+     "price": {
+      "perHour": 5.7
+     }
     },
     "F": {
      "hours": "Monday to Saturday, 8am to 6.30pm",
-     "name": "London Bridge"
+     "name": "London Bridge",
+     "price": {
+      "perHour": 8.6
+     }
     },
     "G": {
      "hours": "Monday to Sunday, 8:30am to 11pm",
-     "name": "Bermondsey"
+     "name": "Bermondsey",
+     "bankHolidays": "charged",
+     "price": {
+      "perHour": 8.6
+     }
     },
     "GR": {
      "hours": "Monday to Friday, 8am and 6:30pm",
      "name": "Grange",
-     "note": "sic ('and')"
+     "note": "sic ('and')",
+     "price": {
+      "perHour": 8.6
+     }
     },
     "H": {
      "hours": "Monday to Friday, 8am to 6:30pm",
-     "name": "Rotherhithe"
+     "name": "Rotherhithe",
+     "price": {
+      "perHour": 5.7
+     }
     },
     "HH": {
      "hours": "Monday to Friday, noon to 2pm",
-     "name": "Herne Hill"
+     "name": "Herne Hill",
+     "price": {
+      "perHour": 5.7
+     }
     },
     "J": {
      "hours": "Monday to Friday, 8:30am to 6:30pm",
-     "name": "South Walworth"
+     "name": "South Walworth",
+     "price": {
+      "perHour": 5.7
+     }
     },
     "K": {
      "hours": "Monday to Friday, 8:30am to 6:30pm",
-     "name": "Camberwell"
+     "name": "Camberwell",
+     "price": {
+      "perHour": 5.7
+     }
     },
     "L": {
      "hours": "Monday to Friday, 8:30am to 6:30pm",
-     "name": "South Camberwell"
+     "name": "South Camberwell",
+     "price": {
+      "perHour": 5.7
+     }
     },
     "LG": {
      "hours": "Monday to Friday, 8:30am to 6:30pm",
-     "name": "Lucas Gardens"
+     "name": "Lucas Gardens",
+     "price": {
+      "perHour": 5.7
+     }
     },
     "M1": {
      "hours": "Monday to Friday, 8:30am to 6:30pm",
-     "name": "Walworth"
+     "name": "Walworth",
+     "price": {
+      "perHour": 5.7
+     }
     },
     "M2": {
      "hours": "Monday to Friday, 8:30am to 6:30pm",
-     "name": "South East Walworth"
+     "name": "South East Walworth",
+     "price": {
+      "perHour": 5.7
+     }
     },
     "N": {
      "hours": "Monday to Friday, 8am to 6:30pm",
-     "name": "South Rotherhithe"
+     "name": "South Rotherhithe",
+     "price": {
+      "perHour": 5.7
+     }
     },
     "NC": {
      "hours": "Monday to Friday, 8:30am to 6:30pm",
-     "name": "North Camberwell"
+     "name": "North Camberwell",
+     "price": {
+      "perHour": 5.7
+     }
     },
     "OKR": {
      "hours": "Monday to Friday, 8.30am to 6.30pm",
-     "name": "Old Kent Road"
+     "name": "Old Kent Road",
+     "price": {
+      "perHour": 5.7
+     }
     },
     "P": {
      "hours": "Monday to Friday, noon to 2pm",
-     "name": "North Dulwich and Denmark Hill"
+     "name": "North Dulwich and Denmark Hill",
+     "price": {
+      "perHour": 5.7
+     }
     },
     "PR": {
      "hours": "Monday to Friday, 8:30am to 6:30pm",
-     "name": "Peckham Road South"
+     "name": "Peckham Road South",
+     "price": {
+      "perHour": 5.7
+     }
     },
     "PW": {
      "hours": "Monday to Friday, 9am to 11am",
-     "name": "Peckham West"
+     "name": "Peckham West",
+     "price": {
+      "perHour": 5.7
+     }
     },
     "Q": {
      "hours": "Monday to Friday, 11am to 1pm",
-     "name": "Dog Kennel Hill"
+     "name": "Dog Kennel Hill",
+     "price": {
+      "perHour": 5.7
+     }
     },
     "QR": {
      "hours": "Monday to Friday, 1pm to 3pm",
-     "name": "Queens Road"
+     "name": "Queens Road",
+     "price": {
+      "perHour": 5.7
+     }
     },
     "R": {
      "hours": "Monday to Friday, 8:30am to 6:30pm",
-     "name": "North Peckham"
+     "name": "North Peckham",
+     "price": {
+      "perHour": 5.7
+     }
     },
     "S": {
      "hours": "Monday to Friday, 8:30am to 6:30pm",
-     "name": "Rotherhithe and Surrey Docks"
+     "name": "Rotherhithe and Surrey Docks",
+     "price": {
+      "perHour": 5.7
+     }
     },
     "SB": {
      "hours": "Monday to Friday, 8am to 6:30pm",
-     "name": "South Bermondsey"
+     "name": "South Bermondsey",
+     "price": {
+      "perHour": 5.7
+     }
     },
     "SEB": {
      "hours": "Monday to Friday, 8:30am to 6:30pm",
-     "name": "South East Bermondsey"
+     "name": "South East Bermondsey",
+     "price": {
+      "perHour": 5.7
+     }
     },
     "T": {
      "hours": "Monday to Friday, 8am to 6:30pm",
-     "name": "Trafalgar"
+     "name": "Trafalgar",
+     "price": {
+      "perHour": 5.7
+     }
     },
     "TS": {
      "hours": "Monday to Friday, 8:30am to 6:30pm",
-     "name": "Thorburn Square"
+     "name": "Thorburn Square",
+     "price": {
+      "perHour": 5.7
+     }
     },
     "Clink St": {
      "hours": "At all times",
      "name": "Clink Street residents’ parking zone",
      "note": "Residents’ parking zone: permit holders only.",
      "permitOnly": true
+    },
+    "Nunhead": {
+     "price": {
+      "perHour": 5.7
+     }
+    },
+    "RV": {
+     "price": {
+      "perHour": 5.7
+     }
     }
    },
    "notes": "Zone boundaries from the council’s Southwark Maps viewer. Hours from the council’s parking zones page, except Nunhead and Rotherhithe Village, which aren’t on that page (hours from the map data).",
@@ -1934,7 +4554,16 @@
     "fields": [
      "datahours"
     ]
-   }
+   },
+   "bankHolidays": "free",
+   "charges": {
+    "model": "zone",
+    "visitorFromPerHour": 1.82,
+    "note": "From 1 April 2026: £8.60/hr in C1, C2, D, F, G and GR, £5.70/hr in all other CPZs. Diesel vehicles pay £13.40 or £9.20/hr in total (a £4.80 or £3.50 surcharge). Visitor permits: a single 1-hour virtual session is £3.00, or £18.15 for 10 one-hour sessions (about £1.82/hr), per the council's 5 March 2026 fees notice. The council's 'street parking bays' page still shows the older £7.80/£5.10 rates, so it's out of date.",
+    "url": "https://www.southwark.gov.uk/parking-streets-and-transport/parking/places-park/paying-parking",
+    "checked": "2026-11-18"
+   },
+   "payProvider": "PayByPhone"
   },
   "richmond": {
    "name": "Richmond upon Thames",
@@ -1981,12 +4610,20 @@
        "from": "08:30",
        "to": "24:00"
       }
-     ]
+     ],
+     "bankHolidays": "charged",
+     "price": {
+      "perHour": 4.55
+     },
+     "maxStay": "2 hours"
     },
     "A2": {
      "hours": "Monday to Saturday 8.30am to 6.30pm (Bank and Public Holidays free)",
      "name": "Richmond Hill",
-     "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
+     "note": "Bay types: Permit; Pay and Display; RingGo in P&D",
+     "price": {
+      "perHour": 4.55
+     }
     },
     "A3": {
      "hours": "Monday to Saturday 8.30am to 6.30pm (Bank and Public Holidays free)",
@@ -1996,7 +4633,10 @@
     "B": {
      "hours": "Monday to Friday 10am to 6.30pm (Bank and Public Holidays free)",
      "name": "Hammersmith Bridge",
-     "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
+     "note": "Bay types: Permit; Pay and Display; RingGo in P&D",
+     "price": {
+      "perHour": 1.85
+     }
     },
     "B1": {
      "periods": [
@@ -2050,12 +4690,18 @@
     "B2": {
      "hours": "Monday to Friday 10am to noon (Bank and Public Holidays free)",
      "name": "White Hart Lane South",
-     "note": "Bay types: Permit; RingGo"
+     "note": "Bay types: Permit; RingGo",
+     "price": {
+      "perHour": 1.85
+     }
     },
     "C": {
      "hours": "Monday to Friday 8.30am to 6.30pm (Bank and Public Holidays free)",
      "name": "Cole Park",
-     "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
+     "note": "Bay types: Permit; Pay and Display; RingGo in P&D",
+     "price": {
+      "perHour": 1.85
+     }
     },
     "CB": {
      "periods": [
@@ -2095,17 +4741,28 @@
        "from": "08:00",
        "to": "21:30"
       }
-     ]
+     ],
+     "bankHolidays": "charged",
+     "price": {
+      "perHour": 1.85
+     }
     },
     "CR": {
      "hours": "Monday to Friday 10am to 4.30pm (Bank and Public Holidays free)",
      "name": "South-West Twickenham",
-     "note": "Bay types: Permit; RingGo"
+     "note": "Bay types: Permit; RingGo",
+     "price": {
+      "perHour": 1.85
+     }
     },
     "D": {
      "hours": "Monday to Saturday 8.30am to 6.30pm (Bank and Public Holidays free)",
      "name": "Central Twickenham",
-     "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
+     "note": "Bay types: Permit; Pay and Display; RingGo in P&D",
+     "price": {
+      "perHour": 2.65
+     },
+     "maxStay": "4 hours"
     },
     "E": {
      "periods": [
@@ -2141,22 +4798,34 @@
     "ES": {
      "hours": "Monday to Friday 10am to noon (Bank and Public Holidays free)",
      "name": "East Sheen",
-     "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
+     "note": "Bay types: Permit; Pay and Display; RingGo in P&D",
+     "price": {
+      "perHour": 1.85
+     }
     },
     "ES1": {
      "hours": "Monday to Friday 10am to noon (Bank and Public Holidays free)",
      "name": "Parkside",
-     "note": "Bay types: Permit; RingGo"
+     "note": "Bay types: Permit; RingGo",
+     "price": {
+      "perHour": 1.85
+     }
     },
     "F": {
      "hours": "Monday to Friday 10am to 4.30pm (Bank and Public Holidays free)",
      "name": "East Twickenham",
-     "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
+     "note": "Bay types: Permit; Pay and Display; RingGo in P&D",
+     "price": {
+      "perHour": 1.85
+     }
     },
     "FW": {
      "hours": "Monday to Friday 8.30am to 6.30pm (Bank and Public Holidays free)",
      "name": "Fulwell",
-     "note": "Bay types: Permit; RingGo"
+     "note": "Bay types: Permit; RingGo",
+     "price": {
+      "perHour": 1.85
+     }
     },
     "G": {
      "hours": "Monday to Friday 10am to 4.30pm (Bank and Public Holidays free)",
@@ -2196,12 +4865,19 @@
        "from": "18:30",
        "to": "20:00"
       }
-     ]
+     ],
+     "bankHolidays": "charged",
+     "price": {
+      "perHour": 1.85
+     }
     },
     "HM": {
      "hours": "Monday to Saturday 9am to 6.30pm (Bank and Public Holidays free)",
      "name": "Heatham Area",
-     "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
+     "note": "Bay types: Permit; Pay and Display; RingGo in P&D",
+     "price": {
+      "perHour": 1.85
+     }
     },
     "J": {
      "hours": "Monday to Friday 10am to 2pm (Bank and Public Holidays free)",
@@ -2237,7 +4913,11 @@
        "from": "12:00",
        "to": "22:00"
       }
-     ]
+     ],
+     "bankHolidays": "charged",
+     "price": {
+      "perHour": 1.85
+     }
     },
     "KB": {
      "hours": "Monday to Friday 10am to noon (Bank and Public Holidays free)",
@@ -2280,12 +4960,19 @@
         "to": "23:00"
        }
       ]
+     },
+     "bankHolidays": "charged",
+     "price": {
+      "perHour": 1.85
      }
     },
     "KS": {
      "hours": "Monday to Sunday 8am to 10pm (Bank and Public Holidays free)",
      "name": "Kingsway",
-     "note": "Bay types: Permit; RingGo"
+     "note": "Bay types: Permit; RingGo",
+     "price": {
+      "perHour": 1.85
+     }
     },
     "L": {
      "hours": "Monday to Friday 10am to 4.30pm (Bank and Public Holidays free)",
@@ -2300,22 +4987,32 @@
     "M1": {
      "hours": "Monday to Sunday 8.30am to 10pm (including Bank and Public Holidays)",
      "name": "Vicarage Road, Teddington",
-     "note": "Bay types: Permit"
+     "note": "Bay types: Permit",
+     "bankHolidays": "charged"
     },
     "M3": {
      "hours": "Monday to Saturday 8am to 6.30pm (Bank and Public Holidays free)",
      "name": "High Street, Barnes",
-     "note": "Bay types: RingGo in P&D"
+     "note": "Bay types: RingGo in P&D",
+     "price": {
+      "perHour": 1.85
+     }
     },
     "M4": {
      "hours": "Monday to Saturday 9am to 5pm (Bank and Public Holidays free)",
      "name": "High Street, Teddington",
-     "note": "Bay types: Pay and Display; RingGo in P&D"
+     "note": "Bay types: Pay and Display; RingGo in P&D",
+     "price": {
+      "perHour": 1.85
+     }
     },
     "M5": {
      "hours": "Monday to Saturday 8.30am to 6.30pm (Bank and Public Holidays free)",
      "name": "Broad Street and The Causeway, Teddington",
-     "note": "Bay types: Pay and Display; RingGo in P&D"
+     "note": "Bay types: Pay and Display; RingGo in P&D",
+     "price": {
+      "perHour": 1.85
+     }
     },
     "M8": {
      "hours": "Monday to Saturday 9am to 5pm (Bank and Public Holidays free)",
@@ -2325,22 +5022,52 @@
     "M9": {
      "hours": "Monday to Saturday 10am to 4.30pm (Bank and Public Holidays free)",
      "name": "Ham Parade",
-     "note": "Bay types: Pay and Display; RingGo in P&D"
+     "note": "Bay types: Pay and Display; RingGo in P&D",
+     "price": {
+      "perHour": 1.85
+     }
     },
     "N": {
      "hours": "Monday to Saturday 10am to 4.30pm (Bank and Public Holidays free)",
      "name": "North-East Richmond",
-     "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
+     "note": "Bay types: Permit; Pay and Display; RingGo in P&D",
+     "price": {
+      "perHour": 1.85
+     },
+     "maxStay": "4 hours"
     },
     "R": {
-     "hours": "Variable - refer to zone entry signs or the Twickenham Event day timetable page (restrictions include Bank Holidays when signed)",
+     "hours": "Event days only",
      "name": "Twickenham Event Zone",
-     "note": "Bay types: Permit"
+     "note": "Bay types: Permit",
+     "bankHolidays": "charged",
+     "periods": [],
+     "event": {
+      "hours": "Event days: 11am–11pm",
+      "periods": [
+       {
+        "days": [
+         0,
+         1,
+         2,
+         3,
+         4,
+         5,
+         6
+        ],
+        "from": "11:00",
+        "to": "23:00"
+       }
+      ]
+     }
     },
     "S": {
      "hours": "Monday to Friday 10am to 4.30pm (Bank and Public Holidays free)",
      "name": "St Margarets South",
-     "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
+     "note": "Bay types: Permit; Pay and Display; RingGo in P&D",
+     "price": {
+      "perHour": 1.85
+     }
     },
     "S1": {
      "periods": [
@@ -2368,17 +5095,26 @@
        "from": "10:00",
        "to": "16:30"
       }
-     ]
+     ],
+     "price": {
+      "perHour": 1.85
+     }
     },
     "S2": {
      "hours": "Monday to Friday 10am to 4.30pm (Bank and Public Holidays free)",
      "name": "St Margarets North",
-     "note": "Bay types: Permit"
+     "note": "Bay types: Permit",
+     "price": {
+      "perHour": 1.85
+     }
     },
     "S3": {
      "hours": "Monday to Friday 10am to noon (Bank and Public Holidays free)",
      "name": "St Margarets Riverside",
-     "note": "Bay types: Permit; Free (time limited)"
+     "note": "Bay types: Permit; Free (time limited)",
+     "price": {
+      "perHour": 1.85
+     }
     },
     "SH": {
      "hours": "Monday to Friday 10am to 4.30pm (Bank and Public Holidays free)",
@@ -2401,37 +5137,58 @@
      ],
      "hours": "Monday to Friday, 8.30am to 10.30am (Bank and Public Holidays free)",
      "name": "Teddington",
-     "note": "Bay types: Permit; Free (time limited); Pay and Display; RingGo in P&D"
+     "note": "Bay types: Permit; Free (time limited); Pay and Display; RingGo in P&D",
+     "price": {
+      "perHour": 1.85
+     }
     },
     "T1": {
      "hours": "Monday to Friday, 10am to 4.30pm (Bank and Public Holidays free)",
      "name": "Teddington",
-     "note": "Bay types: Permit; RingGo"
+     "note": "Bay types: Permit; RingGo",
+     "price": {
+      "perHour": 1.85
+     }
     },
     "T2": {
      "hours": "Monday to Friday, 10am to 12 noon (Bank and Public Holidays free)",
      "name": "Teddington",
-     "note": "Bay types: Permit; RingGo"
+     "note": "Bay types: Permit; RingGo",
+     "price": {
+      "perHour": 1.85
+     }
     },
     "T3": {
      "hours": "Monday to Friday, 10am to 12 noon (Bank and Public Holidays free)",
      "name": "Teddington",
-     "note": "Bay types: Permit; RingGo"
+     "note": "Bay types: Permit; RingGo",
+     "price": {
+      "perHour": 1.85
+     }
     },
     "T4": {
      "hours": "Monday to Friday, 10am to 12 noon (Bank and Public Holidays free)",
      "name": "Teddington",
-     "note": "Bay types: Permit; RingGo"
+     "note": "Bay types: Permit; RingGo",
+     "price": {
+      "perHour": 1.85
+     }
     },
     "T5": {
      "hours": "Monday to Friday, 10am to 4.30pm (Bank and Public Holidays free)",
      "name": "Teddington",
-     "note": "Bay types: Permit; Pay by Phone"
+     "note": "Bay types: Permit; Pay by Phone",
+     "price": {
+      "perHour": 1.85
+     }
     },
     "T6": {
      "hours": "Monday to Friday, 10am to 12 noon (Bank and Public Holidays free)",
      "name": "Teddington",
-     "note": "Bay types: Permit; Pay by Phone"
+     "note": "Bay types: Permit; Pay by Phone",
+     "price": {
+      "perHour": 1.85
+     }
     },
     "WC": {
      "periods": [
@@ -2477,6 +5234,9 @@
         "to": "11:00"
        }
       ]
+     },
+     "price": {
+      "perHour": 1.85
      }
     },
     "WR": {
@@ -2519,6 +5279,9 @@
         "to": "23:00"
        }
       ]
+     },
+     "price": {
+      "perHour": 1.85
      }
     },
     "WS": {
@@ -2565,12 +5328,18 @@
         "to": "11:00"
        }
       ]
+     },
+     "price": {
+      "perHour": 1.85
      }
     },
     "WT": {
      "hours": "Monday to Saturday 8.30am to 6.30pm (Bank and Public Holidays free)",
      "name": "West Twickenham",
-     "note": "Bay types: Permit, Pay and Display, RingGo in P&D, RingGo in Permit bays on Andover Road"
+     "note": "Bay types: Permit, Pay and Display, RingGo in P&D, RingGo in Permit bays on Andover Road",
+     "price": {
+      "perHour": 1.85
+     }
     },
     "X": {
      "hours": "Monday to Saturday 8.30am to 6.30pm (Bank and Public Holidays free)",
@@ -2585,17 +5354,23 @@
     "Z1": {
      "hours": "Monday to Sunday 8.30am to 10pm (including Bank and Public Holidays)",
      "name": "Elleray Road, Teddington",
-     "note": "Bay types: Permit"
+     "note": "Bay types: Permit",
+     "bankHolidays": "charged"
     },
     "Z2": {
      "hours": "Monday to Sunday 8.30am to 10pm (including Bank and Public Holidays)",
      "name": "Ferry Road, Teddington",
-     "note": "Bay types: Permit"
+     "note": "Bay types: Permit",
+     "bankHolidays": "charged"
     },
     "Z3": {
      "hours": "Monday to Sunday 8am to 9.30pm (including Bank and Public Holidays)",
      "name": "Bracken Gardens, Barnes",
-     "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
+     "note": "Bay types: Permit; Pay and Display; RingGo in P&D",
+     "bankHolidays": "charged",
+     "price": {
+      "perHour": 1.85
+     }
     },
     "Z4": {
      "hours": "Monday to Friday 10.30am to 2.30pm (Bank and Public Holidays free). Applies 1 September to 30 June",
@@ -2618,7 +5393,10 @@
     "Z5": {
      "hours": "Monday to Sunday 8.30am to 6.30pm (Bank and Public Holidays free)",
      "name": "First Cross Road, Twickenham",
-     "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
+     "note": "Bay types: Permit; Pay and Display; RingGo in P&D",
+     "price": {
+      "perHour": 1.85
+     }
     },
     "A1/A2": {
      "name": "Zone A1/A2 buffer area",
@@ -2658,7 +5436,10 @@
        "to": "24:00"
       }
      ],
-     "note": "The council’s map marks this as the Zone A1/A2 buffer area. Both zones are controlled Monday to Saturday 8.30am to 6.30pm; some A1 bays run longer, so evenings and Sundays show as unknown."
+     "note": "The council’s map marks this as the Zone A1/A2 buffer area. Both zones are controlled Monday to Saturday 8.30am to 6.30pm; some A1 bays run longer, so evenings and Sundays show as unknown.",
+     "price": {
+      "perHour": 4.55
+     }
     },
     "E-Popes": {
      "name": "South Twickenham: Popes Grove (Popes Avenue to the railway bridge)",
@@ -2744,7 +5525,10 @@
        "to": "18:30"
       }
      ],
-     "note": "Both zones’ hours cover Monday to Friday 10am to 4.30pm; the rest of WT’s hours show as unknown here. Check the signs on the street."
+     "note": "Both zones’ hours cover Monday to Friday 10am to 4.30pm; the rest of WT’s hours show as unknown here. Check the signs on the street.",
+     "price": {
+      "perHour": 1.85
+     }
     }
    },
    "notes": "Zone boundaries traced from the council’s “Controlled Parking Zones (CPZs)” map (vector PDF, https://www.richmond.gov.uk/media/0zsnuisk/zone_all.pdf), placed by fitting its borough boundary to Richmond’s (median error about 7 m); zone labels matched by their pointer lines. Pay and display zones M3–M9 and the Twickenham event zone (R) are not drawn.",
@@ -2752,7 +5536,15 @@
     "type": "file",
     "path": "richmond.geojson",
     "zoneField": "zone"
-   }
+   },
+   "bankHolidays": "free",
+   "charges": {
+    "model": "zone",
+    "note": "Richmond raised charges on 6 July 2026 and the council page hasn't been updated: RingGo now shows A1 £4.70/hr (5404 Clarence Street), D £2.80/hr (5590 Queens Road), N £1.95/hr (52822 St John's Grove), roughly 3–6% above the table. 'D (outer)' is in the £1.85 group and only the 'Zone D area' is £2.65; X inner is £1.85 and X outer £1.10, so X isn't given a single price. Residents get up to 30 minutes free/discounted. No diesel surcharge or emissions banding shown on the sampled RingGo pages.",
+    "url": "https://www.richmond.gov.uk/services/parking/parking_machines/pay_and_display_tariffs",
+    "checked": "2026-11-18"
+   },
+   "payProvider": "RingGo"
   },
   "wandsworth": {
    "name": "Wandsworth",
@@ -2977,7 +5769,8 @@
       }
      ],
      "maxStay": "4 hours",
-     "note": "Permits for Battersea Park Area CPZ are NOT valid in Battersea Park. BK Permit Holders only may park in Kersley Mews."
+     "note": "Permits for Battersea Park Area CPZ are NOT valid in Battersea Park. BK Permit Holders only may park in Kersley Mews.",
+     "bankHolidays": "charged"
     },
     "B1": {
      "name": "Battersea",
@@ -4079,7 +6872,17 @@
     "type": "file",
     "path": "wandsworth.geojson",
     "zoneField": "zone"
-   }
+   },
+   "bankHolidays": "free",
+   "charges": {
+    "model": "flat",
+    "perHour": 3.7,
+    "note": "Standard tariff £3.70/hr applies in most shared-use bays (max stay 4 hours or more). High tariff £4.30/hr applies to bays near town centres with 1–2 hour max stays. Low tariff £1.60/hr applies on some under-used streets (Birdhurst Rd, Blackshaw Rd, Grant Rd, Magdalen Rd, Maskell Rd, Podmore Rd, Spencer Park, Wimbledon Park Rd, Windmill Rd). Tariff follows the bay type, not the zone. The council page was last updated 03/06/2024, but RingGo 10612 (Tonsley Road, high tariff) still shows £4.30/hr. RingGo adds an 18p convenience charge. Battersea Park area (B) has its own stepped tariff on the council's Battersea Park page.",
+    "url": "https://www.wandsworth.gov.uk/parking/parking-bays/paying-to-park/parking-tariffs/",
+    "checked": "2026-11-18"
+   },
+   "maxStayDefault": "4 hours",
+   "payProvider": "RingGo"
   },
   "westminster": {
    "name": "Westminster",
@@ -4100,7 +6903,22 @@
     },
     "A3": {
      "name": "Zone A",
-     "note": "row present in PDF but its cells merged with A2/A4 in text extraction - unverified"
+     "note": "row present in PDF but its cells merged with A2/A4 in text extraction - unverified",
+     "hours": "Mon–Sat 8:30am–6:30pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ]
     },
     "A4": {
      "hours": "0830 - 1830 Mon - Sat",
@@ -4118,9 +6936,22 @@
      "note": "Applies to paid-for bays, single yellow lines and resident bays."
     },
     "B11": {
-     "hours": "0830 - 2200 Mon - Sat",
+     "hours": "Mon–Fri 8:30am–6:30pm",
      "name": "Zone B",
-     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+     "note": "Applies to paid-for bays, single yellow lines and resident bays.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ]
     },
     "B2": {
      "hours": "0830 - 1830 Mon - Fri and 0830 - 1330 Sat",
@@ -4128,9 +6959,29 @@
      "note": "Applies to paid-for bays, single yellow lines and resident bays."
     },
     "B3": {
-     "hours": "0830 - 2200 everyday (incl. Bank/Public Holidays)",
+     "hours": "Mon–Fri 8:30am–6:30pm, Sat 8:30am–1:30pm",
      "name": "Zone B",
-     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+     "note": "Applies to paid-for bays, single yellow lines and resident bays.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      },
+      {
+       "days": [
+        6
+       ],
+       "from": "08:30",
+       "to": "13:30"
+      }
+     ]
     },
     "B4": {
      "hours": "0830 - 1830 Mon - Fri",
@@ -4173,9 +7024,22 @@
      "note": "Applies to paid-for bays, single yellow lines and resident bays."
     },
     "D4": {
-     "hours": "0830 - 1830 Mon - Sat (except Maunsel St 0830 - 2230 Mon - Sat)",
+     "hours": "Mon–Fri 8:30am–6:30pm",
      "name": "Zone D",
-     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+     "note": "Applies to paid-for bays, single yellow lines and resident bays.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ]
     },
     "E1": {
      "hours": "0830 - 1830 Mon - Sat",
@@ -4188,29 +7052,99 @@
      "note": "Resident bays: 24 hours everyday (incl. Bank/Public Holidays)."
     },
     "F2": {
-     "hours": "0830 - 2030 everyday (incl. Bank/Public Holidays)",
+     "hours": "Mon–Sat 8:30am–6:30pm",
      "name": "Zone F2 (listed with F2, F3)",
-     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+     "note": "Applies to paid-for bays, single yellow lines and resident bays.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ]
     },
     "F3": {
-     "hours": "0830 - 2030 everyday (incl. Bank/Public Holidays)",
+     "hours": "Mon–Sat 8:30am–6:30pm",
      "name": "Zone F3 (listed with F2, F3)",
-     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+     "note": "Applies to paid-for bays, single yellow lines and resident bays.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ]
     },
     "F4": {
-     "hours": "24 hours everyday (incl. Bank/Public Holidays)",
+     "hours": "Mon–Sat 8:30am–6:30pm",
      "name": "Zone F4 (listed with F4, F5, F6)",
-     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+     "note": "Applies to paid-for bays, single yellow lines and resident bays.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ]
     },
     "F5": {
-     "hours": "24 hours everyday (incl. Bank/Public Holidays)",
+     "hours": "Mon–Sat 8:30am–6:30pm",
      "name": "Zone F5 (listed with F4, F5, F6)",
-     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+     "note": "Applies to paid-for bays, single yellow lines and resident bays.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ]
     },
     "F6": {
-     "hours": "24 hours everyday (incl. Bank/Public Holidays)",
+     "hours": "Mon–Sat 8:30am–6:30pm",
      "name": "Zone F6 (listed with F4, F5, F6)",
-     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+     "note": "Applies to paid-for bays, single yellow lines and resident bays.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ]
     },
     "G1": {
      "hours": "0830 - 1830 Mon - Sat",
@@ -4218,9 +7152,23 @@
      "note": "Resident bays: 24 hours everyday (incl. Bank/Public Holidays)."
     },
     "G2": {
-     "hours": "n/a",
+     "hours": "Mon–Sat 8:30am–6:30pm",
      "name": "Zone G",
-     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+     "note": "Applies to paid-for bays, single yellow lines and resident bays.",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ]
     }
    },
    "notes": "Zone boundaries traced from the council’s CPZ map, which dates from February 2011; boundaries may have changed since and edges can be out by about 20–60 m. Hours from the council’s March 2026 tariffs and controlled hours table; the colour follows paid-for bays and single yellow lines. Taxi and coach bays aren’t shown.",
@@ -4228,7 +7176,15 @@
     "type": "file",
     "path": "westminster.geojson",
     "zoneField": "zone"
-   }
+   },
+   "bankHolidays": "free",
+   "charges": {
+    "bands": [],
+    "note": "Hourly paid-for bay rate by parent zone and CO2 band (band 1 to 5 prices, £/hr), from 2 March 2026. Pre-2015 diesel vehicles pay an extra 50%. Motorcycles have a flat rate (A £4.70, B £3.81, C £2.16, D £3.15, E £6.52, F/G £6.83).",
+    "url": "https://www.westminster.gov.uk/sites/default/files/media/documents/hours-of-control-parking-tariffs-from-march-2026.pdf",
+    "checked": "2026-11-18"
+   },
+   "maxStayDefault": "4 hours"
   },
   "kingston": {
    "name": "Kingston upon Thames",
@@ -4236,7 +7192,129 @@
    "hoursUrl": "https://www.kingston.gov.uk/parking/find-street-parking",
    "checked": "2026-11-08",
    "licence": "Zones and hours: Royal Borough of Kingston upon Thames restrictions map (AppyWay). Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
-   "zones": {},
+   "zones": {
+    "A/A1 (1)": {
+     "bankHolidays": "charged",
+     "price": {
+      "perHour": 3.3
+     },
+     "maxStay": "2 hours",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "26541"
+     }
+    },
+    "A/A1 (2)": {
+     "bankHolidays": "charged"
+    },
+    "A/A1 Town Centre": {
+     "bankHolidays": "charged"
+    },
+    "B* (Town centre)": {
+     "bankHolidays": "charged"
+    },
+    "S (Central area)": {
+     "price": {
+      "perHour": 3.0
+     },
+     "payCode": {
+      "provider": "RingGo",
+      "code": "26573, 26575, 26531"
+     }
+    },
+    "S (Outer area)": {
+     "price": {
+      "perHour": 3.0
+     },
+     "maxStay": "2 hours",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "26532"
+     }
+    },
+    "H": {
+     "price": {
+      "perHour": 2.3
+     },
+     "maxStay": "4 hours",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "26560, 26576"
+     }
+    },
+    "C (1)": {
+     "price": {
+      "perHour": 2.3
+     },
+     "maxStay": "4 hours",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "26574"
+     }
+    },
+    "C (2)": {
+     "price": {
+      "perHour": 2.3
+     },
+     "maxStay": "4 hours",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "26574"
+     }
+    },
+    "N (1)": {
+     "price": {
+      "perHour": 2.3
+     },
+     "maxStay": "4 hours",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "26566, 26547"
+     }
+    },
+    "N (2)": {
+     "price": {
+      "perHour": 2.3
+     },
+     "maxStay": "4 hours",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "26566, 26547"
+     }
+    },
+    "N (3)": {
+     "price": {
+      "perHour": 2.3
+     },
+     "maxStay": "4 hours",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "26566, 26547"
+     }
+    },
+    "R": {
+     "price": {
+      "perHour": 2.3
+     },
+     "maxStay": "2 hours",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "26523"
+     }
+    },
+    "V (1)": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "26567, 26552"
+     }
+    },
+    "V (2)": {
+     "payCode": {
+      "provider": "RingGo",
+      "code": "26567, 26552"
+     }
+    }
+   },
    "notes": "Zones and hours from the council’s restrictions map (AppyWay Streets), which gives each zone’s areas their own hours; the council’s web page lists the same hours. Parking permit areas (DB–DK) are permit holders only during their hours.",
    "polygons": {
     "type": "appyway",
@@ -4247,7 +7325,15 @@
      1,
      9
     ]
-   }
+   },
+   "bankHolidays": "free",
+   "charges": {
+    "model": "zone",
+    "note": "Kingston prices each RingGo location (from 11 April 2025): £2.10–£3.90/hour. Ashdown Road/Fife Road 26508 £3.90). Some locations include 30 minutes free (CPZ S central, H, C). V is £2.30 (4 hour stay, 26567) or £2.10 (no max stay, 26552). RingGo adds a 10p convenience fee.",
+    "url": "https://www.kingston.gov.uk/parking/how-to-pay-for-parking/on-street-parking-charges",
+    "checked": "2026-11-18"
+   },
+   "payProvider": "RingGo"
   },
   "bexley": {
    "name": "Bexley",
@@ -4334,7 +7420,17 @@
     "type": "streets",
     "lists": "tools/parking_lists/bexley.json",
     "borough": "Bexley"
-   }
+   },
+   "bankHolidays": "free",
+   "charges": {
+    "model": "flat",
+    "perHour": 2.1,
+    "note": "RingGo price; pay-and-display machines (where present) are 10–30p dearer. Most on-street locations (Bexleyheath, Sidcup, Welling) charge £2.10 for 1 hour. Exceptions: Erith £1.90/hour (Walnut Tree Road £1.70); Abbey Wood bays (Mon–Fri 11am–1pm only) £15.40 for 2 hours, a commuter deterrent. No diesel or emissions surcharge mentioned. Tariffs are per street, not per CPZ.",
+    "url": "https://www.bexley.gov.uk/services/parking-transport-and-streets/parking-bexley/car-parks-and-street-parking",
+    "checked": "2026-11-18"
+   },
+   "maxStayDefault": "2 hours",
+   "payProvider": "RingGo"
   },
   "bromley": {
    "name": "Bromley",
@@ -4494,8 +7590,21 @@
      "name": "Clock House"
     },
     "R": {
-     "hours": "8am to 9.30am 8am to 2.30pm Monday to Friday Saturday to Sunday R3 only",
-     "name": "Copers Cope"
+     "hours": "Mon–Fri 8am–9:30am",
+     "name": "Copers Cope",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "08:00",
+       "to": "09:30"
+      }
+     ]
     },
     "ELM": {
      "hours": "1pm to 2pm Monday to Friday",
@@ -4633,7 +7742,15 @@
     "zoneField": "zone"
    },
    "partial": "Bromley",
-   "mapPdf": "https://www.bromley.gov.uk/downloads/file/1181/bromley-town-centre-cpz-map"
+   "mapPdf": "https://www.bromley.gov.uk/downloads/file/1181/bromley-town-centre-cpz-map",
+   "bankHolidays": "free",
+   "charges": {
+    "model": "note",
+    "note": "Set street by street (council directory 'On-street parking in Bromley', ~200 records). Examples: Bromley town centre (South St 6037, North St 6008, Queens Rd 6025, Elmfield Park 6010) £2.30/hour, 2h max; Park Road, Bromley £1.80; Beckenham Albemarle Rd (6067) £1.00/hour; Orpington Augustus Lane (6042) £1.20; Chatterton Rd (26100) £1.10. No emissions/diesel element found. Visitor vouchers £45–£55 per book of 15.",
+    "url": "https://www.bromley.gov.uk/directory-record/2538/south-street-bromley",
+    "checked": "2026-11-18"
+   },
+   "payProvider": "RingGo"
   },
   "ealing": {
    "name": "Ealing",
@@ -4655,7 +7772,11 @@
     "AS": {
      "hours": "Monday to Friday from 9am to 11am and 2pm to 4pm.",
      "name": "All Saints",
-     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_as_all_saints"
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_as_all_saints",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "37141"
+     }
     },
     "B": {
      "hours": "Monday to Friday from 9am to 6pm.",
@@ -4680,22 +7801,38 @@
     "DD": {
      "hours": "Monday to Friday from 9:30am to 5:30pm.",
      "name": "Bollo Bridge",
-     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_dd_bollo_bridge"
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_dd_bollo_bridge",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "811209, 811210"
+     }
     },
     "E": {
      "hours": "Monday to Friday from 9am to10am and 2pm to 3pm.",
      "name": "East Acton",
-     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_e_east_acton"
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_e_east_acton",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "37138"
+     }
     },
     "EE": {
      "hours": "Monday to Saturday from 9:30am to 5:30pm.",
      "name": "Brentvale",
-     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_ee_brentvale"
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_ee_brentvale",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "811156"
+     }
     },
     "FF": {
      "hours": "Monday to Friday from 9am to 10am and 3pm to 4pm.",
      "name": "Buxton Gardens",
-     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_ff_buxton_gardens"
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_ff_buxton_gardens",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "811355, 811357"
+     }
     },
     "GG": {
      "hours": "Monday to Friday from 10am to 11am and 2pm to 3pm.",
@@ -4718,29 +7855,69 @@
      "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_h1_hanwell_station"
     },
     "H2": {
-     "hours": "Monday to Friday from 9am to 10am and 3pm to 4pm Monday to Sunday from 9am to 5pm Church Road, W7 and Oakley Close only",
+     "hours": "Mon–Fri 9am–10am, 3pm–4pm",
      "name": "Hanwell Station (Hanwell Zoo)",
-     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_h2_hanwell_station_hanwell_zoo"
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_h2_hanwell_station_hanwell_zoo",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:00",
+       "to": "10:00"
+      },
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "15:00",
+       "to": "16:00"
+      }
+     ]
     },
     "H": {
      "hours": "Monday to Friday from 9:30am to 5:30pm.",
      "name": "West Ealing",
-     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_h_west_ealing"
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_h_west_ealing",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "37193, 811298, 811300"
+     }
     },
     "HH": {
      "hours": "Monday to Friday from 9am to 10am and 3pm to 4pm.",
      "name": "West Ealing",
-     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_hh_west_ealing"
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_hh_west_ealing",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "37166"
+     }
     },
     "HTC": {
      "hours": "Monday to Saturday from 9am to 6pm.",
      "name": "Hanwell Town Centre",
-     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_htc_hanwell_town_centre"
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_htc_hanwell_town_centre",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "811329"
+     }
     },
     "J": {
      "hours": "Monday to Friday from 9am to 10am and 3pm to 4pm.",
      "name": "Acton Town",
-     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_j_acton_town"
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_j_acton_town",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "811255"
+     }
     },
     "JJ": {
      "hours": "Monday to Friday from 10am to 11am and 3pm to 4pm.",
@@ -4760,7 +7937,11 @@
     "KK": {
      "hours": "Monday to Saturday from 9am to 7pm.",
      "name": "The Vale Estate",
-     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_kk_the_vale_estate"
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_kk_the_vale_estate",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "37364"
+     }
     },
     "L": {
      "hours": "Monday to Saturday from 10am to 8pm Sunday from 2pm to 8pm",
@@ -4805,22 +7986,47 @@
     "O": {
      "hours": "Monday to Friday from 9am to 10am and 3pm to 4pm.",
      "name": "Hanger Hill",
-     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_o_hanger_hill"
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_o_hanger_hill",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "37018, 811241"
+     }
     },
     "OH": {
      "hours": "Monday to Friday from 8am to 10am, 1pm to 3pm and 6pm to 8pm.",
      "name": "Old Hanwell",
-     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_oh_old_hanwell"
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_oh_old_hanwell",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "37600, 811275"
+     }
     },
     "P": {
      "hours": "Monday to Friday from 9am to 10am and 2pm to 3pm.",
      "name": "Perivale",
-     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_p_perivale"
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_p_perivale",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "811308"
+     }
     },
     "PC": {
-     "hours": "Monday to Friday from 11am to 2pm Saturday and Sunday from 11am to 2pm for Littlejohn Road only",
+     "hours": "Mon–Fri 11am–2pm",
      "name": "Poets Corner",
-     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_pc_poets_corner"
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_pc_poets_corner",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "11:00",
+       "to": "14:00"
+      }
+     ]
     },
     "PL": {
      "hours": "Monday to Friday from 10am to 11am and 3pm to 4pm.",
@@ -4830,7 +8036,11 @@
     "PP": {
      "hours": "Monday to Sunday from 8am to 8pm.",
      "name": "Old Oak",
-     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_pp_old_oak"
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_pp_old_oak",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "37095, 37189"
+     }
     },
     "PR-I": {
      "hours": "Monday to Friday from 10am to 11am and 3pm to 4pm.",
@@ -4860,22 +8070,35 @@
     "RR": {
      "hours": "Monday to Friday from 9am to 10am and 3pm to 4pm.",
      "name": "Little Ealing",
-     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_rr_little_ealing"
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_rr_little_ealing",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "37130, 37087"
+     }
     },
     "S": {
-     "hours": "Monday to Friday from 10am to 7:30pm Saturday from 10am to 4pm Northside on weekends Saturday from 10am to 1pm Southside on weekends",
+     "hours": "Mon–Fri 10am–7:30pm; Sat 10am–4pm (north side) or 10am–1pm (south side)",
      "name": "South Ealing",
-     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_s_south_ealing"
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_s_south_ealing",
+     "periods": null
     },
     "SA": {
      "hours": "Monday to Friday from 9am to 10am and 2pm to 3pm.",
      "name": "South Acton Estate",
-     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_sa_south_acton_estate"
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_sa_south_acton_estate",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "37100"
+     }
     },
     "SAI": {
      "hours": "Monday to Friday from 8am to 6pm.",
      "name": "South Acton Industrial",
-     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_sai_south_acton_industrial"
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_sai_south_acton_industrial",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "37577, 37581, 37580"
+     }
     },
     "SG": {
      "hours": "Monday to Friday from 9am to 7pm.",
@@ -4885,7 +8108,11 @@
     "SS": {
      "hours": "Monday to Friday from 10am to 11am and 3pm to 4pm.",
      "name": "Wesley Estate",
-     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_ss_wesley_estate"
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_ss_wesley_estate",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "37190, 37191"
+     }
     },
     "T1": {
      "hours": "Monday to Saturday from 9am to 7pm.",
@@ -4900,12 +8127,20 @@
     "TA": {
      "hours": "Monday to Friday from 9am to 11am and 3pm to 5pm.",
      "name": "Twyford Abbey",
-     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_ta_twyford_abbey"
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_ta_twyford_abbey",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "37618, 37620"
+     }
     },
     "TT": {
      "hours": "Monday to Friday from 10am to 11am and 2pm to 3pm.",
      "name": "Kent Gardens",
-     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_tt_kent_gardens"
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_tt_kent_gardens",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "37197, 37199"
+     }
     },
     "TW": {
      "hours": "Monday to Sunday from 8am to 10pm.",
@@ -4940,7 +8175,11 @@
     "Y": {
      "hours": "Monday to Friday from 9am to 10am and 3pm to 4pm.",
      "name": "West Twyford",
-     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_y_west_twyford"
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_y_west_twyford",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "811192"
+     }
     },
     "Z": {
      "hours": "Monday to Friday from 10am to 11am and 2pm to 3pm.",
@@ -4955,7 +8194,11 @@
     "D": {
      "hours": "Monday to Friday from 10am to 7:30pm",
      "name": "University of West London",
-     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_c_and_d_university_of_west_london"
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_c_and_d_university_of_west_london",
+     "payCode": {
+      "provider": "PayByPhone",
+      "code": "37140, 37139"
+     }
     },
     "F": {
      "hours": "Monday to Friday from 9am to 10am, 3pm to 4pm and 6pm to 7pm",
@@ -4973,7 +8216,36 @@
     "type": "streets",
     "lists": "tools/parking_lists/ealing.json",
     "borough": "Ealing"
-   }
+   },
+   "bankHolidays": "free",
+   "charges": {
+    "bands": [
+     {
+      "band": "1",
+      "co2": "0–100 g/km",
+      "perHour": 1.14
+     },
+     {
+      "band": "2",
+      "co2": "101–140 g/km",
+      "perHour": 1.45
+     },
+     {
+      "band": "3",
+      "co2": "141–185 g/km",
+      "perHour": 1.8
+     },
+     {
+      "band": "4",
+      "co2": "186+ g/km",
+      "perHour": 2.01
+     }
+    ],
+    "note": "Each PayByPhone location has one of three on-street hourly tariffs ('Hourly rate 2', '5' or '6'; 352/255/46 locations). Bands above are rate 2, the commonest. Per band 1–4: rate 5 £1.87/£2.43/£2.99/£3.36, rate 6 £2.60/£3.88/£4.11/£4.86. Pre-Euro-6 diesels pay a NOx-charge column instead (rate 2: £1.35/£1.68/£2.01/£2.28; rate 6 top £5.19), i.e. roughly +£0.21–£0.38/hour. tierByZone = the tariff of locations whose street matches the zone's street list (approximate). Spreadsheet's tariff sheet is headed 'New Traiff From 21th Oct 2026'. Council: 'Discounts of up to 50%' via PayByPhone/PayPoint for all but the most polluting vehicles.",
+    "url": "https://www.ealing.gov.uk/download/downloads/id/16797/parking_tariffs.xlsx",
+    "checked": "2026-11-18"
+   },
+   "payProvider": "PayByPhone"
   },
   "croydon": {
    "name": "Croydon",
@@ -4984,12 +8256,48 @@
    "zones": {
     "Bynes Road": {
      "name": "Bynes Road Permit Zone",
-     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Bynes_Road_Permit_Zone.pdf"
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Bynes_Road_Permit_Zone.pdf",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "19559, 19727"
+     },
+     "hours": "Mon–Sat 9am–5pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "09:00",
+       "to": "17:00"
+      }
+     ],
+     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
     },
     "Centre": {
      "name": "Central",
      "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Centre_Permit_Zone.pdf",
-     "note": "The council’s map (July 2008) says restrictions apply 7am to 7pm every day, single yellow lines 8am to midnight every day and bay charges 8am to midnight every day. That map is old, so the hours are shown as unknown: check the signs."
+     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs.",
+     "hours": "Mon–Sun 8am–midnight",
+     "periods": [
+      {
+       "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:00",
+       "to": "24:00"
+      }
+     ]
     },
     "Coulsdon Residents": {
      "name": "Coulsdon resident-only area",
@@ -5012,71 +8320,356 @@
     },
     "Coulsdon": {
      "name": "Coulsdon (town centre)",
-     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Coulsdon_Town_Centre_Permit_Zone.pdf"
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Coulsdon_Town_Centre_Permit_Zone.pdf",
+     "hours": "Mon–Sat 9am–5pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "09:00",
+       "to": "17:00"
+      }
+     ],
+     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
     },
     "E2": {
      "name": "E2 Zone",
-     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/E2%20%20ZONE%20MAP.pdf"
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/E2%20%20ZONE%20MAP.pdf",
+     "hours": "Mon–Sat 9am–5pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "09:00",
+       "to": "17:00"
+      }
+     ],
+     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
     },
     "East Outer": {
      "name": "East Outer Permit Area",
-     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/East%20Outer%20Permit%20Area%202019.pdf"
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/East%20Outer%20Permit%20Area%202019.pdf",
+     "hours": "Mon–Sat 9am–5pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "09:00",
+       "to": "17:00"
+      }
+     ],
+     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
     },
     "East Inner": {
      "name": "East Inner Permit Zone",
-     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/East_Inner_Permit_Zone.pdf"
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/East_Inner_Permit_Zone.pdf",
+     "hours": "Mon–Sat 9am–5pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "09:00",
+       "to": "17:00"
+      }
+     ],
+     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
     },
     "N1": {
      "name": "N1 Zone",
-     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/N1%20Zone.pdf"
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/N1%20Zone.pdf",
+     "hours": "Mon–Sat 9am–5pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "09:00",
+       "to": "17:00"
+      }
+     ],
+     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
     },
     "N2": {
      "name": "N2 Zone",
-     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/N2%20Zone.pdf"
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/N2%20Zone.pdf",
+     "maxStay": "12 hours",
+     "hours": "Mon–Sat 8am–8pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:00",
+       "to": "20:00"
+      }
+     ],
+     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
     },
     "Napier Road": {
      "name": "Napier Road Permit Zone",
-     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Napier_Road_Permit_Zone.pdf"
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Napier_Road_Permit_Zone.pdf",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "16427"
+     },
+     "hours": "Mon–Sat 9am–5pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "09:00",
+       "to": "17:00"
+      }
+     ],
+     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
     },
     "Norbury": {
      "name": "Norbury Permit Zone",
-     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Norbury_Permit_Zone%202017.pdf"
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Norbury_Permit_Zone%202017.pdf",
+     "hours": "Mon–Sat 9am–5pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "09:00",
+       "to": "17:00"
+      }
+     ],
+     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
     },
     "North": {
      "name": "North Zone",
-     "url": "https://www.croydon.gov.uk/sites/default/files/2024-02/north-zone-%28oct-2021.pdf"
+     "url": "https://www.croydon.gov.uk/sites/default/files/2024-02/north-zone-%28oct-2021.pdf",
+     "hours": "Mon–Sat 9am–5pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "09:00",
+       "to": "17:00"
+      }
+     ],
+     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
     },
     "Old Lodge Lane": {
      "name": "Old Lodge Lane Permit Zone",
-     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Old_Lodge_Lane_Permit_Zone.pdf"
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Old_Lodge_Lane_Permit_Zone.pdf",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "19738"
+     },
+     "hours": "Mon–Sat 9am–5pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "09:00",
+       "to": "17:00"
+      }
+     ],
+     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
     },
     "Purley": {
      "name": "Purley Permit Zone",
-     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Purley_Permit_Zone.pdf"
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Purley_Permit_Zone.pdf",
+     "hours": "Mon–Sat 9am–5pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "09:00",
+       "to": "17:00"
+      }
+     ],
+     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
     },
     "Sanderstead": {
      "name": "Sanderstead Permit Zone",
-     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Sanderstead_Permit_Zone.pdf"
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Sanderstead_Permit_Zone.pdf",
+     "hours": "Mon–Fri 9am–5pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "09:00",
+       "to": "17:00"
+      }
+     ],
+     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
     },
     "South Norwood": {
      "name": "South Norwood Permit Zone",
-     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/South%20Norwood%20Permit%20Zone.pdf"
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/South%20Norwood%20Permit%20Zone.pdf",
+     "hours": "Mon–Sat 9am–5pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "09:00",
+       "to": "17:00"
+      }
+     ],
+     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
     },
     "South": {
      "name": "South Permit Zone",
-     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/South_Permit_Zone.pdf"
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/South_Permit_Zone.pdf",
+     "hours": "Mon–Sat 9am–5pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "09:00",
+       "to": "17:00"
+      }
+     ],
+     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
     },
     "Thornton Heath": {
      "name": "Thornton Heath Permit Zone",
-     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Thornton_Heath_Permit_Zone.pdf"
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Thornton_Heath_Permit_Zone.pdf",
+     "hours": "Mon–Sat 9am–5pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "09:00",
+       "to": "17:00"
+      }
+     ],
+     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
     },
     "West": {
      "name": "West Permit Zone",
-     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/West_Permit_Zone.pdf"
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/West_Permit_Zone.pdf",
+     "hours": "Mon–Sat 9am–5pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "09:00",
+       "to": "17:00"
+      }
+     ],
+     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
     },
     "West Thornton": {
      "name": "West Thornton Permit Zone",
-     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/West_Thornton_Permit_Zone_0.pdf"
+     "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/West_Thornton_Permit_Zone_0.pdf",
+     "maxStay": "12 hours",
+     "payCode": {
+      "provider": "RingGo",
+      "code": "19926, 19925"
+     },
+     "hours": "Mon–Sat 8am–8pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:00",
+       "to": "20:00"
+      }
+     ],
+     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
     }
    },
    "notes": "Zone boundaries are traced from the council’s 20 permit zone maps (PDF), each placed by matching its street names to OpenStreetMap (median error 2 to 13 m per map). Several maps are old (2007 to 2021), so boundaries may have changed since; where two maps overlap, the newer one is used. The council doesn’t publish zone hours (they’re on the signs at each zone entrance), so zones are grey except where a map states its hours.",
@@ -5084,6 +8677,53 @@
     "type": "file",
     "path": "croydon.geojson",
     "zoneField": "zone"
+   },
+   "charges": {
+    "bands": [
+     {
+      "band": "1",
+      "co2": "0 g/km (<1)",
+      "perHour": 1.57
+     },
+     {
+      "band": "2",
+      "co2": "1–138 g/km",
+      "perHour": 1.78
+     },
+     {
+      "band": "3",
+      "co2": ">138 g/km, pre-March-2001 and non-Euro-6 diesel",
+      "perHour": 2.1
+     }
+    ],
+    "note": "From 7 April 2026. Other bay types, per hour Band 1/2/3: Central/East Inner/East Outer/West 2-hour bays £3.18/£3.61/£4.25 (plus Sunday & 6pm–midnight £1.76/£1.99/£2.35 in Central); Croydon CPZ 4-hour £2.36/£2.67/£3.15; District 2-hour £1.91/£2.16/£2.55; 8-hour standard £1.12/£1.27/£1.50; 2-hour 'first hour free' bays £0 for the first hour. Non-Euro-6 diesels pay Band 3 (no separate surcharge). RingGo displays the Band 3 price. Visitor half-day permits: inner zones £2.60–£3.40, outer zones £1.60–£2.20.",
+    "url": "https://www.croydon.gov.uk/sites/default/files/2026-04/Permit-and-on-street-parking-carparks-2026.pdf",
+    "checked": "2026-11-18"
+   },
+   "payProvider": "RingGo",
+   "ringgo": {
+    "slug": "croydon",
+    "locations": {
+     "16427": null,
+     "19500": null,
+     "19502": null,
+     "19504": null,
+     "19505": null,
+     "19514": null,
+     "19515": null,
+     "19526": null,
+     "19531": null,
+     "19551": null,
+     "19559": null,
+     "19577": null,
+     "19738": null,
+     "19744": null,
+     "19864": null,
+     "19926": null,
+     "19942": null,
+     "19951": null,
+     "19965": null
+    }
    }
   },
   "barnet": {
@@ -5094,7 +8734,15 @@
    "checked": "2026-11-08",
    "licence": "Zone hours: Barnet council. Borough outline: Office for National Statistics / London Datastore (OGL v3).",
    "zones": {},
-   "notes": "Barnet publishes neither zone boundaries nor a zone hours list online; its interactive map is at barnet.traffweb.app."
+   "notes": "Barnet publishes neither zone boundaries nor a zone hours list online; its interactive map is at barnet.traffweb.app.",
+   "bankHolidays": "free",
+   "charges": {
+    "model": "note",
+    "note": "No borough-wide tariff found; Barnet sets pay-by-phone tariffs per street/location by traffic order. Example (Naylor Rd, Birley Rd, Swan Lane N20, from 31 May 2026): £2.19 for up to 60 minutes, 2-hour max, Mon–Sat 8am–6.30pm. A 2026 HA8 order (Dryfield Rd/Gold Hill) is reported at £3.38/hour (not verified).",
+    "url": "https://www.thegazette.co.uk/notice/5143645",
+    "checked": "2026-11-18"
+   },
+   "payProvider": "PayByPhone"
   },
   "havering": {
    "name": "Havering",
@@ -5147,6 +8795,9 @@
        "from": "10:00",
        "to": "15:00"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "CR1": {
@@ -5165,6 +8816,9 @@
        "from": "08:00",
        "to": "18:30"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "EP1": {
@@ -5183,6 +8837,9 @@
        "from": "08:30",
        "to": "18:30"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "EP2": {
@@ -5201,6 +8858,9 @@
        "from": "08:30",
        "to": "18:30"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "GP1": {
@@ -5219,6 +8879,9 @@
        "from": "08:00",
        "to": "18:30"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "GP2": {
@@ -5261,6 +8924,9 @@
        "from": "18:30",
        "to": "22:00"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "GP3": {
@@ -5279,6 +8945,9 @@
        "from": "08:00",
        "to": "18:30"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "GP4": {
@@ -5297,6 +8966,9 @@
        "from": "08:00",
        "to": "18:30"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "GP5": {
@@ -5314,6 +8986,9 @@
        "from": "08:00",
        "to": "18:30"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "GP6": {
@@ -5331,6 +9006,9 @@
        "from": "08:00",
        "to": "10:00"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "HH1": {
@@ -5349,10 +9027,16 @@
        "from": "08:00",
        "to": "18:30"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "HH2": {
-     "name": "Harold Hill"
+     "name": "Harold Hill",
+     "bankHolidayExcept": [
+      "12-25"
+     ]
     },
     "HW1": {
      "name": "Harold Wood",
@@ -5369,6 +9053,9 @@
        "from": "10:00",
        "to": "14:00"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "HW2": {
@@ -5386,6 +9073,9 @@
        "from": "10:00",
        "to": "14:00"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "HW3": {
@@ -5403,6 +9093,9 @@
        "from": "10:30",
        "to": "11:30"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "HW4": {
@@ -5420,6 +9113,9 @@
        "from": "10:30",
        "to": "11:30"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "HW5": {
@@ -5437,6 +9133,9 @@
        "from": "10:30",
        "to": "11:30"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "HW6": {
@@ -5454,6 +9153,9 @@
        "from": "08:00",
        "to": "18:30"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "HWA": {
@@ -5491,6 +9193,9 @@
        "from": "08:00",
        "to": "18:30"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "HWB": {
@@ -5528,6 +9233,9 @@
        "from": "08:00",
        "to": "18:30"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "HWC": {
@@ -5566,7 +9274,10 @@
        "to": "18:30"
       }
      ],
-     "note": "The council’s page for HWC calls it HWB; its street list is HWC’s."
+     "note": "The council’s page for HWC calls it HWB; its street list is HWC’s.",
+     "bankHolidayExcept": [
+      "12-25"
+     ]
     },
     "HWD": {
      "name": "Harold Wood",
@@ -5596,6 +9307,9 @@
        "from": "08:00",
        "to": "08:30"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "HWE": {
@@ -5628,6 +9342,9 @@
        "from": "08:00",
        "to": "08:30"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "LCT": {
@@ -5659,7 +9376,10 @@
        "to": "23:30"
       }
      ],
-     "note": "The council’s page says 10:30am to 11:30pm; that may be a typo for 11:30am, so 11:30am to 11:30pm is shown as unknown."
+     "note": "The council’s page says 10:30am to 11:30pm; that may be a typo for 11:30am, so 11:30am to 11:30pm is shown as unknown.",
+     "bankHolidayExcept": [
+      "12-25"
+     ]
     },
     "HX1": {
      "name": "Hornchurch",
@@ -5691,7 +9411,10 @@
        "to": "23:30"
       }
      ],
-     "note": "Some single yellow lines are given as 10:30am to 11:30pm, which may be a typo; that time is shown as unknown."
+     "note": "Some single yellow lines are given as 10:30am to 11:30pm, which may be a typo; that time is shown as unknown.",
+     "bankHolidayExcept": [
+      "12-25"
+     ]
     },
     "HX2": {
      "name": "Hornchurch",
@@ -5709,6 +9432,9 @@
        "from": "10:30",
        "to": "11:30"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "HX3": {
@@ -5727,6 +9453,9 @@
        "from": "08:00",
        "to": "18:30"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "RV1": {
@@ -5745,6 +9474,9 @@
        "from": "08:30",
        "to": "18:30"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "RO1": {
@@ -5793,6 +9525,9 @@
        "from": "08:30",
        "to": "18:30"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "RP1": {
@@ -5821,6 +9556,9 @@
        "from": "14:00",
        "to": "16:00"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "ROST": {
@@ -5840,6 +9578,9 @@
        "from": "00:00",
        "to": "24:00"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "ROS": {
@@ -5858,6 +9599,9 @@
        "from": "08:00",
        "to": "20:00"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "ROW": {
@@ -5876,6 +9620,9 @@
        "from": "08:00",
        "to": "20:00"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "RO2B": {
@@ -5902,6 +9649,9 @@
        "from": "08:00",
        "to": "18:30"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "RO3": {
@@ -5920,10 +9670,16 @@
        "from": "08:30",
        "to": "18:30"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "RO4": {
-     "name": "Romford"
+     "name": "Romford",
+     "bankHolidayExcept": [
+      "12-25"
+     ]
     },
     "RO5A": {
      "name": "Romford Marshalls",
@@ -5941,6 +9697,9 @@
        "from": "08:30",
        "to": "18:30"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "RO6": {
@@ -5959,6 +9718,9 @@
        "from": "08:30",
        "to": "18:30"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "RO7": {
@@ -5977,6 +9739,9 @@
        "from": "08:00",
        "to": "18:30"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     },
     "ROR": {
@@ -6025,6 +9790,9 @@
        "from": "08:30",
        "to": "18:30"
       }
+     ],
+     "bankHolidayExcept": [
+      "12-25"
      ]
     }
    },
@@ -6034,7 +9802,17 @@
     "lists": "tools/parking_lists/havering.json",
     "borough": "Havering"
    },
-   "partial": "Havering"
+   "partial": "Havering",
+   "bankHolidays": "charged",
+   "charges": {
+    "model": "flat",
+    "perHour": 2.6,
+    "note": "On-street tariff is by duration, not a strict hourly rate: up to 1 hour £2.60, 1–2 hours £4.40, 2–3 hours £6.20 (Romford streets). First 30 minutes free once a day borough-wide, except Romford. No charge on Sundays. Christmas Day is free.",
+    "url": "https://www.havering.gov.uk/downloads/file/6565/havering-on-street-and-car-park-charges-locations-and-operating-hours",
+    "checked": "2026-11-18"
+   },
+   "maxStayDefault": "3 hours",
+   "payProvider": "RingGo"
   },
   "hillingdon": {
    "name": "Hillingdon",
@@ -6044,7 +9822,16 @@
    "checked": "2026-11-08",
    "licence": "Zone hours: Hillingdon council. Borough outline: Office for National Statistics / London Datastore (OGL v3).",
    "zones": {},
-   "notes": "Hillingdon calls its zones parking management schemes and publishes their hours only in traffic-order notices."
+   "notes": "Hillingdon calls its zones parking management schemes and publishes their hours only in traffic-order notices.",
+   "bankHolidays": "free",
+   "charges": {
+    "model": "flat",
+    "perHour": 2.5,
+    "note": "Non-resident rates, which most areas share: up to 30 min £1.30, 30 min–1 hour £2.50, up to 1.5 hours £4, up to 2 hours £5.50, then 80p (residents) / £1.40 (non-residents) per extra 20 or 30 minutes depending on area. Uxbridge town centre is £1.40 per 15 minutes (about £5.60/hour; residents 80p per 15 minutes). Residents (HillingdonFirst card) pay less: 30 min free, £1.50 up to 1 hour. Hayes (Mount Road/Nield Road), Harlington and parts of Uxbridge South/Hillingdon charge £1.40 per 20 minutes (£4.20/hour) for non-residents. Usual hours are Mon–Sat 8am–6.30pm, but they vary.",
+    "url": "https://pre.hillingdon.gov.uk/parking/street-parking-charges",
+    "checked": "2026-11-18"
+   },
+   "payProvider": "PayByPhone"
   },
   "hounslow": {
    "name": "Hounslow",
@@ -7240,7 +11027,52 @@
     "path": "hounslow.geojson",
     "zoneField": "zone"
    },
-   "partial": "Hounslow"
+   "partial": "Hounslow",
+   "bankHolidays": "free",
+   "charges": {
+    "bands": [
+     {
+      "band": "1",
+      "co2": "0g/km",
+      "perHour": 1.6
+     },
+     {
+      "band": "2",
+      "co2": "1 to 75g/km",
+      "perHour": 2.4
+     },
+     {
+      "band": "3",
+      "co2": "76 to 100g/km",
+      "perHour": 3.2
+     },
+     {
+      "band": "4",
+      "co2": "101 to 130g/km",
+      "perHour": 3.4
+     },
+     {
+      "band": "5",
+      "co2": "131 to 170g/km",
+      "perHour": 3.6
+     },
+     {
+      "band": "6",
+      "co2": "171 to 225g/km",
+      "perHour": 3.8
+     },
+     {
+      "band": "7",
+      "co2": "Over 226g/km",
+      "perHour": 4.0
+     }
+    ],
+    "dieselPerHour": 0.4,
+    "note": "Pay by phone, priced per half hour by CO2 band (bands 1–7, from 28 Feb 2025); table runs to 5 hours. Diesel and diesel-hybrid surcharge £0.20 per half hour (£0.40/hour). Unchanged by the 2026/27 fees notice (effective 6 June 2026), which says charges it doesn't list stay the same. Some park-and-shop places give 30 minutes free (session still needed).",
+    "url": "https://forms2.hounslow.gov.uk/info/20011/parking_transport_and_streets/2627/emissions-based_parking_charges/2",
+    "checked": "2026-11-18"
+   },
+   "payProvider": "PayByPhone"
   },
   "walthamforest": {
    "name": "Waltham Forest",
@@ -7601,7 +11433,17 @@
     "WXSw": {
      "hours": "Monday - Friday 9.00am - 6.00pm"
     }
-   }
+   },
+   "bankHolidays": "free",
+   "charges": {
+    "model": "flat",
+    "perHour": 2.7,
+    "note": "Cashless (PayByPhone) on-street: 30 min £1.70, 1 hour £2.70, 3 hours £4.40, so longer stays are cheaper per hour. Pay and display machines in the Walthamstow High Street area: 30 min £1.90, 1 hour £2.90. No diesel surcharge or emissions banding mentioned.",
+    "url": "https://www.walthamforest.gov.uk/parking-roads-and-travel/car-parks-and-street-parking/street-and-visitor-parking",
+    "checked": "2026-11-18"
+   },
+   "maxStayDefault": "3 hours",
+   "payProvider": "PayByPhone"
   }
  }
 }

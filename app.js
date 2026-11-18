@@ -1811,6 +1811,15 @@ function parkingPriceLabel(rule, borough) {
   return (lo === hi ? '' : 'from ') + parkingMoney(lo) + '/hour';
 }
 
+var PARKING_HOLIDAY_NAMES = { '12-25': 'Christmas Day', '12-26': 'Boxing Day', '01-01': 'New Year’s Day' };
+
+// ', except Christmas Day and Boxing Day' for a rule's free bank holidays; '' if none.
+function parkingHolidayExcept(list) {
+  var names = (list || []).map(function(d) { return PARKING_HOLIDAY_NAMES[d] || d; });
+  if (!names.length) return '';
+  return ', except ' + (names.length > 1 ? names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1] : names[0]);
+}
+
 // A rule's max stay, or the borough's default ('8 hours (council default)'); '' if neither.
 function parkingMaxStay(rule, borough, usingEvent) {
   var own = usingEvent ? rule.event.maxStay : rule.maxStay;
@@ -2133,7 +2142,8 @@ function renderParkingCard(sel) {
     parkingRow(card, 'Max stay', parkingMaxStay(rule, borough, usingEvent) || (rule.periods ? 'No limit listed' : ''));
     var bhPolicy = bankHolidayPolicy(rule);
     if (bhPolicy) parkingRow(card, 'Bank holidays', bhPolicy === 'free' ? 'Free'
-      : 'Normal hours' + (rule.bankHolidayExcept && rule.bankHolidayExcept.indexOf('12-25') !== -1 ? ', except Christmas Day' : ''));
+      : bhPolicy === 'charged' ? 'Normal hours' + parkingHolidayExcept(rule.bankHolidayExcept)
+      : 'Varies: check the signs');
     var pay = rule.payCode || zoneRule.payCode;
     if (pay && pay.code) parkingRow(card, 'Pay by ' + pay.provider, 'Location ' + pay.code);
     if (special) parkingRow(card, 'Rest of zone ' + sel.zone, zoneRule.hours);
@@ -2245,7 +2255,7 @@ function renderParkingCharges(borough) {
     var rows = [];
     if (c.model === 'flat' && c.perHour != null) rows.push(['Per hour', c.perHour]);
     if (c.model === 'fuel' && c.byFuel) {
-      [['electric', 'Electric'], ['petrol', 'Petrol'], ['diesel', 'Diesel']].forEach(function(f) {
+      [['electric', 'Electric'], ['petrol', 'Petrol'], ['diesel', 'Diesel'], ['other', 'Other vehicles']].forEach(function(f) {
         if (c.byFuel[f[0]] != null) rows.push([f[1], c.byFuel[f[0]]]);
       });
     }
