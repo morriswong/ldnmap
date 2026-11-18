@@ -1,0 +1,29 @@
+name: Parking data watch
+
+# Weekly: look for council parking changes the map may be missing (MyRingGo tariff updates,
+# London Gazette traffic orders, the bank holiday list running out) and open an issue for each.
+# It never changes the data. See tools/check_parking_sources.py.
+on:
+  schedule:
+    - cron: '0 6 * * 1'   # Mondays 06:00 UTC
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Print findings only, open no issues'
+        type: boolean
+        default: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check council sources
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 tools/check_parking_sources.py ${{ inputs.dry_run && '--dry-run' || '' }}

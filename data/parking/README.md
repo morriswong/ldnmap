@@ -52,6 +52,16 @@ Where a council publishes only a web list of zones and hours, the borough is out
 shown; where it publishes neither, the outline carries a note and a link. Hours are never guessed:
 times the council's wording doesn't settle are `unsure` (shown as unknown).
 
+## Keeping it current
+
+`.github/workflows/parking-watch.yml` runs `tools/check_parking_sources.py` every Monday. It opens a
+`parking-data` issue when a MyRingGo location's "Last tariff update" changes (boroughs with a `ringgo`
+entry in `parking_sources.json`: `{slug, locations: {code: last update}}`), when a new London Gazette
+traffic order mentions a zone's hours or max stay, or when the bank holiday list is about to run out.
+It never edits the data. After checking an issue, update `parking_sources.json` and the built files,
+and the recorded `ringgo` date. Add new MyRingGo codes with a `null` date and run the script with
+`--write --only ringgo` to record their current dates without opening issues.
+
 ## Sources and gaps
 
 Per borough, `tools/parking_sources.json` records the polygon service and the council page the
