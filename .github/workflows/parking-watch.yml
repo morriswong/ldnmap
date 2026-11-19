@@ -1,8 +1,9 @@
 name: Parking data watch
 
-# Weekly: look for council parking changes the map may be missing (MyRingGo tariff updates,
-# London Gazette traffic orders, the bank holiday list running out) and open an issue for each.
-# It never changes the data. See tools/check_parking_sources.py.
+# Weekly: look for council parking changes the map may be missing (MyRingGo tariff updates, the
+# bank holiday list running out) and open an issue for each. It never changes the data. See
+# tools/check_parking_sources.py. The London Gazette refuses GitHub's runners, so its traffic
+# orders are watched by a scheduled Claude run instead (tools/gazette_watch.md).
 on:
   schedule:
     - cron: '0 6 * * 1'   # Mondays 06:00 UTC

@@ -11,12 +11,15 @@ Checks:
             prices or max stay (H&F zone H's changed three weeks before its new hours started).
             A null date is a baseline: it is recorded (with --write) and not reported.
   holidays  rules.json's bank holiday list runs at least 180 days ahead.
-  gazette   New London Gazette "Road Traffic Acts" notices from the last 8 days that mention a
-            controlled parking zone and hours or a max stay, per borough. If the Gazette refuses
-            the request (it blocks some networks), this is reported in the log, not as a failure.
+
+The London Gazette (where councils publish traffic orders) refuses every request from GitHub's
+runners and from this project's server, robots.txt included, so no script here reads it. A weekly
+Claude run reads it with its web fetch instead (tools/gazette_watch.md) and files each notice
+through --gazette, which gives it the same title, label and de-duplication as the checks above.
 
 Usage:
-  python3 tools/check_parking_sources.py [--dry-run] [--write] [--limit N] [--only ringgo,holidays,gazette]
+  python3 tools/check_parking_sources.py [--dry-run] [--write] [--limit N] [--only ringgo,holidays]
+  python3 tools/check_parking_sources.py --gazette NOTICE_ID --borough hf --summary "..." [--dry-run]
 """
 import argparse
 import datetime as dt
@@ -28,7 +31,6 @@ import subprocess
 import sys
 import time
 import urllib.error
-import urllib.parse
 import urllib.request
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
@@ -36,14 +38,9 @@ SOURCES = os.path.join(ROOT, 'tools', 'parking_sources.json')
 RULES = os.path.join(ROOT, 'data', 'parking', 'rules.json')
 UA = 'ldnmap-parking-check/1.0 (+https://ldnmap.pages.dev)'
 RINGGO = 'https://www.myringgo.com/{slug}/parkinglocator/{code}'
-GAZETTE = 'https://www.thegazette.co.uk/all-notices/notice'
 LABEL = 'parking-data'
 RINGGO_DELAY = 5      # seconds between MyRingGo requests: it rate-limits
-GAZETTE_DELAY = 2
 HOLIDAY_RUNWAY = 180  # days
-GAZETTE_DAYS = 8      # a little over a week, so a late weekly run doesn't miss a day
-GAZETTE_HINT = re.compile(r'monday|tuesday|wednesday|thursday|friday|saturday|sunday|maximum stay|'
-                          r'controlled (hours|times)|extended|operat', re.I)
 
 
 def get(url):
@@ -130,36 +127,22 @@ def check_holidays(findings, today):
     print(f'  bank holidays: last {last}', file=sys.stderr)
 
 
-def gazette_name(b):
-    return b['name'].replace('&', 'and')
-
-
-def check_gazette(src, findings, today):
-    since = (today - dt.timedelta(days=GAZETTE_DAYS)).isoformat()
-    for bid, b in src['boroughs'].items():
-        q = urllib.parse.urlencode({'text': f'"controlled parking zone" "{gazette_name(b)}"',
-                                    'start-publish-date': since, 'sort-by': 'latest-date'})
-        status, raw = get(f'{GAZETTE}?{q}')
-        time.sleep(GAZETTE_DELAY)
-        if status != 200:
-            print(f'  gazette unreachable (HTTP {status}); skipping the Gazette check', file=sys.stderr)
-            return
-        for nid, chunk in re.findall(r'href="(?:https://www\.thegazette\.co\.uk)?/notice/(\d+)"(.*?)(?=href="(?:https://www\.thegazette\.co\.uk)?/notice/\d+"|$)',
-                                     raw, flags=re.S):
-            text = page_text(chunk)[:1500]
-            if 'Road Traffic' not in text and 'Traffic' not in text:
-                continue
-            if not GAZETTE_HINT.search(text):
-                continue
-            findings.append({
-                'title': f'Parking: {b["name"]} traffic order, Gazette notice {nid}',
-                'body': (f'A new Road Traffic Acts notice for {b["name"]} mentions a controlled parking zone and '
-                         f'hours or a max stay: https://www.thegazette.co.uk/notice/{nid}\n\n> {text[:600]}\n\n'
-                         'Check whether it\'s a made order (not just a proposal), when it comes into force, and '
-                         'update `tools/parking_sources.json` and the built data if it changes zone hours, max '
-                         'stays or prices.'),
-            })
-        print(f'  gazette {bid}: checked', file=sys.stderr)
+def gazette_finding(src, notice_id, borough, summary):
+    """The issue for one Gazette traffic order notice (found by tools/gazette_watch.md)."""
+    if not re.fullmatch(r'\d{5,9}', notice_id):
+        sys.exit(f'--gazette takes a numeric notice id, not {notice_id!r}')
+    b = src['boroughs'].get(borough)
+    if not b:
+        sys.exit(f'unknown borough {borough!r}; use one of: {", ".join(src["boroughs"])}')
+    url = f'https://www.thegazette.co.uk/notice/{notice_id}'
+    return {
+        'title': f'Parking: {b["name"]} traffic order, Gazette notice {notice_id}',
+        'body': (f'A London Gazette Road Traffic Acts notice from {b["name"]} may change parking hours, days, '
+                 f'max stays or prices: {url}\n\n> {summary.strip()[:1500]}\n\n'
+                 'Check whether it is a made order (not just a proposal) and when it comes into force, then '
+                 'update `tools/parking_sources.json` and the built data. Found by the weekly Gazette watch '
+                 '(`tools/gazette_watch.md`).'),
+    }
 
 
 def open_issues(findings):
@@ -182,19 +165,23 @@ def main():
     ap.add_argument('--dry-run', action='store_true', help='print findings, open no issues')
     ap.add_argument('--write', action='store_true', help='record new RingGo dates in parking_sources.json')
     ap.add_argument('--limit', type=int, help='check at most N RingGo locations')
-    ap.add_argument('--only', default='ringgo,holidays,gazette')
+    ap.add_argument('--only', default='ringgo,holidays')
+    ap.add_argument('--gazette', metavar='NOTICE_ID', help='file one Gazette notice (with --borough, --summary)')
+    ap.add_argument('--borough', help='borough id from parking_sources.json, for --gazette')
+    ap.add_argument('--summary', default='', help='what the notice changes, for --gazette')
     args = ap.parse_args()
     only = set(args.only.split(','))
     src = json.load(open(SOURCES))
     today = dt.date.today()
     findings = []
+    if args.gazette:
+        findings.append(gazette_finding(src, args.gazette, args.borough, args.summary))
+        only = set()
     if 'holidays' in only:
         check_holidays(findings, today)
     if 'ringgo' in only and check_ringgo(src, findings, args.limit, args.write):
         with open(SOURCES, 'w') as f:
             json.dump(src, f, indent=1, ensure_ascii=False)
-    if 'gazette' in only:
-        check_gazette(src, findings, today)
     for f in findings:
         print(f'FINDING: {f["title"]}')
     if not findings:
