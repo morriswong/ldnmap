@@ -1032,6 +1032,7 @@
       "Bellamy Close",
       "Dieppe Close",
       "Franklin Square",
+      "Gibbs Green Close",
       "Ivatt Place",
       "Lerry Close",
       "Marchbank Road",
@@ -1059,7 +1060,8 @@
       "provider": "RingGo",
       "code": "17738"
      },
-     "note": "The council lists D (East) as Mon–Fri 9am–5pm but publishes no street list; these streets are the block east of North End Road that its borough map shades as Monday to Friday. Check the signs."
+     "note": "Streets inside the council's own Zone D (East) boundary on its online CPZ map (lbhf.gov.uk/parking/pay-and-display/map-controlled-parking-zones, Google My Maps layer 'Controlled Parking Zone D (East)', checked 2026-11-19). Lillie Road and West Cromwell Road form its edge and stay in zone D.",
+     "boundaryUrl": "https://www.google.com/maps/d/kml?mid=19Azi5jTTEnWfrjOLNqy-CG5btpw21Q_6&forcekml=1"
     }
    },
    "streetHook": "hf_river",
@@ -1567,7 +1569,7 @@
     "urlField": "weblink"
    },
    "hoursUrl": "https://www.haringey.gov.uk/parking/cpzs/all-cpz-hours",
-   "checked": "2026-11-08",
+   "checked": "2026-11-19",
    "licence": "Zones: Haringey Council map data (licence not stated). Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
    "hoursFromData": {
     "fields": [
@@ -1586,19 +1588,66 @@
    "bankHolidays": "free",
    "zones": {
     "Bruce Castle": {
-     "bankHolidays": "unknown",
      "price": {
       "perHour": 1.6
-     }
+     },
+     "event": {
+      "hours": "Event days (Tottenham Hotspur Stadium): Mon–Fri 8am–8.30pm, Sat–Sun 8am–8pm, bank holidays 12 noon–8pm",
+      "periods": [
+       {
+        "days": [
+         1,
+         2,
+         3,
+         4,
+         5
+        ],
+        "from": "08:00",
+        "to": "20:30"
+       },
+       {
+        "days": [
+         0,
+         6
+        ],
+        "from": "08:00",
+        "to": "20:00"
+       }
+      ]
+     },
+     "note": "On a bank holiday that is also an event day the council's event hours are 12 noon to 8pm; the map uses that weekday's event hours, so check the signs."
     },
     "Bruce Grove North": {
-     "bankHolidays": "unknown",
      "price": {
       "perHour": 2.6
-     }
+     },
+     "event": {
+      "hours": "Event days (Tottenham Hotspur Stadium): Mon–Fri 8am–8.30pm, Sat–Sun 8am–8pm, bank holidays 12 noon–8pm",
+      "periods": [
+       {
+        "days": [
+         1,
+         2,
+         3,
+         4,
+         5
+        ],
+        "from": "08:00",
+        "to": "20:30"
+       },
+       {
+        "days": [
+         0,
+         6
+        ],
+        "from": "08:00",
+        "to": "20:00"
+       }
+      ]
+     },
+     "note": "On a bank holiday that is also an event day the council's event hours are 12 noon to 8pm; the map uses that weekday's event hours, so check the signs."
     },
     "Northumberland Park West": {
-     "bankHolidays": "unknown",
      "price": {
       "perHour": 1.6
      },
@@ -1615,22 +1664,94 @@
        "from": "08:00",
        "to": "20:00"
       }
-     ]
+     ],
+     "event": {
+      "hours": "Event days (Tottenham Hotspur Stadium): Mon–Fri 8am–8.30pm, Sat, Sun and bank holidays 12 noon–8pm",
+      "periods": [
+       {
+        "days": [
+         1,
+         2,
+         3,
+         4,
+         5
+        ],
+        "from": "08:00",
+        "to": "20:30"
+       },
+       {
+        "days": [
+         0,
+         6
+        ],
+        "from": "12:00",
+        "to": "20:00"
+       }
+      ]
+     },
+     "note": "On a bank holiday that is also an event day the council's event hours are 12 noon to 8pm; the map uses that weekday's event hours, so check the signs."
     },
     "The Hale": {
-     "bankHolidays": "unknown",
      "price": {
       "perHour": 2.6
-     }
+     },
+     "event": {
+      "hours": "Event days (Tottenham Hotspur Stadium): Mon–Fri 8am–8.30pm, Sat–Sun 8am–8pm, bank holidays 12 noon–8pm",
+      "periods": [
+       {
+        "days": [
+         1,
+         2,
+         3,
+         4,
+         5
+        ],
+        "from": "08:00",
+        "to": "20:30"
+       },
+       {
+        "days": [
+         0,
+         6
+        ],
+        "from": "08:00",
+        "to": "20:00"
+       }
+      ]
+     },
+     "note": "On a bank holiday that is also an event day the council's event hours are 12 noon to 8pm; the map uses that weekday's event hours, so check the signs."
     },
     "Tottenham Hale North": {
-     "bankHolidays": "unknown",
      "price": {
       "perHour": 1.6
-     }
+     },
+     "event": {
+      "hours": "Event days (Tottenham Hotspur Stadium): Mon–Fri 8am–8.30pm, Sat–Sun 8am–8pm, bank holidays 12 noon–8pm",
+      "periods": [
+       {
+        "days": [
+         1,
+         2,
+         3,
+         4,
+         5
+        ],
+        "from": "08:00",
+        "to": "20:30"
+       },
+       {
+        "days": [
+         0,
+         6
+        ],
+        "from": "08:00",
+        "to": "20:00"
+       }
+      ]
+     },
+     "note": "On a bank holiday that is also an event day the council's event hours are 12 noon to 8pm; the map uses that weekday's event hours, so check the signs."
     },
     "Tottenham Hale North Event Day": {
-     "bankHolidays": "unknown",
      "hours": "Event days only",
      "periods": [],
      "event": {
@@ -1659,7 +1780,6 @@
      }
     },
     "Tottenham Event Day": {
-     "bankHolidays": "unknown",
      "hours": "Event days only",
      "periods": [],
      "event": {
@@ -1688,7 +1808,6 @@
      }
     },
     "Tottenham North": {
-     "bankHolidays": "unknown",
      "price": {
       "perHour": 1.6
      },
@@ -1706,16 +1825,70 @@
        "from": "08:00",
        "to": "18:30"
       }
-     ]
+     ],
+     "event": {
+      "hours": "Event days (Tottenham Hotspur Stadium): Mon–Fri 8am–8.30pm, Sat 8am–8pm, Sun and bank holidays 12 noon–8pm",
+      "periods": [
+       {
+        "days": [
+         1,
+         2,
+         3,
+         4,
+         5
+        ],
+        "from": "08:00",
+        "to": "20:30"
+       },
+       {
+        "days": [
+         6
+        ],
+        "from": "08:00",
+        "to": "20:00"
+       },
+       {
+        "days": [
+         0
+        ],
+        "from": "12:00",
+        "to": "20:00"
+       }
+      ]
+     },
+     "note": "On a bank holiday that is also an event day the council's event hours are 12 noon to 8pm; the map uses that weekday's event hours, so check the signs."
     },
     "Tower Gardens": {
-     "bankHolidays": "charged",
      "price": {
       "perHour": 1.6
-     }
+     },
+     "event": {
+      "hours": "Event days (Tottenham Hotspur Stadium): Mon–Fri 8am–8.30pm, Sat–Sun 8am–8pm, bank holidays 12 noon–8pm",
+      "periods": [
+       {
+        "days": [
+         1,
+         2,
+         3,
+         4,
+         5
+        ],
+        "from": "08:00",
+        "to": "20:30"
+       },
+       {
+        "days": [
+         0,
+         6
+        ],
+        "from": "08:00",
+        "to": "20:00"
+       }
+      ]
+     },
+     "note": "Walpole Road north of Downhills Way has its own hours (shown separately). On a bank holiday that is also an event day the council's event hours are 12 noon to 8pm; the map uses that weekday's event hours, so check the signs."
     },
     "Tower Gardens Event Day": {
-     "bankHolidays": "unknown",
      "hours": "Event days only",
      "periods": [],
      "event": {
@@ -1744,34 +1917,154 @@
      }
     },
     "White Hart Lane": {
-     "bankHolidays": "unknown",
      "price": {
       "perHour": 1.6
-     }
+     },
+     "event": {
+      "hours": "Event days (Tottenham Hotspur Stadium): Mon–Fri 8am–8.30pm, Sat–Sun 8am–8pm, bank holidays 12 noon–8pm",
+      "periods": [
+       {
+        "days": [
+         1,
+         2,
+         3,
+         4,
+         5
+        ],
+        "from": "08:00",
+        "to": "20:30"
+       },
+       {
+        "days": [
+         0,
+         6
+        ],
+        "from": "08:00",
+        "to": "20:00"
+       }
+      ]
+     },
+     "note": "On a bank holiday that is also an event day the council's event hours are 12 noon to 8pm; the map uses that weekday's event hours, so check the signs."
     },
     "Willoughby Lane": {
-     "bankHolidays": "unknown",
      "price": {
       "perHour": 1.6
-     }
+     },
+     "event": {
+      "hours": "Event days (Tottenham Hotspur Stadium): Mon–Fri 8am–8.30pm, Sat, Sun and bank holidays 12 noon–8pm",
+      "periods": [
+       {
+        "days": [
+         1,
+         2,
+         3,
+         4,
+         5
+        ],
+        "from": "08:00",
+        "to": "20:30"
+       },
+       {
+        "days": [
+         0,
+         6
+        ],
+        "from": "12:00",
+        "to": "20:00"
+       }
+      ]
+     },
+     "note": "On a bank holiday that is also an event day the council's event hours are 12 noon to 8pm; the map uses that weekday's event hours, so check the signs."
     },
     "Finsbury Park": {
-     "bankHolidays": "unknown",
      "price": {
       "perHour": 2.6
-     }
+     },
+     "event": {
+      "hours": "Event days (Emirates Stadium matches and events, Finsbury Park events): Mon–Sat 8.30am–8.30pm, Sun and bank holidays 12 noon–4.30pm",
+      "periods": [
+       {
+        "days": [
+         1,
+         2,
+         3,
+         4,
+         5,
+         6
+        ],
+        "from": "08:30",
+        "to": "20:30"
+       },
+       {
+        "days": [
+         0
+        ],
+        "from": "12:00",
+        "to": "16:30"
+       }
+      ]
+     },
+     "note": "On a bank holiday that is also an event day the council's event hours are 12 noon to 4.30pm; the map uses that weekday's event hours, so check the signs."
     },
     "Finsbury Park B": {
-     "bankHolidays": "unknown",
      "price": {
       "perHour": 2.6
-     }
+     },
+     "event": {
+      "hours": "Event days (Emirates Stadium matches and events, Finsbury Park events): Mon–Sat 8.30am–8.30pm, Sun and bank holidays 12 noon–4.30pm",
+      "periods": [
+       {
+        "days": [
+         1,
+         2,
+         3,
+         4,
+         5,
+         6
+        ],
+        "from": "08:30",
+        "to": "20:30"
+       },
+       {
+        "days": [
+         0
+        ],
+        "from": "12:00",
+        "to": "16:30"
+       }
+      ]
+     },
+     "note": "On a bank holiday that is also an event day the council's event hours are 12 noon to 4.30pm; the map uses that weekday's event hours, so check the signs."
     },
     "Finsbury Park C": {
-     "bankHolidays": "unknown",
      "price": {
       "perHour": 2.6
-     }
+     },
+     "event": {
+      "hours": "Event days (Emirates Stadium matches and events, Finsbury Park events): Mon–Sat 8.30am–8.30pm, Sun and bank holidays 12 noon–4.30pm",
+      "periods": [
+       {
+        "days": [
+         1,
+         2,
+         3,
+         4,
+         5,
+         6
+        ],
+        "from": "08:30",
+        "to": "20:30"
+       },
+       {
+        "days": [
+         0
+        ],
+        "from": "12:00",
+        "to": "16:30"
+       }
+      ]
+     },
+     "note": "On a bank holiday that is also an event day the council's event hours are 12 noon to 4.30pm; the map uses that weekday's event hours, so check the signs."
     },
     "Alexandra Palace": {
      "price": {
@@ -1929,7 +2222,43 @@
      }
     }
    },
-   "payProvider": "RingGo"
+   "payProvider": "RingGo",
+   "specialStreets": {
+    "TG-walpole": {
+     "zone": "Tower Gardens",
+     "name": "Tower Gardens: Walpole Road sub-zone",
+     "streets": [
+      "Walpole Road"
+     ],
+     "hours": "Mon–Sat 8am–10pm, Sun 1pm–10pm (event days too); bank holidays 1pm–10pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:00",
+       "to": "22:00"
+      },
+      {
+       "days": [
+        0
+       ],
+       "from": "13:00",
+       "to": "22:00"
+      }
+     ],
+     "bankHolidays": "unknown",
+     "price": {
+      "perHour": 1.6
+     },
+     "note": "Walpole Road north of Downhills Way is in Tower Gardens CPZ with its own hours (council CPZ hours page, checked 2026-11-19). Bank holidays are controlled 1pm to 10pm, which the map can't show yet, so they show as unknown."
+    }
+   }
   },
   "harrow": {
    "name": "Harrow",
@@ -4613,7 +4942,7 @@
      ],
      "bankHolidays": "charged",
      "price": {
-      "perHour": 4.55
+      "perHour": 4.7
      },
      "maxStay": "2 hours"
     },
@@ -4622,7 +4951,7 @@
      "name": "Richmond Hill",
      "note": "Bay types: Permit; Pay and Display; RingGo in P&D",
      "price": {
-      "perHour": 4.55
+      "perHour": 4.7
      }
     },
     "A3": {
@@ -4635,7 +4964,7 @@
      "name": "Hammersmith Bridge",
      "note": "Bay types: Permit; Pay and Display; RingGo in P&D",
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "B1": {
@@ -4692,7 +5021,7 @@
      "name": "White Hart Lane South",
      "note": "Bay types: Permit; RingGo",
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "C": {
@@ -4700,7 +5029,7 @@
      "name": "Cole Park",
      "note": "Bay types: Permit; Pay and Display; RingGo in P&D",
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "CB": {
@@ -4744,7 +5073,7 @@
      ],
      "bankHolidays": "charged",
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "CR": {
@@ -4752,7 +5081,7 @@
      "name": "South-West Twickenham",
      "note": "Bay types: Permit; RingGo",
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "D": {
@@ -4760,7 +5089,7 @@
      "name": "Central Twickenham",
      "note": "Bay types: Permit; Pay and Display; RingGo in P&D",
      "price": {
-      "perHour": 2.65
+      "perHour": 2.8
      },
      "maxStay": "4 hours"
     },
@@ -4800,7 +5129,7 @@
      "name": "East Sheen",
      "note": "Bay types: Permit; Pay and Display; RingGo in P&D",
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "ES1": {
@@ -4808,7 +5137,7 @@
      "name": "Parkside",
      "note": "Bay types: Permit; RingGo",
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "F": {
@@ -4816,7 +5145,7 @@
      "name": "East Twickenham",
      "note": "Bay types: Permit; Pay and Display; RingGo in P&D",
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "FW": {
@@ -4824,7 +5153,7 @@
      "name": "Fulwell",
      "note": "Bay types: Permit; RingGo",
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "G": {
@@ -4868,7 +5197,7 @@
      ],
      "bankHolidays": "charged",
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "HM": {
@@ -4876,7 +5205,7 @@
      "name": "Heatham Area",
      "note": "Bay types: Permit; Pay and Display; RingGo in P&D",
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "J": {
@@ -4916,7 +5245,7 @@
      ],
      "bankHolidays": "charged",
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "KB": {
@@ -4963,7 +5292,7 @@
      },
      "bankHolidays": "charged",
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "KS": {
@@ -4971,13 +5300,16 @@
      "name": "Kingsway",
      "note": "Bay types: Permit; RingGo",
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "L": {
      "hours": "Monday to Friday 10am to 4.30pm (Bank and Public Holidays free)",
      "name": "Leeson Estate",
-     "note": "Bay types: Permit; RingGo"
+     "note": "Bay types: Permit; RingGo",
+     "price": {
+      "perHour": 1.95
+     }
     },
     "M": {
      "hours": "Monday to Friday 9am to 11am (Bank and Public Holidays free)",
@@ -4995,7 +5327,7 @@
      "name": "High Street, Barnes",
      "note": "Bay types: RingGo in P&D",
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "M4": {
@@ -5003,7 +5335,7 @@
      "name": "High Street, Teddington",
      "note": "Bay types: Pay and Display; RingGo in P&D",
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "M5": {
@@ -5011,7 +5343,7 @@
      "name": "Broad Street and The Causeway, Teddington",
      "note": "Bay types: Pay and Display; RingGo in P&D",
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "M8": {
@@ -5024,7 +5356,7 @@
      "name": "Ham Parade",
      "note": "Bay types: Pay and Display; RingGo in P&D",
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "N": {
@@ -5032,7 +5364,7 @@
      "name": "North-East Richmond",
      "note": "Bay types: Permit; Pay and Display; RingGo in P&D",
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      },
      "maxStay": "4 hours"
     },
@@ -5066,7 +5398,7 @@
      "name": "St Margarets South",
      "note": "Bay types: Permit; Pay and Display; RingGo in P&D",
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "S1": {
@@ -5097,7 +5429,7 @@
       }
      ],
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "S2": {
@@ -5105,7 +5437,7 @@
      "name": "St Margarets North",
      "note": "Bay types: Permit",
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "S3": {
@@ -5113,13 +5445,16 @@
      "name": "St Margarets Riverside",
      "note": "Bay types: Permit; Free (time limited)",
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "SH": {
      "hours": "Monday to Friday 10am to 4.30pm (Bank and Public Holidays free)",
      "name": "Strawberry Hill",
-     "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
+     "note": "Bay types: Permit; Pay and Display; RingGo in P&D",
+     "price": {
+      "perHour": 1.95
+     }
     },
     "T": {
      "periods": [
@@ -5139,7 +5474,7 @@
      "name": "Teddington",
      "note": "Bay types: Permit; Free (time limited); Pay and Display; RingGo in P&D",
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "T1": {
@@ -5147,7 +5482,7 @@
      "name": "Teddington",
      "note": "Bay types: Permit; RingGo",
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "T2": {
@@ -5155,7 +5490,7 @@
      "name": "Teddington",
      "note": "Bay types: Permit; RingGo",
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "T3": {
@@ -5163,7 +5498,7 @@
      "name": "Teddington",
      "note": "Bay types: Permit; RingGo",
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "T4": {
@@ -5171,7 +5506,7 @@
      "name": "Teddington",
      "note": "Bay types: Permit; RingGo",
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "T5": {
@@ -5179,7 +5514,7 @@
      "name": "Teddington",
      "note": "Bay types: Permit; Pay by Phone",
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "T6": {
@@ -5187,7 +5522,7 @@
      "name": "Teddington",
      "note": "Bay types: Permit; Pay by Phone",
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "WC": {
@@ -5236,7 +5571,7 @@
       ]
      },
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "WR": {
@@ -5281,7 +5616,7 @@
       ]
      },
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "WS": {
@@ -5330,7 +5665,7 @@
       ]
      },
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "WT": {
@@ -5338,13 +5673,16 @@
      "name": "West Twickenham",
      "note": "Bay types: Permit, Pay and Display, RingGo in P&D, RingGo in Permit bays on Andover Road",
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "X": {
      "hours": "Monday to Saturday 8.30am to 6.30pm (Bank and Public Holidays free)",
      "name": "Hampton Wick",
-     "note": "Bay types: Permit; Pay and Display; RingGo in P&D"
+     "note": "Bay types: Permit; Pay and Display; RingGo in P&D",
+     "price": {
+      "perHour": 1.5
+     }
     },
     "X1": {
      "hours": "Monday to Saturday 8.30am to 12.30pm (Bank and Public Holidays free)",
@@ -5369,7 +5707,7 @@
      "note": "Bay types: Permit; Pay and Display; RingGo in P&D",
      "bankHolidays": "charged",
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "Z4": {
@@ -5395,7 +5733,7 @@
      "name": "First Cross Road, Twickenham",
      "note": "Bay types: Permit; Pay and Display; RingGo in P&D",
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     },
     "A1/A2": {
@@ -5438,7 +5776,7 @@
      ],
      "note": "The council’s map marks this as the Zone A1/A2 buffer area. Both zones are controlled Monday to Saturday 8.30am to 6.30pm; some A1 bays run longer, so evenings and Sundays show as unknown.",
      "price": {
-      "perHour": 4.55
+      "perHour": 4.7
      }
     },
     "E-Popes": {
@@ -5527,7 +5865,7 @@
      ],
      "note": "Both zones’ hours cover Monday to Friday 10am to 4.30pm; the rest of WT’s hours show as unknown here. Check the signs on the street.",
      "price": {
-      "perHour": 1.85
+      "perHour": 1.95
      }
     }
    },
@@ -5540,9 +5878,9 @@
    "bankHolidays": "free",
    "charges": {
     "model": "zone",
-    "note": "Richmond raised charges on 6 July 2026 and the council page hasn't been updated: RingGo now shows A1 £4.70/hr (5404 Clarence Street), D £2.80/hr (5590 Queens Road), N £1.95/hr (52822 St John's Grove), roughly 3–6% above the table. 'D (outer)' is in the £1.85 group and only the 'Zone D area' is £2.65; X inner is £1.85 and X outer £1.10, so X isn't given a single price. Residents get up to 30 minutes free/discounted. No diesel surcharge or emissions banding shown on the sampled RingGo pages.",
-    "url": "https://www.richmond.gov.uk/services/parking/parking_machines/pay_and_display_tariffs",
-    "checked": "2026-11-18"
+    "note": "Prices from RingGo, checked 2026-11-19: Richmond raised charges around 29 June–8 July 2026 and its own tariff page still shows 2025/26. Per hour: A1 and A2 £4.70 (Clarence Street 5404, King Street 5411, Chiselhurst Road 5401, Royston Road 5430); Zone D area £2.80 (Heath Gardens 5477, Lion Road 5497); X £1.50 (Vicarage Road 5566, Upper Teddington Road 5580; the council's old inner/outer split isn't shown on RingGo); every other zone sampled £1.95 (B, C, CR, H, HM, KA, L, N, S, SH, SH/WT, T–T6, WT, Z5). Residents get up to 30 minutes free or discounted. Max stays vary by street (1 to 10 hours), so check the sign or the app.",
+    "url": "https://myringgo.com/parkinglocator/5404",
+    "checked": "2026-11-19"
    },
    "payProvider": "RingGo"
   },
@@ -8251,7 +8589,7 @@
    "name": "Croydon",
    "short": "Croydon",
    "hoursUrl": "https://www.croydon.gov.uk/parking-streets-and-transport/parking/parking-restrictions/list-controlled-parking-zones",
-   "checked": "2026-11-10",
+   "checked": "2026-11-19",
    "licence": "Zone boundaries traced from Croydon Council’s permit zone maps. Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
    "zones": {
     "Bynes Road": {
@@ -8276,12 +8614,12 @@
        "to": "17:00"
       }
      ],
-     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
+     "note": "Croydon publishes no table of zone hours (its zone maps and permit pages don't give them). These are the hours RingGo charges in the zone's pay-to-park bays (checked 2026-11-19); permit-only bays may differ, so check the zone entry signs."
     },
     "Centre": {
      "name": "Central",
      "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/Centre_Permit_Zone.pdf",
-     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs.",
+     "note": "Monday to Sunday 8am to midnight in pay-to-park bays (RingGo Altyre Road 19515, checked 2026-11-19; the council's 2026 charges order sets Sunday and evening charges in the Central zone only). Croydon publishes no table of zone hours; permit-only bays may differ, so check the zone entry signs.",
      "hours": "Mon–Sun 8am–midnight",
      "periods": [
       {
@@ -8336,7 +8674,7 @@
        "to": "17:00"
       }
      ],
-     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
+     "note": "Croydon publishes no table of zone hours (its zone maps and permit pages don't give them). These are the hours RingGo charges in the zone's pay-to-park bays (checked 2026-11-19); permit-only bays may differ, so check the zone entry signs."
     },
     "E2": {
      "name": "E2 Zone",
@@ -8356,7 +8694,7 @@
        "to": "17:00"
       }
      ],
-     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
+     "note": "Croydon publishes no table of zone hours (its zone maps and permit pages don't give them). These are the hours RingGo charges in the zone's pay-to-park bays (checked 2026-11-19); permit-only bays may differ, so check the zone entry signs."
     },
     "East Outer": {
      "name": "East Outer Permit Area",
@@ -8376,7 +8714,7 @@
        "to": "17:00"
       }
      ],
-     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
+     "note": "Croydon publishes no table of zone hours (its zone maps and permit pages don't give them). These are the hours RingGo charges in the zone's pay-to-park bays (checked 2026-11-19); permit-only bays may differ, so check the zone entry signs."
     },
     "East Inner": {
      "name": "East Inner Permit Zone",
@@ -8396,7 +8734,7 @@
        "to": "17:00"
       }
      ],
-     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
+     "note": "Croydon publishes no table of zone hours (its zone maps and permit pages don't give them). These are the hours RingGo charges in the zone's pay-to-park bays (checked 2026-11-19); permit-only bays may differ, so check the zone entry signs."
     },
     "N1": {
      "name": "N1 Zone",
@@ -8416,16 +8754,17 @@
        "to": "17:00"
       }
      ],
-     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
+     "note": "Monday to Saturday 9am to 5pm: the council's September 2026 notice extending N1 (Gazette 5204638) states these hours, and RingGo (Amersham Road 19951) charges the same."
     },
     "N2": {
      "name": "N2 Zone",
      "url": "https://www.croydon.gov.uk/sites/default/files/Parking%20streets%20and%20transport/Parking/permit%20zone%20maps/N2%20Zone.pdf",
      "maxStay": "12 hours",
-     "hours": "Mon–Sat 8am–8pm",
+     "hours": "Mon–Sun 8am–8pm",
      "periods": [
       {
        "days": [
+        0,
         1,
         2,
         3,
@@ -8437,7 +8776,7 @@
        "to": "20:00"
       }
      ],
-     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
+     "note": "Monday to Sunday 8am to 8pm: the council's order creating N2 (Gazette notice 3403865, in force 14 October 2019) and RingGo (Boston Road, 19965, checked 2026-11-19) agree."
     },
     "Napier Road": {
      "name": "Napier Road Permit Zone",
@@ -8461,7 +8800,7 @@
        "to": "17:00"
       }
      ],
-     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
+     "note": "Croydon publishes no table of zone hours (its zone maps and permit pages don't give them). These are the hours RingGo charges in the zone's pay-to-park bays (checked 2026-11-19); permit-only bays may differ, so check the zone entry signs."
     },
     "Norbury": {
      "name": "Norbury Permit Zone",
@@ -8481,7 +8820,7 @@
        "to": "17:00"
       }
      ],
-     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
+     "note": "Croydon publishes no table of zone hours (its zone maps and permit pages don't give them). These are the hours RingGo charges in the zone's pay-to-park bays (checked 2026-11-19); permit-only bays may differ, so check the zone entry signs."
     },
     "North": {
      "name": "North Zone",
@@ -8501,7 +8840,7 @@
        "to": "17:00"
       }
      ],
-     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
+     "note": "Croydon publishes no table of zone hours (its zone maps and permit pages don't give them). These are the hours RingGo charges in the zone's pay-to-park bays (checked 2026-11-19); permit-only bays may differ, so check the zone entry signs."
     },
     "Old Lodge Lane": {
      "name": "Old Lodge Lane Permit Zone",
@@ -8525,7 +8864,7 @@
        "to": "17:00"
       }
      ],
-     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
+     "note": "Croydon publishes no table of zone hours (its zone maps and permit pages don't give them). These are the hours RingGo charges in the zone's pay-to-park bays (checked 2026-11-19); permit-only bays may differ, so check the zone entry signs."
     },
     "Purley": {
      "name": "Purley Permit Zone",
@@ -8545,7 +8884,7 @@
        "to": "17:00"
       }
      ],
-     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
+     "note": "Croydon publishes no table of zone hours (its zone maps and permit pages don't give them). These are the hours RingGo charges in the zone's pay-to-park bays (checked 2026-11-19); permit-only bays may differ, so check the zone entry signs."
     },
     "Sanderstead": {
      "name": "Sanderstead Permit Zone",
@@ -8564,7 +8903,7 @@
        "to": "17:00"
       }
      ],
-     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
+     "note": "Monday to Friday 9am to 5pm in pay-to-park bays (RingGo Broomhall Road 19551, checked 2026-11-19). Croydon publishes no table of zone hours; permit-only bays may differ, so check the zone entry signs."
     },
     "South Norwood": {
      "name": "South Norwood Permit Zone",
@@ -8584,7 +8923,7 @@
        "to": "17:00"
       }
      ],
-     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
+     "note": "Croydon publishes no table of zone hours (its zone maps and permit pages don't give them). These are the hours RingGo charges in the zone's pay-to-park bays (checked 2026-11-19); permit-only bays may differ, so check the zone entry signs."
     },
     "South": {
      "name": "South Permit Zone",
@@ -8604,7 +8943,7 @@
        "to": "17:00"
       }
      ],
-     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
+     "note": "Croydon publishes no table of zone hours (its zone maps and permit pages don't give them). These are the hours RingGo charges in the zone's pay-to-park bays (checked 2026-11-19); permit-only bays may differ, so check the zone entry signs."
     },
     "Thornton Heath": {
      "name": "Thornton Heath Permit Zone",
@@ -8624,7 +8963,7 @@
        "to": "17:00"
       }
      ],
-     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
+     "note": "Monday to Saturday 9am to 5pm: the council's September 2026 notice extending Thornton Heath (Gazette 5204638) states these hours, and RingGo (Bensham Manor Road 19526) charges the same."
     },
     "West": {
      "name": "West Permit Zone",
@@ -8644,7 +8983,7 @@
        "to": "17:00"
       }
      ],
-     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
+     "note": "Croydon publishes no table of zone hours (its zone maps and permit pages don't give them). These are the hours RingGo charges in the zone's pay-to-park bays (checked 2026-11-19); permit-only bays may differ, so check the zone entry signs."
     },
     "West Thornton": {
      "name": "West Thornton Permit Zone",
@@ -8654,10 +8993,11 @@
       "provider": "RingGo",
       "code": "19926, 19925"
      },
-     "hours": "Mon–Sat 8am–8pm",
+     "hours": "Mon–Sun 8am–8pm",
      "periods": [
       {
        "days": [
+        0,
         1,
         2,
         3,
@@ -8669,7 +9009,7 @@
        "to": "20:00"
       }
      ],
-     "note": "Hours are those RingGo shows for the pay-to-park bays; permit bays may differ, so check the signs."
+     "note": "Monday to Sunday 8am to 8pm since 1 February 2020 (Gazette notice 3482004); RingGo (Aurelia Road 19926, Cecil Road 19925, checked 2026-11-19) charges the same, Sundays included."
     }
    },
    "notes": "Zone boundaries are traced from the council’s 20 permit zone maps (PDF), each placed by matching its street names to OpenStreetMap (median error 2 to 13 m per map). Several maps are old (2007 to 2021), so boundaries may have changed since; where two maps overlap, the newer one is used. The council doesn’t publish zone hours (they’re on the signs at each zone entrance), so zones are grey except where a map states its hours.",

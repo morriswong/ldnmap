@@ -211,3 +211,29 @@ test('event-day-only zones: free normally, controlled on event days', () => {
   assert.equal(isControlled('richmond:R', SAT, at(15), false), 'free');
   assert.equal(isControlled('richmond:R', SAT, at(15), true), 'ctrl');
 });
+
+test('Croydon N2 and West Thornton charge on Sundays 8am–8pm; other zones stay Mon–Sat', () => {
+  assert.equal(isControlled('croydon:N2', SUN, at(12), false), 'ctrl');
+  assert.equal(isControlled('croydon:West Thornton', SUN, at(19, 59), false), 'ctrl');
+  assert.equal(isControlled('croydon:West Thornton', SUN, at(20), false), 'free');
+  assert.equal(isControlled('croydon:N1', SUN, at(12), false), 'free');
+});
+
+test('Haringey: free on a bank holiday that is not an event day, event hours on event days', () => {
+  for (const z of ['Bruce Castle', 'Tower Gardens', 'Finsbury Park', 'White Hart Lane']) {
+    assert.equal(isControlled('haringey:' + z, 1, at(12), false, '05-25'), 'free', z);
+  }
+  // Bruce Castle: Mon–Sat 8am–6.30pm normally, until 8pm on a Saturday event day
+  assert.equal(isControlled('haringey:Bruce Castle', SAT, at(19), false), 'free');
+  assert.equal(isControlled('haringey:Bruce Castle', SAT, at(19), true), 'ctrl');
+  // Walpole Road sub-zone of Tower Gardens: Sunday 1pm–10pm
+  assert.equal(isControlled('haringey:TG-walpole', SUN, at(21), false), 'ctrl');
+  assert.equal(isControlled('haringey:Tower Gardens', SUN, at(21), false), 'free');
+  assert.equal(isControlled('haringey:TG-walpole', 1, at(14), false, '05-25'), 'unknown');
+});
+
+test('Richmond prices follow the July 2026 rise', () => {
+  assert.equal(rules.rules['richmond:A1'].price.perHour, 4.7);
+  assert.equal(rules.rules['richmond:D'].price.perHour, 2.8);
+  assert.equal(rules.rules['richmond:N'].price.perHour, 1.95);
+});

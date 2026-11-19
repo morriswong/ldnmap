@@ -577,7 +577,8 @@ def build_rules(bid, b, zone_info):
         periods = s['periods'] if 'periods' in s else parse_hours(s['hours'])
         rule = {'borough': bid, 'zone': s['zone'], 'name': s['name'], 'streets': s['streets'],
                 'hours': s['hours'], 'periods': periods}
-        for k in ('maxStay', 'note', 'permit', 'permitOnly', 'pdf', 'bankHolidays', 'bankHolidayExcept', 'price', 'payCode'):
+        for k in ('maxStay', 'note', 'permit', 'permitOnly', 'pdf', 'event', 'unsure', 'bankHolidays',
+                  'bankHolidayExcept', 'price', 'payCode', 'boundaryUrl'):
             if s.get(k) not in (None, ''):
                 rule[k] = s[k]
         rules[f'{bid}:{key}'] = rule
