@@ -1,8 +1,9 @@
 name: Parking data watch
 
 # Weekly: look for council parking changes the map may be missing (MyRingGo tariff updates, new
-# traffic orders in the DfT's D-TRO service, the bank holiday list running out) and open an issue
-# for each. It never changes the data. See tools/check_parking_sources.py and tools/dtro.py.
+# traffic orders in the DfT's D-TRO service, parking notices on council websites, the bank holiday
+# list running out) and open an issue for each. It never changes the data. See
+# tools/check_parking_sources.py, tools/dtro.py and tools/council_notices.py.
 # D-TRO needs the repository secrets DTRO_CLIENT_ID and DTRO_CLIENT_SECRET (a free consumer
 # application from https://dtro-ui.dft.gov.uk); without them that check is skipped.
 on:

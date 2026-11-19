@@ -65,8 +65,12 @@ entry in `parking_sources.json`: `{slug, locations: {code: last update}}`), when
 publishes or changes a parking traffic order in the DfT's D-TRO service (`tools/dtro.py`; boroughs are
 matched by their GeoPlace `swaCode`; needs the `DTRO_CLIENT_ID`/`DTRO_CLIENT_SECRET` secrets), or when
 the bank holiday list is about to run out. It logs how many orders each borough has in D-TRO, since
-councils are still joining. The London Gazette refuses scripted requests, so a Gazette notice found by
-hand is filed with `check_parking_sources.py --gazette` (`tools/gazette_watch.md`). None of this edits
+councils are still joining. For boroughs not in D-TRO yet it reads parking notices from the councils'
+own websites (`tools/council_notices.py`: Richmond, Westminster, Kensington & Chelsea, City of London,
+Islington, Brent, Merton, Ealing, Wandsworth). H&F, Camden, Southwark, Barking & Dagenham, Bromley,
+Harrow, Havering and Hillingdon refuse scripted requests, as does the London Gazette, so those are
+checked by hand (`tools/gazette_watch.md`) and filed with `check_parking_sources.py --gazette`. Islington's
+`reviewedNotices` holds the version of its consolidated charged-for parking order last checked. None of this edits
 the data. After checking an issue, update `parking_sources.json` and the built files, and the recorded
 `ringgo` date. Add new MyRingGo codes with a `null` date and run the script with
 `--write --only ringgo` to record their current dates without opening issues.

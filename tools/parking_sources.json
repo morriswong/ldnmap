@@ -4252,7 +4252,10 @@
     "url": "https://www.islington.gov.uk/parking/where-to-park/pay-for-short-stay-parking",
     "checked": "2026-11-18"
    },
-   "payProvider": "RingGo"
+   "payProvider": "RingGo",
+   "reviewedNotices": [
+    "charged-pps-B17C7A68"
+   ]
   },
   "lewisham": {
    "name": "Lewisham",

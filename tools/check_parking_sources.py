@@ -17,12 +17,16 @@ Checks:
             waiting (tools/dtro.py). Needs DTRO_CLIENT_ID and DTRO_CLIENT_SECRET; skipped without them.
             Also logs how many orders each borough has in D-TRO, to show which ones publish yet.
 
+  councils  For boroughs not in D-TRO yet, parking notices from the councils' own websites in the last
+            45 days (tools/council_notices.py; one issue per notice). Sites that refuse scripted requests
+            are listed there and skipped; a source that fails or parses nothing opens its own issue.
+
 The London Gazette refuses scripted requests from GitHub's runners and from this project's server,
-so no script here reads it. A notice found by hand can be filed with --gazette, which gives it the
-same title, label and de-duplication as the checks above (tools/gazette_watch.md).
+so no script here reads it. A notice found by hand can still be filed with --gazette, which gives
+it the same title, label and de-duplication as the checks above.
 
 Usage:
-  python3 tools/check_parking_sources.py [--dry-run] [--write] [--limit N] [--only ringgo,holidays,dtro]
+  python3 tools/check_parking_sources.py [--dry-run] [--write] [--limit N] [--only ringgo,holidays,dtro,councils]
   python3 tools/check_parking_sources.py --gazette NOTICE_ID --borough hf --summary "..." [--dry-run]
 """
 import argparse
@@ -46,6 +50,7 @@ LABEL = 'parking-data'
 RINGGO_DELAY = 5      # seconds between MyRingGo requests: it rate-limits
 DTRO_DAYS = 8         # a little over a week, so a late weekly run doesn't miss a day
 HOLIDAY_RUNWAY = 180  # days
+COUNCIL_DAYS = 45     # council notices this recent are reported (repeats are skipped by issue title)
 
 
 def get(url):
@@ -174,6 +179,43 @@ def check_dtro(src, findings):
     return True
 
 
+def check_councils(src, findings, today):
+    """Parking notices on the councils' own sites, for boroughs not in D-TRO yet (tools/council_notices.py).
+    A notice id listed in a borough's `reviewedNotices` is skipped (used for Islington's consolidated
+    order, whose id is its current version)."""
+    import council_notices as cn
+    found, failures = cn.collect()
+    since = today - dt.timedelta(days=COUNCIL_DAYS)
+    new = 0
+    for n in found:
+        b = src['boroughs'][n['borough']]
+        if not cn.is_parking(n) or n['id'] in b.get('reviewedNotices', []):
+            continue
+        if n['date'] and n['date'] < since:
+            continue
+        new += 1
+        findings.append({
+            'title': f'Parking: {b["name"]} notice: {n["title"][:110]} ({n["id"]})',
+            'body': (f'{b["name"]} lists this on its own website ({n["date"] or "currently listed, undated"}):\n\n'
+                     f'> {n["title"]}\n\n{n["url"]}\n\nCheck whether it changes zone hours, days, max stays or '
+                     'prices and when it takes effect, then update `tools/parking_sources.json` and the built data. '
+                     'Found by the weekly parking watch (`tools/council_notices.py`, check `councils`).'
+                     + ('\n\nThis is the consolidated order, so this notice means it was amended. Once checked, '
+                        f'replace the old `charged-pps-...` id in Islington\'s `reviewedNotices` with `{n["id"]}`.'
+                        if n['kind'] == 'consolidation' else '')),
+        })
+    for bid, reason in failures:
+        findings.append({
+            'title': f'Parking watch: {src["boroughs"][bid]["name"]} notice source failing',
+            'body': (f'`tools/council_notices.py` could not read {src["boroughs"][bid]["name"]}\'s notices: {reason}.\n\n'
+                     'The site may be down for a while, or its layout changed and the parser needs updating.'),
+        })
+    for bid, reason in cn.BLOCKED.items():
+        print(f'  councils: no source for {bid}: {reason}', file=sys.stderr)
+    print(f'  councils: {new} parking notices in the last {COUNCIL_DAYS} days, {len(failures)} sources failing',
+          file=sys.stderr)
+
+
 def dtro_digest(src, found, today):
     """One issue for a week's D-TRO parking orders, grouped by borough: London councils publish dozens
     of small bay amendments a week, so one issue per order would bury the few that change a zone."""
@@ -227,7 +269,7 @@ def main():
     ap.add_argument('--dry-run', action='store_true', help='print findings, open no issues')
     ap.add_argument('--write', action='store_true', help='record new RingGo dates in parking_sources.json')
     ap.add_argument('--limit', type=int, help='check at most N RingGo locations')
-    ap.add_argument('--only', default='ringgo,holidays,dtro')
+    ap.add_argument('--only', default='ringgo,holidays,dtro,councils')
     ap.add_argument('--gazette', metavar='NOTICE_ID', help='file one Gazette notice (with --borough, --summary)')
     ap.add_argument('--borough', help='borough id from parking_sources.json, for --gazette')
     ap.add_argument('--summary', default='', help='what the notice changes, for --gazette')
@@ -245,6 +287,8 @@ def main():
         with open(SOURCES, 'w') as f:
             json.dump(src, f, indent=1, ensure_ascii=False)
     ok = check_dtro(src, findings) if 'dtro' in only else True
+    if 'councils' in only:
+        check_councils(src, findings, today)
     for f in findings:
         print(f'FINDING: {f["title"]}')
     if not findings:

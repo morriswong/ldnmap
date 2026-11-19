@@ -2,9 +2,11 @@
 
 Councils publish traffic orders (new controlled hours, days, max stays, charges) in the London
 Gazette, usually weeks before they take effect. The weekly watch reads the same orders from the
-DfT's D-TRO service (`tools/dtro.py`), but not every borough publishes there yet: the watch log
-lists which do. The Gazette refuses scripted requests from GitHub's runners and from the server, so
-for the others check it in a browser with these steps.
+DfT's D-TRO service (`tools/dtro.py`) and, for boroughs not in D-TRO yet, from the councils' own
+websites (`tools/council_notices.py`). That leaves the boroughs whose sites refuse scripted requests
+(`BLOCKED` in `tools/council_notices.py`: H&F, Camden, Southwark, Barking & Dagenham, Bromley, Harrow,
+Havering, Hillingdon). The Gazette refuses scripted requests too, so check it for those in a browser
+now and then with these steps.
 
 1. Fetch each search, sorted newest first, for the last 8 days (set `start-publish-date` to
    today minus 8 days, `YYYY-MM-DD`), 100 results a page. Read every page.
