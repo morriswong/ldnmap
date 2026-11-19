@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Weekly check for council parking changes the map's data may be missing. No dependencies.
 
-Opens one GitHub issue per finding (label `parking-data`, de-duplicated by title), or prints them
+Opens one GitHub issue per finding (label `parking-data`, de-duplicated by title; D-TRO orders
+come as one weekly digest), or prints them
 with --dry-run. It never edits the data: a person checks the council and updates
 tools/parking_sources.json.
 
@@ -167,18 +168,43 @@ def check_dtro(src, findings):
     except dtro.DtroError as e:
         print(f'  dtro: {e}', file=sys.stderr)
         return False
-    for bid, e in found:
-        b = src['boroughs'][bid]
-        findings.append({
-            'title': f'Parking: {b["name"]} traffic order, D-TRO {e["id"]}',
-            'body': (f'{b["name"]} published or changed a traffic order in the DfT\'s D-TRO service that '
-                     f'touches parking zones or bays:\n\n{dtro.describe(e)}\n\n'
-                     'Check whether it changes zone hours, days, max stays or prices and when it takes effect, '
-                     'then update `tools/parking_sources.json` and the built data. Found by the weekly parking '
-                     'watch (`tools/check_parking_sources.py`, check `dtro`).'),
-        })
+    if found:
+        findings.append(dtro_digest(src, found, dt.date.today()))
     print(f'  dtro: {len(found)} parking orders in the last {DTRO_DAYS} days', file=sys.stderr)
     return True
+
+
+def dtro_digest(src, found, today):
+    """One issue for a week's D-TRO parking orders, grouped by borough: London councils publish dozens
+    of small bay amendments a week, so one issue per order would bury the few that change a zone."""
+    import dtro
+    by_borough = {}
+    for bid, e in found:
+        by_borough.setdefault(bid, []).append(e)
+    names = {bid: src['boroughs'][bid]['name'] for bid in by_borough}
+    order = sorted(by_borough, key=lambda bid: names[bid])
+    zone_wide = [(bid, e) for bid in order for e in by_borough[bid] if dtro.is_zone_wide(e)]
+    parts = [f'London boroughs published or changed {len(found)} traffic orders in the DfT\'s D-TRO service '
+             f'in the {DTRO_DAYS} days to {today:%Y-%m-%d} that touch parking zones or bays. Check the ones '
+             'that change zone hours, days, max stays or prices, and when they take effect, then update '
+             '`tools/parking_sources.json` and the built data.',
+             '',
+             'By borough: ' + ', '.join(f'{names[bid]} {len(by_borough[bid])}' for bid in order)]
+    if zone_wide:
+        parts += ['', f'## Zone-wide orders ({len(zone_wide)})', 'These create or change a controlled or '
+                  'restricted parking zone or a permit area, so they are the likeliest to change the map.']
+        for bid, e in zone_wide:
+            parts += ['', f'### {names[bid]}', dtro.describe(e)]
+    parts += ['', '## All orders']
+    for bid in order:
+        parts += ['', f'**{names[bid]}**']
+        parts += [f'- {dtro.summary_line(e)}' for e in by_borough[bid]]
+    parts += ['', 'Full order: `python3 tools/dtro.py show <D-TRO id>`. Found by the weekly parking watch '
+              '(`tools/check_parking_sources.py`, check `dtro`).']
+    body = '\n'.join(parts)
+    if len(body) > 60000:   # GitHub's issue body limit is 65,536
+        body = body[:60000] + '\n\n(cut short; run `python3 tools/dtro.py events` for the rest)'
+    return {'title': f'Parking: D-TRO orders, week to {today:%Y-%m-%d} ({len(found)})', 'body': body}
 
 
 def open_issues(findings):

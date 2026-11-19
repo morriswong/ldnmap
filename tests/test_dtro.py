@@ -64,9 +64,9 @@ class DtroTests(unittest.TestCase):
         self.assertEqual([(b, e['id'], e['eventType']) for b, e in found],
                          [('croydon', '4', 'update'), ('hf', '1', 'update')])   # latest event per D-TRO
         bodies = [b for m, p, b, f, a in c.calls if p == '/events']
-        self.assertEqual(bodies[0]['since'], '2026-11-11T07:00:00')
+        self.assertEqual(bodies[0]['since'], '2026-11-11T07:00:00Z')
         self.assertEqual(bodies[0]['pageSize'], 50)
-        self.assertEqual(bodies[-1]['modifiedFrom'], '2026-11-11T07:00:00')
+        self.assertEqual(bodies[-1]['modifiedFrom'], '2026-11-11T07:00:00Z')
         self.assertEqual(sum(1 for m, p, *_ in c.calls if p == '/oauth-generator'), 1)   # token reused
 
     def test_count_and_describe(self):
@@ -83,6 +83,33 @@ class DtroTests(unittest.TestCase):
         with self.assertRaises(dtro.DtroError):
             Refused([], []).count(traCreator=5390)
 
+
+    def test_weekly_digest(self):
+        import check_parking_sources as cps
+        found = [('hf', event('z1', 5390, ['kerbsideControlledParkingZone'])),
+                 ('croydon', event('b1', 5240, ['kerbsidePaymentParkingPlace'])),
+                 ('croydon', event('b2', 5240, ['kerbsidePermitParkingPlace', 'kerbsideNoWaiting']))]
+        d = cps.dtro_digest(SRC, found, dt.date(2026, 11, 19))
+        self.assertEqual(d['title'], 'Parking: D-TRO orders, week to 2026-11-19 (3)')
+        self.assertIn('By borough: Croydon 2, Hammersmith & Fulham 1', d['body'])
+        self.assertIn('## Zone-wide orders (1)', d['body'])
+        self.assertIn('Order b2: create 2026-11-17, permanentNoticeOfMaking; PermitParkingPlace (`b2`)', d['body'])
+
+    def test_retries_rate_limit(self):
+        class Limited(dtro.Client):
+            def __init__(self):
+                super().__init__('id', 'secret', base='https://example.invalid/v1')
+                self._token, self.answers = 'tok', [(429, {}), (200, {'totalCount': 7})]
+            def _send(self, *a):
+                return self.answers.pop(0)
+        sleeps = []
+        orig = dtro.time.sleep
+        dtro.time.sleep = sleeps.append
+        try:
+            self.assertEqual(Limited().count(traCreator=5390), 7)
+        finally:
+            dtro.time.sleep = orig
+        self.assertIn(5, sleeps)
 
 if __name__ == '__main__':
     unittest.main(verbosity=1)

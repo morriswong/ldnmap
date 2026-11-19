@@ -23,6 +23,7 @@ import json
 import os
 import re
 import sys
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -33,12 +34,16 @@ BASE = os.environ.get('DTRO_BASE', 'https://dtro.dft.gov.uk/v1').rstrip('/')
 UA = 'ldnmap-parking-check/1.0 (+https://ldnmap.pages.dev)'
 PAGE_SIZE = 50   # the API's maximum
 MAX_PAGES = 200
+MIN_INTERVAL = 0.6   # seconds between requests: the API's spike arrest allows 120 a minute
+RETRIES = 4          # tries again after HTTP 429, backing off
 
 # D-TRO regulation types that can change where, when or how long you can park, or what it costs.
 PARKING_TYPES = {
     'kerbsideControlledParkingZone', 'kerbsideRestrictedParkingZone', 'kerbsidePaymentParkingPlace',
     'kerbsidePermitParkingArea', 'kerbsidePermitParkingPlace', 'kerbsideParkingPlace', 'kerbsideLimitedWaiting',
 }
+# Types that create or change a whole zone rather than individual bays.
+ZONE_TYPES = {'kerbsideControlledParkingZone', 'kerbsideRestrictedParkingZone', 'kerbsidePermitParkingArea'}
 # Order stages for temporary orders (works, events): not a lasting change to a zone.
 TEMPORARY = re.compile(r'^(ttro|specialEvent)', re.I)
 
@@ -52,6 +57,7 @@ class Client:
         self.base = base
         self._auth = base64.b64encode(f'{client_id}:{client_secret}'.encode()).decode()
         self._token = None
+        self._last = 0.0
 
     @classmethod
     def from_env(cls):
@@ -60,6 +66,17 @@ class Client:
         return cls(cid, secret) if cid and secret else None
 
     def _request(self, method, path, body=None, form=None, auth=None):
+        for attempt in range(RETRIES + 1):
+            wait = self._last + MIN_INTERVAL - time.monotonic()
+            if wait > 0:
+                time.sleep(wait)
+            self._last = time.monotonic()
+            status, data = self._send(method, path, body, form, auth)
+            if status != 429 or attempt == RETRIES:
+                return status, data
+            time.sleep(5 * 2 ** attempt)
+
+    def _send(self, method, path, body, form, auth):
         headers = {'User-Agent': UA, 'Accept': 'application/json'}
         data = None
         if form is not None:
@@ -127,7 +144,8 @@ class Client:
 
 
 def iso(t):
-    return t.strftime('%Y-%m-%dT%H:%M:%S')
+    # UTC, marked with Z: /events answers HTTP 500 for an unmarked modifiedFrom/modifiedTo
+    return t.strftime('%Y-%m-%dT%H:%M:%SZ')
 
 
 def london_codes(src):
@@ -148,7 +166,7 @@ def is_parking_change(event):
 def recent_parking_events(client, src, days, now=None):
     """[(borough id, event)] for London parking orders created or modified in the last `days`,
     one per D-TRO (its latest event)."""
-    now = now or dt.datetime.utcnow()
+    now = now or dt.datetime.now(dt.timezone.utc).replace(tzinfo=None)
     since = now - dt.timedelta(days=days)
     codes = london_codes(src)
     latest = {}
@@ -165,6 +183,20 @@ def recent_parking_events(client, src, days, now=None):
             if not prev or (e.get('eventTime') or '') > (prev[1].get('eventTime') or ''):
                 latest[e['id']] = (bid, e)
     return sorted(latest.values(), key=lambda x: (x[0], x[1].get('eventTime') or ''))
+
+
+def is_zone_wide(event):
+    return bool(set(event.get('regulationType') or []) & ZONE_TYPES)
+
+
+def summary_line(event):
+    """One markdown line for an event: name, stage, kinds of parking it touches, id."""
+    types = sorted(set(event.get('regulationType') or []) & PARKING_TYPES)
+    short = ', '.join(t.replace('kerbside', '') for t in types)
+    stage = ', '.join(event.get('orderReportingPoint') or [])
+    when = (event.get('eventTime') or '')[:10]
+    return (f'{event.get("troName") or "(no name)"}: {event.get("eventType") or "?"} {when}'
+            f'{f", {stage}" if stage else ""}; {short} (`{event["id"]}`)')
 
 
 def describe(event):
