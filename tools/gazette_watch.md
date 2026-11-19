@@ -1,10 +1,10 @@
-# Weekly Gazette watch
+# Checking the Gazette by hand
 
 Councils publish traffic orders (new controlled hours, days, max stays, charges) in the London
-Gazette, usually weeks before they take effect. The Gazette refuses scripted requests from GitHub's
-runners and from the server, so `check_parking_sources.py` can't read it. A scheduled Claude run on
-the server reads it with its web fetch each Monday and follows the steps below. Run them by hand
-the same way.
+Gazette, usually weeks before they take effect. The weekly watch reads the same orders from the
+DfT's D-TRO service (`tools/dtro.py`), but not every borough publishes there yet: the watch log
+lists which do. The Gazette refuses scripted requests from GitHub's runners and from the server, so
+for the others check it in a browser with these steps.
 
 1. Fetch each search, sorted newest first, for the last 8 days (set `start-publish-date` to
    today minus 8 days, `YYYY-MM-DD`), 100 results a page. Read every page.

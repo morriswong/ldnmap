@@ -4,6 +4,7 @@
   "hf": {
    "name": "Hammersmith & Fulham",
    "short": "H&F",
+   "swaCode": 5390,
    "polygons": {
     "type": "arcgis",
     "url": "https://www.rbkc.gov.uk/arcgis/rest/services/LBHF/INSPIRE/MapServer/10",
@@ -1110,6 +1111,7 @@
   "enfield": {
    "name": "Enfield",
    "short": "Enfield",
+   "swaCode": 5300,
    "polygons": {
     "type": "file",
     "path": "enfield.geojson",
@@ -1211,6 +1213,7 @@
   "greenwich": {
    "name": "Royal Greenwich",
    "short": "Greenwich",
+   "swaCode": 5330,
    "polygons": {
     "type": "drupal-settings",
     "url": "https://www.royalgreenwich.gov.uk/parking-transport-and-streets/check-if-you-need-parking-permit-or-update-your-details/check-if-you/map",
@@ -1395,6 +1398,7 @@
   "hackney": {
    "name": "Hackney",
    "short": "Hackney",
+   "swaCode": 5360,
    "polygons": {
     "type": "geojson",
     "url": "https://map2.hackney.gov.uk/geoserver/wfs?service=WFS&version=2.0.0&request=GetFeature&typeNames=parking:controlled_parking_zone&outputFormat=application/json&srsName=EPSG:4326",
@@ -1562,6 +1566,7 @@
   "haringey": {
    "name": "Haringey",
    "short": "Haringey",
+   "swaCode": 5420,
    "polygons": {
     "type": "gml",
     "url": "https://my.haringey.gov.uk/getows.ashx?mapsource=mapsources/AllMaps&service=WFS&version=2.0.0&request=GetFeature&typeNames=ms:Controlled_Parking_Zones",
@@ -2263,6 +2268,7 @@
   "harrow": {
    "name": "Harrow",
    "short": "Harrow",
+   "swaCode": 5450,
    "polygons": {
     "type": "arcgis",
     "url": "https://mapping.harrow.gov.uk/server/rest/services/Public/Transport_and_Streets_2/MapServer/1",
@@ -2448,6 +2454,7 @@
   "lambeth": {
    "name": "Lambeth",
    "short": "Lambeth",
+   "swaCode": 5660,
    "polygons": {
     "type": "arcgis",
     "url": "https://gis.lambeth.gov.uk/arcgis/rest/services/LambethControlledParkingZones/MapServer/1",
@@ -2663,6 +2670,7 @@
   "merton": {
    "name": "Merton",
    "short": "Merton",
+   "swaCode": 5720,
    "polygons": {
     "type": "arcgis",
     "url": "https://services-eu1.arcgis.com/lDzXrGJF6LKIhYUB/arcgis/rest/services/Controlled_Parking_Zone_Boundaries/FeatureServer/5",
@@ -3012,6 +3020,7 @@
   "newham": {
    "name": "Newham",
    "short": "Newham",
+   "swaCode": 5750,
    "polygons": {
     "type": "arcgis",
     "url": "https://services1.arcgis.com/trOdpHvvP7HrTfdb/arcgis/rest/services/Controlled_Parking_Zones/FeatureServer/0",
@@ -3092,6 +3101,7 @@
   "redbridge": {
    "name": "Redbridge",
    "short": "Redbridge",
+   "swaCode": 5780,
    "polygons": {
     "type": "redbridge",
     "url": "https://my.redbridge.gov.uk/map/ajaxmap/GetFeatures?layerId=5&layerName=Permit%20parking%20zones",
@@ -3168,6 +3178,7 @@
   "sutton": {
    "name": "Sutton",
    "short": "Sutton",
+   "swaCode": 5870,
    "polygons": {
     "type": "geojson",
     "epsg": 27700,
@@ -3228,6 +3239,7 @@
   "towerhamlets": {
    "name": "Tower Hamlets",
    "short": "Tower Hamlets",
+   "swaCode": 5900,
    "polygons": {
     "type": "arcgis",
     "url": "https://services1.arcgis.com/KZuCGRSe2K5BiG1Z/arcgis/rest/services/Parking_Permit_Mini_Zones_view/FeatureServer/159",
@@ -3399,6 +3411,7 @@
   "city": {
    "name": "City of London",
    "short": "City",
+   "swaCode": 5030,
    "polygons": {
     "type": "arcgis",
     "url": "https://www.mapping.cityoflondon.gov.uk/arcgis/rest/services/COMPASS_Boundary/FeatureServer/0",
@@ -3434,6 +3447,7 @@
   "rbkc": {
    "name": "Kensington & Chelsea",
    "short": "RBKC",
+   "swaCode": 5600,
    "polygons": {
     "type": "file",
     "path": "rbkc.geojson",
@@ -3497,6 +3511,7 @@
   "camden": {
    "name": "Camden",
    "short": "Camden",
+   "swaCode": 5210,
    "polygons": {
     "type": "arcgis",
     "url": "https://services-eu1.arcgis.com/qVAu4gow1D4Ooh57/arcgis/rest/services/CPZAllZones26_27/FeatureServer/0",
@@ -3525,6 +3540,7 @@
   "brent": {
    "name": "Brent",
    "short": "Brent",
+   "swaCode": 5150,
    "polygons": {
     "type": "geojson",
     "url": "https://www.brent.gov.uk/-/media/maps/external/cpz.json",
@@ -3989,6 +4005,7 @@
   "bd": {
    "name": "Barking & Dagenham",
    "short": "B&D",
+   "swaCode": 5060,
    "polygons": {
     "type": "arcgis",
     "url": "https://lbbdgis.lbbd.gov.uk/arcgis/rest/services/ArcGIS_Online/Parking_Zones_101022/MapServer/1",
@@ -4079,6 +4096,7 @@
   "islington": {
    "name": "Islington",
    "short": "Islington",
+   "swaCode": 5570,
    "hoursUrl": "https://www.islington.gov.uk/parking/parking-restrictions/controlled-parking-zones",
    "checked": "2026-11-08",
    "licence": "Zone boundaries traced from Islington Council’s CPZ map; hours from the council’s CPZ page. Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
@@ -4239,6 +4257,7 @@
   "lewisham": {
    "name": "Lewisham",
    "short": "Lewisham",
+   "swaCode": 5690,
    "hoursUrl": "https://lewisham.gov.uk/myservices/parking/permits/controlled-parking-zones-and-operating-times",
    "checked": "2026-11-08",
    "licence": "Zone boundaries traced from Lewisham Council’s parking restrictions map; hours from the council. Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
@@ -4616,6 +4635,7 @@
   "southwark": {
    "name": "Southwark",
    "short": "Southwark",
+   "swaCode": 5840,
    "hoursUrl": "https://www.southwark.gov.uk/parking/find-somewhere-to-park/parking-zones",
    "checked": "2026-11-08",
    "licence": "Zone boundaries: Southwark Council map data. Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
@@ -4897,6 +4917,7 @@
   "richmond": {
    "name": "Richmond upon Thames",
    "short": "Richmond",
+   "swaCode": 5810,
    "hoursUrl": "https://www.richmond.gov.uk/services/parking/cpz/cpz_times",
    "checked": "2026-11-08",
    "licence": "Zone boundaries traced from Richmond upon Thames Council’s CPZ map; hours from the council. Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
@@ -5887,6 +5908,7 @@
   "wandsworth": {
    "name": "Wandsworth",
    "short": "Wandsworth",
+   "swaCode": 5960,
    "hoursUrl": "https://www.wandsworth.gov.uk/find-parking-zones",
    "checked": "2026-11-08",
    "licence": "Zone boundaries traced from Wandsworth Council’s CPZ map; hours from the council. Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
@@ -7225,6 +7247,7 @@
   "westminster": {
    "name": "Westminster",
    "short": "Westminster",
+   "swaCode": 5990,
    "hoursUrl": "https://www.westminster.gov.uk/parking/parking-zones-and-prices",
    "checked": "2026-11-08",
    "licence": "Zone boundaries traced from Westminster City Council’s CPZ map (2011); hours from the council (March 2026). Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
@@ -7527,6 +7550,7 @@
   "kingston": {
    "name": "Kingston upon Thames",
    "short": "Kingston",
+   "swaCode": 5630,
    "hoursUrl": "https://www.kingston.gov.uk/parking/find-street-parking",
    "checked": "2026-11-08",
    "licence": "Zones and hours: Royal Borough of Kingston upon Thames restrictions map (AppyWay). Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
@@ -7676,6 +7700,7 @@
   "bexley": {
    "name": "Bexley",
    "short": "Bexley",
+   "swaCode": 5120,
    "hoursUrl": "https://www.bexley.gov.uk/services/parking-transport-and-streets/parking-permits/residents-parking-permits",
    "checked": "2026-11-08",
    "licence": "Zone roads and hours: London Borough of Bexley. Streets: © OpenStreetMap contributors (ODbL).",
@@ -7773,6 +7798,7 @@
   "bromley": {
    "name": "Bromley",
    "short": "Bromley",
+   "swaCode": 5180,
    "hoursUrl": "https://www.bromley.gov.uk/homepage/195/parking-permit-information-and-charges",
    "checked": "2026-11-10",
    "licence": "Town-centre zone boundaries traced from Bromley Council’s “Bromley Town Centre CPZ” map; hours from that map’s signs and the council’s permit page. Borough outline: Office for National Statistics / London Datastore (OGL v3). Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
@@ -8093,6 +8119,7 @@
   "ealing": {
    "name": "Ealing",
    "short": "Ealing",
+   "swaCode": 5270,
    "hoursUrl": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz",
    "checked": "2026-11-08",
    "licence": "Zone street lists and hours: Ealing Council. Streets: © OpenStreetMap contributors (ODbL).",
@@ -8588,6 +8615,7 @@
   "croydon": {
    "name": "Croydon",
    "short": "Croydon",
+   "swaCode": 5240,
    "hoursUrl": "https://www.croydon.gov.uk/parking-streets-and-transport/parking/parking-restrictions/list-controlled-parking-zones",
    "checked": "2026-11-19",
    "licence": "Zone boundaries traced from Croydon Council’s permit zone maps. Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
@@ -9069,6 +9097,7 @@
   "barnet": {
    "name": "Barnet",
    "short": "Barnet",
+   "swaCode": 5090,
    "boundaryOnly": "Barnet",
    "hoursUrl": "https://www.barnet.gov.uk/parking/parking-and-traffic-enforcement/controlled-parking-zones-cpz/how-controlled-parking-zones",
    "checked": "2026-11-08",
@@ -9087,6 +9116,7 @@
   "havering": {
    "name": "Havering",
    "short": "Havering",
+   "swaCode": 5480,
    "hoursUrl": "https://havering-self.achieveservice.com/service/lbh-Parking-Permit-Zones-Lookup",
    "checked": "2026-11-10",
    "licence": "Zone streets and hours: Havering council (Parking Permit Zones Lookup). Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
@@ -10157,6 +10187,7 @@
   "hillingdon": {
    "name": "Hillingdon",
    "short": "Hillingdon",
+   "swaCode": 5510,
    "boundaryOnly": "Hillingdon",
    "hoursUrl": "https://pre.hillingdon.gov.uk/parking",
    "checked": "2026-11-08",
@@ -10176,6 +10207,7 @@
   "hounslow": {
    "name": "Hounslow",
    "short": "Hounslow",
+   "swaCode": 5540,
    "hoursUrl": "https://hounslow.statmap.co.uk/map/Aurora.svc/run?script=%5CAurora%5CControlled%20Parking%20Zones.AuroraScript%24",
    "checked": "2026-11-09",
    "licence": "Zone boundaries traced from Hounslow Council’s interactive CPZ map; hours from its pop-ups. Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
@@ -11417,6 +11449,7 @@
   "walthamforest": {
    "name": "Waltham Forest",
    "short": "Waltham Forest",
+   "swaCode": 5930,
    "hoursUrl": "https://www.walthamforest.gov.uk/parking-roads-and-travel/parking-permits-and-suspensions/controlled-parking-zones-cpzs",
    "checked": "2026-11-10",
    "licence": "Zone boundaries and hours from Waltham Forest Council’s CPZ overview map (December 2025 revision). Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",

@@ -11,14 +11,17 @@ Checks:
             prices or max stay (H&F zone H's changed three weeks before its new hours started).
             A null date is a baseline: it is recorded (with --write) and not reported.
   holidays  rules.json's bank holiday list runs at least 180 days ahead.
+  dtro      Traffic orders London boroughs published to the DfT's D-TRO service in the last 8 days
+            that create or change controlled zones, paid or permit parking places or limited
+            waiting (tools/dtro.py). Needs DTRO_CLIENT_ID and DTRO_CLIENT_SECRET; skipped without them.
+            Also logs how many orders each borough has in D-TRO, to show which ones publish yet.
 
-The London Gazette (where councils publish traffic orders) refuses every request from GitHub's
-runners and from this project's server, robots.txt included, so no script here reads it. A weekly
-Claude run reads it with its web fetch instead (tools/gazette_watch.md) and files each notice
-through --gazette, which gives it the same title, label and de-duplication as the checks above.
+The London Gazette refuses scripted requests from GitHub's runners and from this project's server,
+so no script here reads it. A notice found by hand can be filed with --gazette, which gives it the
+same title, label and de-duplication as the checks above (tools/gazette_watch.md).
 
 Usage:
-  python3 tools/check_parking_sources.py [--dry-run] [--write] [--limit N] [--only ringgo,holidays]
+  python3 tools/check_parking_sources.py [--dry-run] [--write] [--limit N] [--only ringgo,holidays,dtro]
   python3 tools/check_parking_sources.py --gazette NOTICE_ID --borough hf --summary "..." [--dry-run]
 """
 import argparse
@@ -40,6 +43,7 @@ UA = 'ldnmap-parking-check/1.0 (+https://ldnmap.pages.dev)'
 RINGGO = 'https://www.myringgo.com/{slug}/parkinglocator/{code}'
 LABEL = 'parking-data'
 RINGGO_DELAY = 5      # seconds between MyRingGo requests: it rate-limits
+DTRO_DAYS = 8         # a little over a week, so a late weekly run doesn't miss a day
 HOLIDAY_RUNWAY = 180  # days
 
 
@@ -145,6 +149,38 @@ def gazette_finding(src, notice_id, borough, summary):
     }
 
 
+def check_dtro(src, findings):
+    """Recent London parking orders in D-TRO. Returns False if the check could not run."""
+    import dtro
+    client = dtro.Client.from_env()
+    if not client:
+        print('  dtro: DTRO_CLIENT_ID/DTRO_CLIENT_SECRET not set; skipping', file=sys.stderr)
+        return True
+    try:
+        publishing = []
+        for code, bid in sorted(dtro.london_codes(src).items()):
+            n = client.count(traCreator=code)
+            if n:
+                publishing.append(f'{src["boroughs"][bid]["short"]} {n}')
+        print(f'  dtro: orders held per borough: {", ".join(publishing) or "none yet"}', file=sys.stderr)
+        found = dtro.recent_parking_events(client, src, DTRO_DAYS)
+    except dtro.DtroError as e:
+        print(f'  dtro: {e}', file=sys.stderr)
+        return False
+    for bid, e in found:
+        b = src['boroughs'][bid]
+        findings.append({
+            'title': f'Parking: {b["name"]} traffic order, D-TRO {e["id"]}',
+            'body': (f'{b["name"]} published or changed a traffic order in the DfT\'s D-TRO service that '
+                     f'touches parking zones or bays:\n\n{dtro.describe(e)}\n\n'
+                     'Check whether it changes zone hours, days, max stays or prices and when it takes effect, '
+                     'then update `tools/parking_sources.json` and the built data. Found by the weekly parking '
+                     'watch (`tools/check_parking_sources.py`, check `dtro`).'),
+        })
+    print(f'  dtro: {len(found)} parking orders in the last {DTRO_DAYS} days', file=sys.stderr)
+    return True
+
+
 def open_issues(findings):
     subprocess.run(['gh', 'label', 'create', LABEL, '--color', 'e74c3c',
                     '--description', 'Council parking changes to check'], capture_output=True)
@@ -165,7 +201,7 @@ def main():
     ap.add_argument('--dry-run', action='store_true', help='print findings, open no issues')
     ap.add_argument('--write', action='store_true', help='record new RingGo dates in parking_sources.json')
     ap.add_argument('--limit', type=int, help='check at most N RingGo locations')
-    ap.add_argument('--only', default='ringgo,holidays')
+    ap.add_argument('--only', default='ringgo,holidays,dtro')
     ap.add_argument('--gazette', metavar='NOTICE_ID', help='file one Gazette notice (with --borough, --summary)')
     ap.add_argument('--borough', help='borough id from parking_sources.json, for --gazette')
     ap.add_argument('--summary', default='', help='what the notice changes, for --gazette')
@@ -182,12 +218,15 @@ def main():
     if 'ringgo' in only and check_ringgo(src, findings, args.limit, args.write):
         with open(SOURCES, 'w') as f:
             json.dump(src, f, indent=1, ensure_ascii=False)
+    ok = check_dtro(src, findings) if 'dtro' in only else True
     for f in findings:
         print(f'FINDING: {f["title"]}')
     if not findings:
         print('No changes found.')
     if findings and not args.dry_run:
         open_issues(findings)
+    if not ok:
+        sys.exit('A check could not run; see the log above.')
 
 
 if __name__ == '__main__':

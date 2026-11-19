@@ -61,12 +61,14 @@ times the council's wording doesn't settle are `unsure` (shown as unknown).
 
 `.github/workflows/parking-watch.yml` runs `tools/check_parking_sources.py` every Monday. It opens a
 `parking-data` issue when a MyRingGo location's "Last tariff update" changes (boroughs with a `ringgo`
-entry in `parking_sources.json`: `{slug, locations: {code: last update}}`) or when the bank holiday
-list is about to run out. The London Gazette refuses GitHub's runners, so its traffic orders are read
-each Monday by a scheduled Claude run on the server, which follows `tools/gazette_watch.md` and files
-notices through `check_parking_sources.py --gazette` (same label and de-duplication). Neither edits
-the data. After checking an issue, update `parking_sources.json` and the built files,
-and the recorded `ringgo` date. Add new MyRingGo codes with a `null` date and run the script with
+entry in `parking_sources.json`: `{slug, locations: {code: last update}}`), when a London borough
+publishes or changes a parking traffic order in the DfT's D-TRO service (`tools/dtro.py`; boroughs are
+matched by their GeoPlace `swaCode`; needs the `DTRO_CLIENT_ID`/`DTRO_CLIENT_SECRET` secrets), or when
+the bank holiday list is about to run out. It logs how many orders each borough has in D-TRO, since
+councils are still joining. The London Gazette refuses scripted requests, so a Gazette notice found by
+hand is filed with `check_parking_sources.py --gazette` (`tools/gazette_watch.md`). None of this edits
+the data. After checking an issue, update `parking_sources.json` and the built files, and the recorded
+`ringgo` date. Add new MyRingGo codes with a `null` date and run the script with
 `--write --only ringgo` to record their current dates without opening issues.
 
 ## Sources and gaps

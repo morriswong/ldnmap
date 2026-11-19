@@ -1,9 +1,10 @@
 name: Parking data watch
 
-# Weekly: look for council parking changes the map may be missing (MyRingGo tariff updates, the
-# bank holiday list running out) and open an issue for each. It never changes the data. See
-# tools/check_parking_sources.py. The London Gazette refuses GitHub's runners, so its traffic
-# orders are watched by a scheduled Claude run instead (tools/gazette_watch.md).
+# Weekly: look for council parking changes the map may be missing (MyRingGo tariff updates, new
+# traffic orders in the DfT's D-TRO service, the bank holiday list running out) and open an issue
+# for each. It never changes the data. See tools/check_parking_sources.py and tools/dtro.py.
+# D-TRO needs the repository secrets DTRO_CLIENT_ID and DTRO_CLIENT_SECRET (a free consumer
+# application from https://dtro-ui.dft.gov.uk); without them that check is skipped.
 on:
   schedule:
     - cron: '0 6 * * 1'   # Mondays 06:00 UTC
@@ -27,4 +28,6 @@ jobs:
       - name: Check council sources
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DTRO_CLIENT_ID: ${{ secrets.DTRO_CLIENT_ID }}
+          DTRO_CLIENT_SECRET: ${{ secrets.DTRO_CLIENT_SECRET }}
         run: python3 tools/check_parking_sources.py ${{ inputs.dry_run && '--dry-run' || '' }}
