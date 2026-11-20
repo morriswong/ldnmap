@@ -24,6 +24,15 @@
     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
   </svg>
 </button>
+<!-- Locate me: bottom right, riding above whichever card or sheet covers that corner -->
+<div id="locate-box" class="locate-box">
+  <div id="locate-msg" class="locate-msg" role="status" aria-live="polite"></div>
+  <button id="locate-fab" class="locate-fab" type="button" title="Use my location" aria-label="Use my location" aria-busy="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M3 11l19-9-9 19-2-8-8-2z"/>
+    </svg>
+  </button>
+</div>
 <!-- [ccz] while the Congestion Charge layer is on: whether the charge applies now -->
 <div id="ccz-chip" class="ccz-chip" role="status" aria-live="polite">
   <span class="ccz-chip-dot" aria-hidden="true"></span>

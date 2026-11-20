@@ -154,12 +154,13 @@ function postcodeCentre(pc, seq) {
     .then(function(data) {
       if (seq !== postcodeSeq) return;
       if (!(data.status === 200 && data.result && data.result.latitude)) { done('Postcode lookup failed.', true); return; }
-      if (pendingPlace) {
+      var exact = !!(pendingPlace && pendingPlace.exact);
+      if (pendingPlace && !exact) {
         pendingPlace.lat = data.result.latitude;
         pendingPlace.lng = data.result.longitude;
       }
       postcodeReady();
-      map.flyTo({ center: [data.result.longitude, data.result.latitude], zoom: 14 });
+      if (!exact) map.flyTo({ center: [data.result.longitude, data.result.latitude], zoom: 14 });
       done('Boundary unavailable — showing postcode centre', false);
     })
     .catch(function() { done('Postcode lookup failed.', true); });
@@ -194,13 +195,17 @@ function renderPostcode(geo, seq) {
     if (seq !== postcodeSeq) return;
     addPostcodeLayers(geo);
 
+    // An exact place (your location) keeps its own point and view; the postcode is just its label.
     var bounds = geojsonBounds(geo);
+    var exact = !!(pendingPlace && pendingPlace.exact);
     if (bounds) {
-      map.fitBounds(bounds, { padding: fitPadding({ top: 24, right: 24, bottom: 24, left: 24 }), maxZoom: 16 });
+      if (!exact) map.fitBounds(bounds, { padding: fitPadding({ top: 24, right: 24, bottom: 24, left: 24 }), maxZoom: 16 });
       var ctr = bounds.getCenter();
       if (pendingPlace && pendingPlace.postcode) {
-        pendingPlace.lat = ctr.lat;
-        pendingPlace.lng = ctr.lng;
+        if (!exact) {
+          pendingPlace.lat = ctr.lat;
+          pendingPlace.lng = ctr.lng;
+        }
         postcodeReady();
       }
     }
@@ -547,7 +552,7 @@ function goToPlace(place) {
   clearTravel();
   closeParkNear(); // [park] it was for the previous place
   pendingPlace = place;
-  map.flyTo({ center: [place.lng, place.lat], zoom: 12, duration: 1000 });
+  map.flyTo({ center: [place.lng, place.lat], zoom: place.zoom || 12, duration: 1000 });
   placeMarker(place.lat, place.lng);
   cczCheckPlace(place.lng, place.lat); // [ccz]
   setStatus(place.name);
@@ -4173,3 +4178,131 @@ window.__parkSheet = makeSnapSheet({
   isOpen: function () { return parkPanel.classList.contains('open'); }
 });
 /* ===== END DRAGGABLE BOTTOM SHEET ===== */
+
+/* ===== LOCATE ME ===== */
+// The arrow button in the bottom-right corner: asks the browser where you are, puts a blue dot
+// there and opens it as the place (its postcode card, so Park near here and travel times work
+// from where you actually are). With Park near here open, it looks again from your location.
+var locateBox = document.getElementById('locate-box');
+var locateBtn = document.getElementById('locate-fab');
+var locateMsgEl = document.getElementById('locate-msg');
+var locateSeq = 0;           // the newest tap: an answer for an earlier one is dropped
+var locateDot = null;        // the blue dot's marker, once there's a fix
+var locateMsgTimer = null;
+var LOCATE_ZOOM = 15;
+
+function locateMessage(text) {
+  clearTimeout(locateMsgTimer);
+  if (!locateMsgEl) return;
+  locateMsgEl.textContent = text || '';
+  locateMsgEl.classList.toggle('open', !!text);
+  if (text) locateMsgTimer = setTimeout(function() { locateMessage(''); }, 5000);
+}
+
+function locateBusy(on) {
+  if (!locateBtn) return;
+  locateBtn.classList.toggle('is-busy', on);
+  locateBtn.setAttribute('aria-busy', on ? 'true' : 'false');
+}
+
+function showLocateDot(lat, lng) {
+  if (!locateDot) {
+    var el = document.createElement('div');
+    el.className = 'locate-dot';
+    el.setAttribute('aria-hidden', 'true');
+    locateDot = new mapboxgl.Marker({ element: el });
+  }
+  locateDot.setLngLat([lng, lat]).addTo(map);
+}
+
+// The nearest postcode (postcodes.io, within 500 m), or null: none, or the lookup failed.
+function locatePostcode(lat, lng) {
+  return fetch('https://api.postcodes.io/postcodes?lon=' + lng.toFixed(6) + '&lat=' + lat.toFixed(6) + '&radius=500&limit=1')
+    .then(function(r) { return r.json(); })
+    .then(function(d) { return d && d.status === 200 && d.result && d.result[0] ? d.result[0].postcode : null; })
+    .catch(function() { return null; });
+}
+
+// A fix arrived: the dot, then the place. `exact` keeps the card on your coordinates rather
+// than moving it to the postcode's centre.
+function locateFound(lat, lng, seq) {
+  showLocateDot(lat, lng);
+  var reopenPark = !!parkPlace;
+  return locatePostcode(lat, lng).then(function(pc) {
+    if (seq !== locateSeq) return;
+    locateBusy(false);
+    goToPlace({ name: 'Your location', address: pc || '', lat: lat, lng: lng, postcode: pc, exact: true, zoom: LOCATE_ZOOM });
+    if (reopenPark) return openParkNear();
+  });
+}
+
+function locateMe() {
+  var seq = ++locateSeq;
+  locateMessage('');
+  if (!navigator.geolocation) {
+    locateMessage('Your browser can’t share your location.');
+    return Promise.resolve();
+  }
+  locateBusy(true);
+  return new Promise(function(resolve) {
+    navigator.geolocation.getCurrentPosition(function(pos) {
+      if (seq !== locateSeq) { resolve(); return; }
+      locateFound(pos.coords.latitude, pos.coords.longitude, seq).then(resolve, resolve);
+    }, function(err) {
+      if (seq === locateSeq) {
+        locateBusy(false);
+        locateMessage(err && err.code === 1
+          ? 'Location is off for this site. Allow it in your browser settings.'
+          : 'Couldn’t find your location. Try again.');
+      }
+      resolve();
+    }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 });
+  });
+}
+
+if (locateBtn) locateBtn.addEventListener('click', function() { locateMe(); });
+
+// On a phone the cards and sheets fill the bottom of the screen, so the button rides just above
+// whichever one covers its corner, and steps aside when a sheet is pulled up most of the way.
+var LOCATE_COVERS = ['travel-card', 'postcode-chip', 'fuel-panel', 'parking-panel', 'park-panel'];
+var locateLiftQueued = false;
+
+function locateLift() {
+  locateLiftQueued = false;
+  if (!locateBox) return;
+  var H = window.innerHeight, W = window.innerWidth;
+  var base = isMobileView() ? 40 : 16, size = 40, right = isMobileView() ? 16 : 66;
+  var colL = W - right - size, colR = W - right, top = H;
+  LOCATE_COVERS.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (!el || typeof el.getBoundingClientRect !== 'function') return;
+    var r = el.getBoundingClientRect();
+    if (r.height <= 0 || r.top >= H - 1 || r.right <= colL || r.left >= colR) return;
+    if (r.bottom <= H - base - size) return;               // above the button (the desktop panels)
+    if (window.getComputedStyle && parseFloat(window.getComputedStyle(el).opacity) < 0.1) return;
+    top = Math.min(top, r.top);
+  });
+  var bottom = top < H ? H - top + 12 : base;
+  locateBox.style.bottom = bottom + 'px';
+  locateBox.classList.toggle('is-tucked', bottom + size > H * 0.62);
+}
+
+function queueLocateLift() {
+  if (locateLiftQueued) return;
+  locateLiftQueued = true;
+  requestAnimationFrame(locateLift);
+}
+
+if (locateBox && typeof MutationObserver !== 'undefined') {
+  var locateWatch = new MutationObserver(queueLocateLift);
+  locateWatch.observe(document.body, { attributes: true, attributeFilter: ['class', 'data-state'] });
+  LOCATE_COVERS.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    locateWatch.observe(el, { attributes: true, attributeFilter: ['class', 'style'] });
+    el.addEventListener('transitionend', queueLocateLift);
+  });
+  window.addEventListener('resize', queueLocateLift);
+  queueLocateLift();
+}
+/* ===== END LOCATE ME ===== */

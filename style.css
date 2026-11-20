@@ -814,3 +814,52 @@
     .park-chip, .park-edit, .park-seg-btn, .park-secondary { font-size: 14px; }
   }
   /* ===== END PARK NEAR HERE ===== */
+
+  /* ===== Locate me ===== */
+  /* Bottom right: beside the theme button on a computer; on a phone, above whichever card or
+     sheet covers the corner (app.js sets `bottom`), and out of the way when a sheet is pulled up. */
+  .locate-box {
+    position: absolute; right: 66px; bottom: 16px; z-index: 1000;
+    display: flex; align-items: center; gap: 8px;
+    transition: bottom 0.3s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.2s;
+  }
+  .locate-box.is-tucked { opacity: 0; pointer-events: none; }
+  .locate-fab {
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    width: 40px; height: 40px; border-radius: 20px; padding: 0;
+    background: var(--glass-fab-bg);
+    backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    box-shadow: inset 0 1px 0 0 var(--glass-highlight), 0 4px 16px rgba(0,0,0,0.12);
+    color: #3b82f6; cursor: pointer;
+    transition: transform 0.2s, background 0.3s;
+  }
+  body.light .locate-fab { color: #1d4ed8; }
+  .locate-fab:active { transform: scale(0.94); }
+  .locate-fab svg { width: 18px; height: 18px; }
+  .locate-fab.is-busy svg { animation: locate-pulse 1s ease-in-out infinite; }
+  @keyframes locate-pulse { 50% { opacity: 0.3; } }
+  .locate-msg {
+    max-width: 240px; padding: 7px 12px; border-radius: 14px;
+    background: var(--glass-pill-bg);
+    backdrop-filter: blur(40px) saturate(180%); -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    color: var(--text); font: 500 12px/1.35 'DM Sans', sans-serif;
+    opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  .locate-msg.open { opacity: 1; }
+  .locate-msg:empty { display: none; }
+  .locate-dot {
+    width: 16px; height: 16px; border-radius: 50%;
+    background: #3b82f6; border: 3px solid #fff; box-sizing: border-box;
+    box-shadow: 0 0 0 6px rgba(59,130,246,0.25), 0 1px 4px rgba(0,0,0,0.35);
+    pointer-events: none;
+  }
+  @media (max-width: 768px) {
+    .locate-box { right: 16px; bottom: 40px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .locate-box { transition: none; }
+    .locate-fab.is-busy svg { animation: none; opacity: 0.5; }
+  }

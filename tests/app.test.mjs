@@ -1458,3 +1458,72 @@ test('park near here, congestion charge: the tip never offers a time that has go
   await openCczPark(app, plan);
   assert.equal(cczTip(app).querySelectorAll('.park-ccz-tip-main')[0].textContent, 'Arrive after 6pm and it’s free');
 });
+
+/* --- Locate me --- */
+const HERE = { lat: 51.4851, lng: -0.1953 };                     // inside SQUARE, off its centre
+const geo = (answer) => ({ geolocation: { calls: 0, getCurrentPosition(ok, fail, opts) {
+  this.calls++; this.opts = opts;
+  if (answer.code) fail(answer); else ok({ coords: { latitude: answer.lat, longitude: answer.lng, accuracy: 20 } });
+} } });
+const REVERSE = (pc) => [/api\.postcodes\.io\/postcodes\?lon=/, () => reply({ status: 200, result: pc ? [{ postcode: pc }] : null })];
+
+test('locate me: your location opens as the place, on your exact point, with its postcode as the label', async () => {
+  const app = loadApp({ routes: [REVERSE('SW6 1AA'), BOUNDARY], navigator: geo(HERE) });
+  app.el('locate-fab').dispatch('click');
+  assert.equal(app.el('locate-fab').getAttribute('aria-busy'), 'true');
+  await settle();
+  const ask = app.fetched.find((u) => /postcodes\?lon=/.test(u));
+  assert.match(ask, /lon=-0\.195300&lat=51\.485100&radius=500&limit=1$/);
+  assert.equal(app.locateDot.added, true, 'the blue dot');
+  assert.deepEqual(plain(app.locateDot.lngLat), [HERE.lng, HERE.lat]);
+  assert.equal(app.el('locate-fab').getAttribute('aria-busy'), 'false');
+  assert.equal(app.appState, 'modepicker', 'the postcode card');
+  assert.equal(app.el('pc-label').textContent, 'Your location');
+  assert.equal(app.el('pc-badge').textContent, 'SW6 1AA');
+  await settle();
+  // The boundary loaded, but the place stays where you are and the view isn't refitted to it.
+  assert.equal(app.pendingPlace.lat, HERE.lat);
+  assert.equal(app.pendingPlace.lng, HERE.lng);
+  assert.equal(app.el('postcode-park-btn').disabled, false, 'Park near here is ready');
+  assert.equal(app.el('postcode-cta-btn').disabled, false);
+  const moves = app.map.calls.map((c) => c.name);
+  assert.equal(moves.indexOf('fitBounds'), -1, 'no refit to the postcode');
+  assert.equal(app.map.calls.find((c) => c.name === 'flyTo').options.zoom, 15);
+});
+
+test('locate me: with no postcode nearby, it goes straight to travel times from your location', async () => {
+  const app = loadApp({ routes: [REVERSE(null), ISO, NO_STATIONS], navigator: geo(HERE) });
+  await app.locateMe();
+  await settle();
+  assert.equal(app.appState, 'travel');
+  assert.equal(app.pendingPlace.name, 'Your location');
+  assert.match(app.location.hash, /^#p=51\.48510,-0\.19530&/);
+});
+
+test('locate me: a refusal or a failure says so, and nothing moves', async () => {
+  for (const [code, text] of [[1, /Allow it in your browser settings/], [3, /Couldn’t find your location/]]) {
+    const app = loadApp({ routes: [REVERSE('SW6 1AA')], navigator: geo({ code }) });
+    await app.locateMe();
+    assert.match(app.el('locate-msg').textContent, text);
+    assert.equal(app.el('locate-msg').classList.contains('open'), true);
+    assert.equal(app.el('locate-fab').getAttribute('aria-busy'), 'false');
+    assert.equal(app.pendingPlace, null);
+    assert.equal(app.locateDot, null);
+  }
+  const bare = loadApp({});
+  await bare.locateMe();
+  assert.match(bare.el('locate-msg').textContent, /can’t share your location/);
+});
+
+test('locate me: with Park near here open, it looks again from where you are', async () => {
+  const here = cAt(150);
+  const app = loadApp({ routes: [...cczParkRoutes(), REVERSE('EC2V 7AA'), BOUNDARY], navigator: geo({ lat: here[1], lng: here[0] }), now: FRI_3PM });
+  await openCczPark(app);
+  assert.equal(app.parkPlace.name, 'The Office');
+  await app.locateMe();
+  await settle();
+  assert.equal(app.parkPlace.name, 'Your location');
+  assert.deepEqual([app.parkPlace.lng, app.parkPlace.lat], here);
+  assert.equal(app.parkPanel.classList.contains('open'), true);
+  assert.equal(app.parkView, 'results');
+});
