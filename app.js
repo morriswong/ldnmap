@@ -305,7 +305,7 @@ function geojsonBounds(geojson) {
 
 // Put every layer of ours back on a freshly loaded style. Safe to run more than once.
 function rehydrateLayers() {
-  if (cczOn) addCczLayers(); // [ccz]
+  if (cczOn || cczPark) addCczLayers(); // [ccz]
   var saved = isoLayers;
   isoLayers = [];
   saved.forEach(function(l) { addIsoLayer(l.data); });
@@ -3035,6 +3035,7 @@ function closeParkNear() {
   parkInfo = null;
   parkSelIdx = -1;
   clearParkResults();
+  cczShowForPark(false);
   parkPanel.classList.remove('open');
   document.body.classList.remove('park-open');
   if (window.__parkSheet) window.__parkSheet.close();
@@ -3172,6 +3173,8 @@ function parkFind() {
     var out = ccz && ccz.charge.charged ? parkOutsideResult(found.outs) : null;
     if (out) parkResults.push(out);
     parkInfo = { arrival: arrival, inZone: area.inZone, outline: area.outline, covered: area.boroughs.length > 0, ccz: ccz };
+    // The charge zone's outline whenever the place or a listed result is in it.
+    cczShowForPark(!!ccz || parkResults.some(function(r) { return r.point && ccInZone(r.point[0], r.point[1]) === true; }));
     parkView = 'results';
     parkData = parkResults.length ? parkResultsGeoJSON() : null;
     parkZoneData = parkResults.length ? parkZonesGeoJSON() : null;
@@ -3754,6 +3757,7 @@ function syncCczColors() {
 }
 syncCczColors();
 var cczOn = false;
+var cczPark = false;        // Park near here wants the outline drawn (cczShowForPark()), C button or not
 var cczData = null;         // the zone's GeoJSON once loaded
 var cczLoading = null;      // the in-flight load, so a tap and a pick share it
 var cczTimer = null;
@@ -3813,7 +3817,7 @@ function toggleCcz(on) {
   (cczBtn || document.getElementById('ccz-ctrl')).setAttribute('aria-pressed', on ? 'true' : 'false');
   clearInterval(cczTimer);
   if (!on) {
-    removeCczLayers();
+    if (!cczPark) removeCczLayers();
     cczChip.classList.remove('open');
     return;
   }
@@ -3846,7 +3850,7 @@ function removeCczLayers() {
 function addCczLayers() {
   if (!cczData) return;
   whenStyleReady(function() {
-    if (!cczOn) return;
+    if (!cczOn && !cczPark) return;
     removeCczLayers();
     var styleLayers = map.getStyle().layers;
     var underRoads = (styleLayers.filter(function(l) { return l.type === 'symbol'; })[0] || {}).id;
@@ -3871,6 +3875,13 @@ function cczCheckPlace(lng, lat) {
     if (seq !== cczPickSeq) return;
     if (ccInZone(lng, lat)) toggleCcz(true);
   }).catch(function() {});
+}
+// Park near here draws the zone's outline (no chip) while its results are near the zone, so the
+// banner and the 'outside the charge zone' row can be read against it. The C button is untouched.
+function cczShowForPark(on) {
+  cczPark = !!on;
+  if (!cczPark) { if (!cczOn) removeCczLayers(); return; }
+  loadCczData().then(function() { if (cczPark || cczOn) addCczLayers(); }).catch(function() {});
 }
 /* ===== END CONGESTION CHARGE ===== */
 

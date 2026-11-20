@@ -1386,6 +1386,33 @@ test('park near here, congestion charge: free hours, an uncharged stay, and a pl
   assert.equal(cczBanner(app), undefined);
 });
 
+test('park near here, congestion charge: the zone outline shows with the results, chip and C button untouched', async () => {
+  const app = loadApp({ routes: cczParkRoutes(), now: FRI_3PM });
+  await openCczPark(app);
+  await settle();
+  assert.equal(app.cczOn, false, 'the C button stays off');
+  assert.equal(app.el('ccz-chip').classList.contains('open'), false);
+  assert.ok(app.map.getLayer('ccz-line'), 'the outline is drawn');
+  assert.ok(app.map.getLayer('ccz-fill'));
+  app.closeParkNear();
+  assert.equal(app.map.getLayer('ccz-line'), undefined, 'closing takes it away');
+  // Outside the zone but with listed streets inside it: the outline shows. Far away: it doesn't.
+  await openCczPark(app, null, cAt(900));
+  await settle();
+  assert.ok(app.parkResults.some((r) => app.ccInZone(r.point[0], r.point[1])));
+  assert.ok(app.map.getLayer('ccz-line'));
+  await openCczPark(app, null, cAt(8000));
+  await settle();
+  assert.equal(app.map.getLayer('ccz-line'), undefined);
+  // With the C button on, closing keeps it.
+  await openCczPark(app);
+  await settle();
+  app.toggleCcz(true);
+  await settle();
+  app.closeParkNear();
+  assert.ok(app.map.getLayer('ccz-line'));
+});
+
 test('park near here, congestion charge: the tip moves the arrival, keeps the stay and looks again', async () => {
   const app = loadApp({ routes: cczParkRoutes(), now: FRI_3PM });
   await openCczPark(app, { dayIdx: 0, minutes: 15 * 60, stay: 120, now: false });
