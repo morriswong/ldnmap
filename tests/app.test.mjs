@@ -1527,3 +1527,17 @@ test('locate me: with Park near here open, it looks again from where you are', a
   assert.equal(app.parkPanel.classList.contains('open'), true);
   assert.equal(app.parkView, 'results');
 });
+
+test('pinching outside the map never zooms the page', () => {
+  const app = loadApp({ mobile: true });
+  for (const type of ['gesturestart', 'gesturechange', 'gestureend']) {
+    const hs = app.document.listeners[type] || [];
+    assert.equal(hs.length, 1, type + ' is handled');
+    assert.equal(hs[0].opts.passive, false, type + ' can be cancelled');
+    let stopped = false;
+    hs[0].fn({ preventDefault() { stopped = true; } });
+    assert.ok(stopped, type + ' is cancelled');
+  }
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  assert.match(html, /name="viewport" content="[^"]*maximum-scale=1\.0, user-scalable=no"/);
+});

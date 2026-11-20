@@ -28,7 +28,8 @@
     --glass-tile-bg: rgba(255,255,255,0.45); --glass-tile-active: rgba(255,255,255,0.75);
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body { position: fixed; inset: 0; width: 100%; height: 100%; overflow: hidden; overscroll-behavior: none; -webkit-overflow-scrolling: auto; }
+  html, body { position: fixed; inset: 0; width: 100%; height: 100%; overflow: hidden; overscroll-behavior: none; -webkit-overflow-scrolling: auto; touch-action: pan-x pan-y; }
+  /* Pinch and double-tap zoom only the map (Mapbox handles its own touches); the page itself never zooms. */
   body { font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text-soft); height: var(--app-h, 100dvh); transition: background 0.3s, color 0.3s; }
   #map { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 1; }
   #search-pill {

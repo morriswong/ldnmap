@@ -202,6 +202,8 @@ export function loadApp(opts) {
     body,
     documentElement: new El('html'),
     copied: [],
+    listeners: {},
+    addEventListener(type, fn, opts) { (this.listeners[type] = this.listeners[type] || []).push({ fn, opts }); },
     getElementById(id) { return (els[id] = els[id] || new El('div', id)); },
     createElement(tag) { return new El(tag); },
     createTextNode: textNode,

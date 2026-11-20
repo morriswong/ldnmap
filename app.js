@@ -32,6 +32,12 @@ if (window.visualViewport) {
   window.visualViewport.addEventListener('scroll', syncAppHeight);
 }
 
+// Only the map zooms. iOS Safari ignores user-scalable=no, so a pinch on a panel or button would
+// zoom the whole page; stop its gesture events (Mapbox uses touch events, so map pinch still works).
+['gesturestart', 'gesturechange', 'gestureend'].forEach(function (type) {
+  document.addEventListener(type, function (e) { e.preventDefault(); }, { passive: false });
+});
+
 function buildStyleUrl(dark) {
   return 'mapbox://styles/mapbox/' + (dark ? 'dark-v11' : 'streets-v12');
 }
