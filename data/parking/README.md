@@ -48,6 +48,18 @@ that would be controlled shows as unknown.
 (`isControlled(ruleKey, day, minutes, eventDay, bankHoliday)`) and finds the next change
 (`nextChange`, for the card's "free from 10pm"); `tests/parking.test.mjs` tests it.
 
+### How Park near here lists zones and streets
+
+Park near here lists **zones**, not streets. The named, non-`tfl` pieces in each nearby borough's
+`streets.geojson` whose `rule` is their zone's own (`"<borough>:<zone>"`) make one row per zone:
+"Zone C · 2 min · £4.20/hr", priced and timed by the zone's rule. Its walk is to the nearest of
+those streets, or about a minute when the place is inside the zone's polygon in `zones.geojson`.
+A street whose `rule` is a street rule (`hf:H-long`, `hf:K-Richford`: a pay-by-phone strip, a
+different max stay) keeps a row of its own, with its zone under its name, so nothing is hidden;
+the zone's card lists these streets too. On the map the listed zones' outlines (`zones.geojson`'s
+polygons, not the `outline` ones) are drawn in their row's colour and the view fits them; a zone's
+card frames that zone and colours its streets.
+
 ### How Park near here prices a stay
 
 `ruleTariff(ruleKey)` in `parking-rules.js` finds a rule's hourly price, first match wins:
@@ -60,7 +72,7 @@ that would be controlled shows as unknown.
 4. the borough's emissions `bands` (`"bands"`, a range);
 5. the borough's `byFuel` rates (`"fuel"`, a range);
 6. none (`model: "note"`, or a `"zone"` borough's rule without a `price`): the price is unknown and
-   the street card shows the borough's `note` and links its `url`.
+   the zone or street card shows the borough's `note` and links its `url`.
 
 `planStay()` multiplies the stay's paid minutes by the lowest and highest rate (`costMin`, `costMax`;
 `costMax` is null for a `"from"` price) and gives an exact `cost` only when there's one price (or
@@ -71,10 +83,11 @@ by it. The list's **Cheapest** order sorts by `costMin`.
 Park near here opens with no stay chosen ("Now · any length"). Then `stayFromNow()` works out how
 long you can park from the arrival under each rule, looking a week ahead with the same status
 segments as `planStay()`: the stay ends at the first permit-holders-only or unclear time, or when
-a paid stretch reaches the max stay (free time in between starts a new stretch). Streets that are
-permit-only at the arrival are left out. Each row shows the hourly rate (`ruleTariff()`: `£2.32/hr`,
-`£4.78–£10.58/hr`, `from £2.32/hr`, or "Price unknown"), and **Cheapest** sorts by its lowest rate,
-free first. A street's card prices the time you can stay, up to 24 hours.
+a paid stretch reaches the max stay (free time in between starts a new stretch). Zones and
+streets that are permit-only at the arrival are left out. Each row shows the hourly rate
+(`ruleTariff()`: `£2.32/hr`, `£4.78–£10.58/hr`, `from £2.32/hr`, or "Price unknown"), and
+**Cheapest** sorts by its lowest rate,
+free first. A zone's or street's card prices the time you can stay, up to 24 hours.
 
 ## Coverage
 

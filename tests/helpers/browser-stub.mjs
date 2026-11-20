@@ -96,6 +96,7 @@ class FakeMap {
     this.sources = {};
     this.layers = [];
     this.handlers = {};      // type → [{ fn, once }]
+    this.layerHandlers = {}; // 'type:layerId' → [fn]
     this.styleLoaded = true;
     this.styles = [];        // every setStyle() url
     this.calls = [];         // camera moves: { name, options }
@@ -108,7 +109,12 @@ class FakeMap {
     this.canvas = new El('canvas');
   }
   addControl() {}
-  on(type, a, b) { if (!b) (this.handlers[type] = this.handlers[type] || []).push({ fn: a }); }
+  // A layer's own listener (map.on(type, layerId, fn)) is kept apart: fireLayer() calls it.
+  on(type, a, b) {
+    if (!b) (this.handlers[type] = this.handlers[type] || []).push({ fn: a });
+    else (this.layerHandlers[type + ':' + a] = this.layerHandlers[type + ':' + a] || []).push(b);
+  }
+  fireLayer(type, layerId, ev) { (this.layerHandlers[type + ':' + layerId] || []).forEach((fn) => fn(ev || {})); }
   once(type, fn) { (this.handlers[type] = this.handlers[type] || []).push({ fn, once: true }); }
   off(type, fn) { this.handlers[type] = (this.handlers[type] || []).filter((h) => h.fn !== fn); }
   fire(type, ev) {
@@ -139,7 +145,7 @@ class FakeMap {
   // Kept on the layer, like the real map's getPaintProperty().
   setPaintProperty(id, prop, value) { const l = this.getLayer(id); if (l) l.paint = { ...l.paint, [prop]: value }; }
   getPaintProperty(id, prop) { const l = this.getLayer(id); return l && l.paint ? l.paint[prop] : undefined; }
-  setFilter() {}
+  setFilter(id, filter) { const l = this.getLayer(id); if (l) l.filter = filter; }
   resize() {}
   getContainer() { return this.container; }
   getCanvas() { return this.canvas; }
@@ -148,7 +154,8 @@ class FakeMap {
   getPadding() { return this.padding; }
   getBounds() { return new LngLatBounds([this.center.lng - 0.05, this.center.lat - 0.03], [this.center.lng + 0.05, this.center.lat + 0.03]); }
   project(c) { return { x: (c[0] - this.center.lng) * 10000 + 640, y: (this.center.lat - c[1]) * 10000 + 400 }; }
-  queryRenderedFeatures() { return []; }
+  // Nothing is rendered; a test can set `rendered` to { layerId: [features] }.
+  queryRenderedFeatures(p, o) { return ((o && o.layers) || []).reduce((a, id) => a.concat((this.rendered || {})[id] || []), []); }
   // A padding passed to flyTo/easeTo/jumpTo stays on the map; fitBounds' padding doesn't.
   move(name, o) { this.calls.push({ name, options: o }); if (o && o.padding) this.padding = o.padding; if (o && o.center) this.center = { lng: o.center[0], lat: o.center[1] }; }
   flyTo(o) { this.move('flyTo', o); }

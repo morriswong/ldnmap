@@ -313,7 +313,7 @@ function rehydrateLayers() {
   if (stationsData) addStationsLayer(stationsData); // [stations]
   if (fuelData) addFuelLayer(fuelData); // [fuel]
   if (parkingOn) addParkingLayers(); // [parking]
-  if (parkData) addParkResultsLayers(); // [park] after the parking layers, so it draws over them
+  if (parkData) addParkResultsLayers(); // [park] its zone outlines and streets, after the parking layers so they draw over them
 }
 
 function isoFitPadding() {
@@ -2369,17 +2369,19 @@ map.on('moveend', function(e) {
 /* ===== END PARKING ===== */
 
 /* ===== PARK NEAR HERE ===== */
-// For drivers: from a place's card, straight to the streets within a 20 min walk where you can
-// park now and for how long (no stay chosen: stayFromNow() in parking-rules.js; permit-only-now
-// streets go), with the hourly rate, nearest or cheapest first. "Change" opens a plan (arrival day
-// and time, and how long to stay); with a stay chosen the list is the streets where the whole stay
-// is allowed (no permit-only time, no paid stretch over the max stay), with what it costs
-// (planStay()). Candidates are the named, non-red-route pieces of each nearby borough's
-// streets.geojson, one per street name and rule. Walks are straight-line estimates,
-// refined for the nearest 24 with one Mapbox Matrix call. The parking layer goes on too, set to
-// the arrival time, for context (zones and permit-only streets); the results are drawn over it as
-// the `park-results` source. closeParkNear() is the one way out: it puts the parking layer back
-// as it was. Every lookup takes a number from parkSeq.
+// For drivers: from a place's card, straight to the controlled parking zones within a 20 min walk
+// where you can park now and for how long (no stay chosen: stayFromNow() in parking-rules.js;
+// permit-only-now rules go), with the hourly rate, nearest or cheapest first. "Change" opens a
+// plan (arrival day and time, and how long to stay); with a stay chosen the list is where the
+// whole stay is allowed (no permit-only time, no paid stretch over the max stay), with what it
+// costs (planStay()). Candidates come from the named, non-red-route pieces of each nearby
+// borough's streets.geojson: one row per zone (the streets that follow the zone's own rule), and
+// one per "odd" street whose rule differs from its zone's, so nothing is hidden. Walks are
+// straight-line estimates, refined for the nearest 24 with one Mapbox Matrix call. The parking
+// layer goes on too, set to the arrival time, for context; the listed zones' outlines (the
+// `park-zones` source) and odd streets (`park-results`) are drawn over it, and a zone's card
+// frames the zone and colours its streets. closeParkNear() is the one way out: it puts the
+// parking layer back as it was. Every lookup takes a number from parkSeq.
 var PARK_STAYS = [[null, 'Any'], [30, '30m'], [60, '1h'], [120, '2h'], [180, '3h'], [240, '4h'], ['day', 'All day']];
 var PARK_REACH_M = 1800;       // boroughs with a zone this close to the place are searched
 var PARK_EST_MAX = 25;         // minutes: the straight-line estimate a street must be within
@@ -2388,7 +2390,7 @@ var PARK_MATRIX_MAX = 24;      // streets whose walks are refined (25 coordinate
 var PARK_STATE_COLORS = { free: PARKING_COLORS.free, paid: PARKING_COLORS.ctrl, unknown: PARKING_COLORS.unknown };
 var PARK_SEG_COLORS = { free: PARKING_COLORS.free, ctrl: PARKING_COLORS.ctrl, permit: PARKING_COLORS.permit, unknown: PARKING_COLORS.unknown };
 var PARK_SEG_WORDS = { free: 'free', ctrl: 'paid', permit: 'permit only', unknown: 'unclear' };
-var PARK_LAYERS = ['park-results-sel', 'park-results-line', 'park-results-casing'];
+var PARK_LAYERS = ['park-results-sel', 'park-results-line', 'park-results-casing', 'park-zones-line', 'park-zones-fill'];
 var parkSeq = 0;               // the newest lookup; closing, editing or a new search moves it on
 var parkPlace = null;          // { name, lat, lng } while the view is open, else null
 var parkPlan = null;           // { dayIdx, minutes, stay (minutes, 'day', or null for any length), now }
@@ -2399,6 +2401,7 @@ var parkInfo = null;           // { arrival, inZone, outline, covered } for the 
 var parkSort = 'nearest';
 var parkSelIdx = -1;
 var parkData = null;           // the park-results GeoJSON on the map, or null
+var parkZoneData = null;       // the park-zones GeoJSON (the listed zones' outlines), or null
 var parkPrevParking = null;    // the parking layer's own day and time, when it was on before
 var parkOwnsParking = false;   // true when this view turned the parking layer on
 var parkZoneIndex = null;      // zone features with their bounding boxes, built once per load
@@ -2534,47 +2537,66 @@ function parkZones() {
     });
     return { f: f, bb: bb };
   });
-  parkZoneIndex = { src: parkingData, list: list };
+  var byRule = {};
+  list.forEach(function(z) { if (!z.f.properties.outline) byRule[z.f.properties.rule] = z; });
+  parkZoneIndex = { src: parkingData, list: list, byRule: byRule };
   return list;
+}
+// A zone's polygon and bounding box ({ f, bb }) by its rule key, or null when it has no outline.
+function parkZoneEntry(rule) {
+  if (!parkingData) return null;
+  parkZones();
+  return parkZoneIndex.byRule[rule] || null;
 }
 
 // Around a place: the boroughs with a zone (or, for boroughs with no zone map, an outline)
-// within reach, whether the place is inside a zone, and the outline it's inside, if any.
+// within reach, whether the place is inside a zone (`inRules`: the rule keys of the zones it's in),
+// and the outline it's inside, if any.
 function parkArea(lng, lat) {
   var dLat = PARK_REACH_M / 110540, dLng = PARK_REACH_M / (111320 * Math.cos(lat * Math.PI / 180));
-  var near = {}, inZone = false, outline = null;
+  var near = {}, inZone = false, outline = null, inRules = {};
   parkZones().forEach(function(z) {
     var bb = z.bb, p = z.f.properties;
     if (lng < bb[0] - dLng || lng > bb[2] + dLng || lat < bb[1] - dLat || lat > bb[3] + dLat) return;
     near[p.b] = true;
     if (lng < bb[0] || lng > bb[2] || lat < bb[1] || lat > bb[3] || !parkInGeometry([lng, lat], z.f.geometry)) return;
-    if (p.outline) outline = p.b; else inZone = true;
+    if (p.outline) outline = p.b; else { inZone = true; inRules[p.rule] = true; }
   });
-  return { boroughs: Object.keys(near).filter(function(id) { return parkingRules.boroughs[id]; }), inZone: inZone, outline: outline };
+  return { boroughs: Object.keys(near).filter(function(id) { return parkingRules.boroughs[id]; }), inZone: inZone, outline: outline,
+    inRules: inRules };
 }
 
 /* --- candidates and results --- */
-// One candidate per street name and rule in the loaded boroughs: its point nearest the place,
-// an estimated walk, and the stay planned under its rule. Permit-only and over-max stays go.
-// With no stay chosen, `now` is stayFromNow()'s answer (streets that are permit-only at the
+// One candidate per controlled parking zone, and one per "odd" street (a street whose rule isn't
+// its zone's: a pay-by-phone strip, a different max stay), in the loaded boroughs. A zone
+// (`kind` 'zone', rule `<borough>:<zone>`) takes in every named, non-red-route piece that follows
+// the zone's rule: its walk is from the nearest of them (`street`, `point`), or about a minute
+// when the place is inside the zone (`inside`, from `inRules`, parkArea()'s). An odd street
+// (`kind` 'street') is one per street name and rule, as before, so nothing is hidden.
+// Each has an estimated walk and the stay planned under its rule. Permit-only and over-max stays
+// go. With no stay chosen, `now` is stayFromNow()'s answer (rules that are permit-only at the
 // arrival go) and `plan` covers the time it allows, up to 24 hours (parkWindow()), for the card.
-function parkCandidates(ids, o, a) {
+function parkCandidates(ids, o, a, inRules) {
   var groups = {};
+  inRules = inRules || {};
   ids.forEach(function(id) {
     var d = parkingDetail[id];
     if (!d || d === 'loading') return;
     d.streets.forEach(function(f) {
       var p = f.properties;
       if (p.tfl || !p.name || !p.rule || !f.geometry || f.geometry.type !== 'LineString') return;
-      var key = p.name + '|' + p.rule;
-      var g = groups[key] || (groups[key] = { name: p.name, rule: p.rule, zone: p.zone, b: id, d: Infinity, point: null, lines: [] });
+      var zoneRule = p.zone != null && p.rule === id + ':' + p.zone;
+      var key = zoneRule ? 'zone|' + p.rule : 'street|' + p.name + '|' + p.rule;
+      var g = groups[key] || (groups[key] = { kind: zoneRule ? 'zone' : 'street', name: zoneRule ? 'Zone ' + p.zone : p.name,
+        rule: p.rule, zone: p.zone, b: id, d: Infinity, point: null, street: null, lines: [], inside: zoneRule && !!inRules[p.rule] });
       g.lines.push(f.geometry.coordinates);
       var near = parkNearestOnLine(f.geometry.coordinates, o);
-      if (near.d < g.d) { g.d = near.d; g.point = near.c; }
+      if (near.d < g.d) { g.d = near.d; g.point = near.c; g.street = p.name; }
     });
   });
   var plans = {}, nows = {};
   return Object.keys(groups).map(function(k) { return groups[k]; }).filter(function(g) {
+    if (g.inside) g.d = 0;                               // the place is in the zone: about a minute
     g.walk = Math.max(1, Math.ceil(g.d * 1.3 / 80));
     if (g.walk > PARK_EST_MAX) return false;
     if (a.any) {
@@ -2602,8 +2624,9 @@ function parkWindow(n) {
 }
 
 // Walking times for the nearest candidates from one Matrix call. Any failure keeps the estimates.
+// A zone the place is inside keeps its minute.
 function parkRefineWalks(cands, o) {
-  var best = cands.slice().sort(function(a, b) { return a.d - b.d; }).slice(0, PARK_MATRIX_MAX);
+  var best = cands.filter(function(c) { return !c.inside; }).sort(function(a, b) { return a.d - b.d; }).slice(0, PARK_MATRIX_MAX);
   if (!best.length) return Promise.resolve();
   var coords = [o].concat(best.map(function(c) { return c.point; }))
     .map(function(c) { return c[0].toFixed(6) + ',' + c[1].toFixed(6); });
@@ -2622,7 +2645,8 @@ function parkRefineWalks(cands, o) {
     .catch(function() {});
 }
 
-// A listed street: 'free' (nothing to pay), 'paid', or 'unknown' (hours couldn't be read).
+// A listed zone or odd street (`kind`, as parkCandidates()): 'free' (nothing to pay), 'paid', or
+// 'unknown' (hours couldn't be read).
 // `price` is what the stay costs when that's exact (0 when free), else null. `costMin`/`costMax`
 // are its lowest and highest cost (a range when it depends on the car; costMax null for a 'from'
 // price), both null when the price isn't known. `tariff` is planStay()'s (ruleTariff()).
@@ -2636,7 +2660,8 @@ function parkResult(c) {
     var nowState = n.now === 'free' ? 'free' : n.now === 'ctrl' ? 'paid' : 'unknown';
     var known = plan.status !== 'unknown', t = n.tariff || null;
     var cMin = known ? num(plan.costMin) : null;
-    return { name: c.name, rule: c.rule, zone: c.zone, b: c.b, d: c.d, walk: c.walk, refined: !!c.refined,
+    return { kind: c.kind, name: c.name, rule: c.rule, zone: c.zone, b: c.b, d: c.d, walk: c.walk, refined: !!c.refined,
+      street: c.street, inside: !!c.inside,
       point: c.point, lines: c.lines, plan: plan, now: n, window: parkWindow(n), state: nowState, tariff: t,
       price: known ? num(plan.cost) : null, costMin: cMin, costMax: cMin !== null ? num(plan.costMax) : null,
       rateMin: nowState === 'free' ? 0 : nowState === 'paid' && t ? t.min : null,
@@ -2644,7 +2669,8 @@ function parkResult(c) {
   }
   var state = plan.status === 'unknown' ? 'unknown' : (plan.freeAll || plan.paidMin === 0) ? 'free' : 'paid';
   var paid = state === 'paid', free = state === 'free';
-  return { name: c.name, rule: c.rule, zone: c.zone, b: c.b, d: c.d, walk: c.walk, refined: !!c.refined,
+  return { kind: c.kind, name: c.name, rule: c.rule, zone: c.zone, b: c.b, d: c.d, walk: c.walk, refined: !!c.refined,
+    street: c.street, inside: !!c.inside,
     point: c.point, lines: c.lines, plan: plan, state: state, tariff: plan.tariff || null,
     price: free ? 0 : paid ? num(plan.cost) : null,
     costMin: free ? 0 : paid ? num(plan.costMin) : null,
@@ -2730,6 +2756,21 @@ function parkZoneLine(r) {
   return 'Zone ' + r.zone + (zr.name && zr.name !== r.zone ? ' · ' + zr.name : '');
 }
 
+// A row's title and the line under it. A zone: 'Zone E · Rushey Green West', then where its
+// nearest street is (or that the place is in it) and the borough. An odd street: its name, then its zone.
+function parkRowTitle(r) {
+  return r.kind === 'zone' ? parkZoneLine(r) : r.name;
+}
+function parkRowSub(r) {
+  if (r.kind !== 'zone') return parkZoneLine(r);
+  var bn = (parkingRules.boroughs[r.b] || {}).name;
+  return (r.inside ? parkPlace.name + ' is in this zone' : 'Nearest: ' + r.street) + (bn ? ' · ' + bn : '');
+}
+// The odd streets listed in a zone row's zone, in the list's order.
+function parkOddStreets(r) {
+  return parkSorted().filter(function(x) { return x.r.kind === 'street' && x.r.b === r.b && x.r.zone === r.zone; });
+}
+
 // The minutes a street's card covers: the stay, or with none chosen, parkWindow().
 function parkSpan(r) {
   return r.now ? r.window : parkInfo.arrival.stayMin;
@@ -2762,34 +2803,108 @@ function parkFitLine(r) {
 }
 
 /* --- map --- */
+// Every listed row's street pieces, `i` its index in parkResults and `kind` 'zone' or 'street'.
+// A zone's streets show only while its card is open (parkShownFilter()); odd streets always.
 function parkResultsGeoJSON() {
   var features = [];
   parkResults.forEach(function(r, i) {
     r.lines.forEach(function(line) {
-      features.push({ type: 'Feature', properties: { i: i, state: r.state }, geometry: { type: 'LineString', coordinates: line } });
+      features.push({ type: 'Feature', properties: { i: i, state: r.state, kind: r.kind }, geometry: { type: 'LineString', coordinates: line } });
     });
   });
   return { type: 'FeatureCollection', features: features };
 }
 
-function parkSelFilter() { return ['==', ['get', 'i'], parkSelIdx]; }
+// The listed zones' outlines (zones.geojson's polygons), coloured by their row's state; null with none.
+function parkZonesGeoJSON() {
+  var features = [];
+  parkResults.forEach(function(r, i) {
+    var z = r.kind === 'zone' ? parkZoneEntry(r.rule) : null;
+    if (z) features.push({ type: 'Feature', properties: { i: i, state: r.state }, geometry: z.f.geometry });
+  });
+  return features.length ? { type: 'FeatureCollection', features: features } : null;
+}
+
+// [west, south, east, north] around a list of [lng, lat] points (or lines' points), extending `bb`.
+function parkExtend(bb, pts) {
+  bb = bb || [Infinity, Infinity, -Infinity, -Infinity];
+  pts.forEach(function(c) {
+    if (c[0] < bb[0]) bb[0] = c[0]; if (c[1] < bb[1]) bb[1] = c[1];
+    if (c[0] > bb[2]) bb[2] = c[0]; if (c[1] > bb[3]) bb[3] = c[1];
+  });
+  return bb;
+}
+// A zone row's extent: its outline, or (a zone with no polygon) its streets.
+function parkZoneBounds(r) {
+  var z = parkZoneEntry(r.rule);
+  if (z) return z.bb.slice();
+  var bb = null;
+  r.lines.forEach(function(line) { bb = parkExtend(bb, line); });
+  return bb;
+}
+// What the results view frames: the place, every listed zone and every odd street's nearest point.
+function parkResultsBounds() {
+  var bb = parkExtend(null, [[parkPlace.lng, parkPlace.lat]]);
+  parkResults.forEach(function(r) {
+    if (r.kind === 'zone') { var z = parkZoneBounds(r); bb = parkExtend(bb, [[z[0], z[1]], [z[2], z[3]]]); }
+    else bb = parkExtend(bb, [r.point]);
+  });
+  return bb;
+}
+
+function parkSelFilter() { return ['all', ['==', ['get', 'i'], parkSelIdx], ['==', ['get', 'kind'], 'street']]; }
+function parkShownFilter() { return ['any', ['==', ['get', 'kind'], 'street'], ['==', ['get', 'i'], parkSelIdx]]; }
+// The open zone stands out: a stronger tint and a thicker line, the others step back.
+function parkZoneFillOpacity() {
+  return ['case', ['==', ['get', 'i'], parkSelIdx], 0.16, parkSelIdx >= 0 ? 0.03 : 0.07];
+}
+function parkZoneLineWidth() {
+  return ['case', ['==', ['get', 'i'], parkSelIdx], 4.5, 2.5];
+}
+function parkZoneLineOpacity() {
+  return ['case', ['==', ['get', 'i'], parkSelIdx], 1, parkSelIdx >= 0 ? 0.45 : 0.9];
+}
+function parkStateColor() {
+  return ['match', ['get', 'state'], 'free', PARK_STATE_COLORS.free, 'paid', PARK_STATE_COLORS.paid, PARK_STATE_COLORS.unknown];
+}
+
+// Point the map's layers at the selected row (parkSelIdx): a street's outline, or a zone's
+// streets and its highlighted outline.
+function parkApplySel() {
+  if (map.getLayer('park-results-casing')) map.setFilter('park-results-casing', parkShownFilter());
+  if (map.getLayer('park-results-line')) map.setFilter('park-results-line', parkShownFilter());
+  if (map.getLayer('park-results-sel')) map.setFilter('park-results-sel', parkSelFilter());
+  if (map.getLayer('park-zones-fill')) map.setPaintProperty('park-zones-fill', 'fill-opacity', parkZoneFillOpacity());
+  if (map.getLayer('park-zones-line')) {
+    map.setPaintProperty('park-zones-line', 'line-width', parkZoneLineWidth());
+    map.setPaintProperty('park-zones-line', 'line-opacity', parkZoneLineOpacity());
+  }
+}
 
 function addParkResultsLayers() {
   whenStyleReady(function() {
     if (!parkData) return;
     removeParkResultsLayers();
-    // About twice the general layer's street width, on a casing in the map's background colour,
-    // with the general layer dimmed underneath (parkingSetDimmed()), so the matches stand out.
+    // The listed zones' outlines in their state's colour, a faint tint under the roads, then the
+    // streets: about twice the general layer's street width, on a casing in the map's background
+    // colour, with the general layer dimmed underneath (parkingSetDimmed()), so the matches stand out.
+    if (parkZoneData) {
+      var underRoads = (map.getStyle().layers.filter(function(l) { return l.type === 'symbol'; })[0] || {}).id;
+      map.addSource('park-zones', { type: 'geojson', data: parkZoneData });
+      map.addLayer({ id: 'park-zones-fill', type: 'fill', source: 'park-zones',
+        paint: { 'fill-color': parkStateColor(), 'fill-opacity': parkZoneFillOpacity() } }, underRoads);
+      map.addLayer({ id: 'park-zones-line', type: 'line', source: 'park-zones', layout: { 'line-join': 'round' },
+        paint: { 'line-color': parkStateColor(), 'line-width': parkZoneLineWidth(), 'line-opacity': parkZoneLineOpacity() } });
+    }
     var width = ['interpolate', ['linear'], ['zoom'], 13, 4, 15, 6, 16, 7, 18, 12];
     map.addSource('park-results', { type: 'geojson', data: parkData });
-    map.addLayer({ id: 'park-results-casing', type: 'line', source: 'park-results',
+    map.addLayer({ id: 'park-results-casing', type: 'line', source: 'park-results', filter: parkShownFilter(),
       layout: { 'line-cap': 'round', 'line-join': 'round' },
       paint: { 'line-color': isDark ? '#0a0a0a' : '#ffffff', 'line-opacity': 1,
         'line-width': ['interpolate', ['linear'], ['zoom'], 13, 8, 15, 10.5, 16, 12, 18, 18] } });
-    map.addLayer({ id: 'park-results-line', type: 'line', source: 'park-results',
+    map.addLayer({ id: 'park-results-line', type: 'line', source: 'park-results', filter: parkShownFilter(),
       layout: { 'line-cap': 'round', 'line-join': 'round' },
-      paint: { 'line-color': ['match', ['get', 'state'], 'free', PARK_STATE_COLORS.free, 'paid', PARK_STATE_COLORS.paid, PARK_STATE_COLORS.unknown],
-        'line-width': width } });
+      paint: { 'line-color': parkStateColor(), 'line-width': width } });
     map.addLayer({ id: 'park-results-sel', type: 'line', source: 'park-results', filter: parkSelFilter(),
       layout: { 'line-cap': 'round', 'line-join': 'round' },
       paint: { 'line-color': isDark ? '#ffffff' : '#111111', 'line-width': 2.5, 'line-gap-width': width } });
@@ -2800,11 +2915,13 @@ function addParkResultsLayers() {
 function removeParkResultsLayers() {
   PARK_LAYERS.forEach(function(id) { if (map.getLayer(id)) map.removeLayer(id); });
   if (map.getSource('park-results')) map.removeSource('park-results');
+  if (map.getSource('park-zones')) map.removeSource('park-zones');
   parkingSetDimmed();   // back to full strength once parkData is gone
 }
 
 function clearParkResults() {
   parkData = null;
+  parkZoneData = null;
   removeParkResultsLayers();
 }
 
@@ -2817,13 +2934,13 @@ function parkMapPadding() {
   return fitPadding({ top: 60, right: 390, bottom: 60, left: 60 });
 }
 
-// The place and its nearest results.
+function parkFitBounds(bb) {
+  map.fitBounds(new mapboxgl.LngLatBounds([bb[0], bb[1]], [bb[2], bb[3]]), { padding: parkMapPadding(), maxZoom: 17 });
+}
+
+// The place, the listed zones and the odd streets.
 function parkFitResults() {
-  var pts = [[parkPlace.lng, parkPlace.lat]];
-  parkResults.slice().sort(function(a, b) { return a.d - b.d; }).slice(0, 8).forEach(function(r) { pts.push(r.point); });
-  var b = new mapboxgl.LngLatBounds(pts[0], pts[0]);
-  pts.forEach(function(p) { b.extend(p); });
-  map.fitBounds(b, { padding: parkMapPadding(), maxZoom: 17 });
+  parkFitBounds(parkResultsBounds());
 }
 
 // The parking layer, at the arrival time, for context. Its panel stays shut while this is open.
@@ -2945,21 +3062,31 @@ function parkShowPlan() {
 
 function parkShowList() {
   parkSelIdx = -1;
-  if (map.getLayer('park-results-sel')) map.setFilter('park-results-sel', parkSelFilter());
+  parkApplySel();
   parkView = 'results';
   parkRender();
   parkSheetTo('half');
 }
 
+// A row's card. A zone: the map frames its outline, highlighted, with its streets coloured. A
+// street: the map flies to it, outlined.
 function parkShowDetail(i) {
   var r = parkResults[i];
   if (!r || !parkPlace) return;
   parkSelIdx = i;
   parkView = 'detail';
-  if (map.getLayer('park-results-sel')) map.setFilter('park-results-sel', parkSelFilter());
+  parkApplySel();
   parkRender();
   parkSheetTo('half');
-  map.flyTo({ center: r.point, zoom: Math.max(map.getZoom(), 16.5), offset: paddingOffset(parkMapPadding()) });
+  if (r.kind === 'zone') parkFitBounds(parkZoneBounds(r));
+  else map.flyTo({ center: r.point, zoom: Math.max(map.getZoom(), 16.5), offset: paddingOffset(parkMapPadding()) });
+}
+
+// A tap on a result on the map: its card, unless it's already open.
+function parkTapResult(i) {
+  if (!parkPlace || (parkView !== 'results' && parkView !== 'detail')) return;
+  if (parkView === 'detail' && parkSelIdx === i) return;
+  parkShowDetail(i);
 }
 
 function parkSetSort(s) {
@@ -2967,7 +3094,7 @@ function parkSetSort(s) {
   parkRender();
 }
 
-// Find parking: load what's needed, list the streets, draw them.
+// Find parking: load what's needed, list the zones and odd streets, draw them.
 function parkFind() {
   if (!parkPlace || !parkPlan) return Promise.resolve();
   var seq = ++parkSeq;
@@ -2989,7 +3116,7 @@ function parkFind() {
       .then(function() { return ids; });
   }).then(function(ids) {
     if (!ids || seq !== parkSeq) return null;
-    var cands = parkCandidates(ids, o, arrival);
+    var cands = parkCandidates(ids, o, arrival, area.inRules);
     return parkRefineWalks(cands, o).then(function() { return cands; });
   }).then(function(cands) {
     if (!cands || seq !== parkSeq) return;
@@ -2997,6 +3124,7 @@ function parkFind() {
     parkInfo = { arrival: arrival, inZone: area.inZone, outline: area.outline, covered: area.boroughs.length > 0 };
     parkView = 'results';
     parkData = parkResults.length ? parkResultsGeoJSON() : null;
+    parkZoneData = parkResults.length ? parkZonesGeoJSON() : null;
     if (parkData) addParkResultsLayers();
     parkRender();
     parkSheetTo('half');
@@ -3157,7 +3285,7 @@ function parkRenderResults() {
     return;
   }
 
-  var seg = parkGroup('park-seg park-compact', 'Sort streets');
+  var seg = parkGroup('park-seg park-compact', 'Sort zones and streets');
   [['nearest', 'Nearest'], ['cheapest', 'Cheapest']].forEach(function(s) {
     var b = parkButton('park-seg-btn', s[1], function() { parkSetSort(s[0]); });
     b.setAttribute('aria-pressed', parkSort === s[0] ? 'true' : 'false');
@@ -3166,30 +3294,34 @@ function parkRenderResults() {
   parkBody.appendChild(seg);
 
   var list = pkEl('ul', 'park-list');
-  parkSorted().forEach(function(x) {
-    var r = x.r;
-    var li = pkEl('li', '');
-    var row = parkButton('park-row', undefined, function() { parkShowDetail(x.i); });
-    parkRowSwatch(row, r);
-    var walk = pkEl('span', 'park-walk');
-    walk.appendChild(pkEl('b', '', String(r.walk)));
-    walk.appendChild(pkEl('span', '', 'min'));
-    row.appendChild(walk);
-    var main = pkEl('span', 'park-main');
-    main.appendChild(pkEl('span', 'park-name', r.name));
-    main.appendChild(pkEl('span', 'park-zone', parkZoneLine(r)));
-    if (r.now) main.appendChild(pkEl('span', 'park-stay', parkStayLine(r)));
-    else {
-      var fit = parkFitLine(r);
-      if (fit) main.appendChild(pkEl('span', 'park-fit', fit));
-    }
-    row.appendChild(main);
-    row.appendChild(parkCostEl(r));
-    li.appendChild(row);
-    list.appendChild(li);
-  });
+  parkSorted().forEach(function(x) { list.appendChild(parkRowEl(x)); });
   parkBody.appendChild(list);
   parkBody.appendChild(pkEl('p', 'pk-small park-foot', 'Shows where you’re allowed to park, not whether a space is free. Check the signs.'));
+}
+
+// One row of the list ({ r, i } from parkSorted()): walk, title, the line under it, how long you
+// can stay (or whether the stay fits) and the price. It opens the row's card.
+function parkRowEl(x) {
+  var r = x.r;
+  var li = pkEl('li', '');
+  var row = parkButton('park-row' + (r.kind === 'zone' ? ' park-row--zone' : ''), undefined, function() { parkShowDetail(x.i); });
+  parkRowSwatch(row, r);
+  var walk = pkEl('span', 'park-walk');
+  walk.appendChild(pkEl('b', '', String(r.walk)));
+  walk.appendChild(pkEl('span', '', 'min'));
+  row.appendChild(walk);
+  var main = pkEl('span', 'park-main');
+  main.appendChild(pkEl('span', 'park-name', parkRowTitle(r)));
+  main.appendChild(pkEl('span', 'park-zone', parkRowSub(r)));
+  if (r.now) main.appendChild(pkEl('span', 'park-stay', parkStayLine(r)));
+  else {
+    var fit = parkFitLine(r);
+    if (fit) main.appendChild(pkEl('span', 'park-fit', fit));
+  }
+  row.appendChild(main);
+  row.appendChild(parkCostEl(r));
+  li.appendChild(row);
+  return li;
 }
 
 // A result row's left edge in its street's colour on the map, so the list and the map's result
@@ -3257,9 +3389,10 @@ function parkRenderDetail() {
   var borough = parkingRules.boroughs[r.b] || {};
   var card = pkEl('div', 'pk-card park-detail');
 
+  var zone = r.kind === 'zone';
   var titles = pkEl('div', 'pk-card-titles');
-  titles.appendChild(pkEl('div', 'pk-card-title', r.name));
-  titles.appendChild(pkEl('div', 'pk-card-sub', parkZoneLine(r) + (borough.name ? ' · ' + borough.name : '')));
+  titles.appendChild(pkEl('div', 'pk-card-title', parkRowTitle(r)));
+  titles.appendChild(pkEl('div', 'pk-card-sub', zone ? borough.name || '' : parkZoneLine(r) + (borough.name ? ' · ' + borough.name : '')));
   card.appendChild(titles);
 
   var pill = pkEl('div', 'park-pill');
@@ -3268,7 +3401,8 @@ function parkRenderDetail() {
   pill.appendChild(dot);
   pill.appendChild(document.createTextNode(parkPillText(r)));
   card.appendChild(pill);
-  card.appendChild(pkEl('p', 'park-walkline', r.walk + ' min walk to ' + parkPlace.name + (r.refined ? '' : ' (estimate)')));
+  card.appendChild(pkEl('p', 'park-walkline', r.inside ? parkPlace.name + ' is in this zone'
+    : r.walk + ' min walk to ' + parkPlace.name + (zone ? ' from ' + r.street : '') + (r.refined ? '' : ' (estimate)')));
 
   // With no stay chosen the bar covers the time you can stay, up to 24 hours (parkWindow()).
   var span = parkSpan(r), limited = r.now && r.now.untilMin === span;
@@ -3333,8 +3467,17 @@ function parkRenderDetail() {
   if (rule.event) parkingRow(card, 'Event days', rule.event.hours.replace(/^Event days: /, ''));
   var pay = rule.payCode || zoneRule.payCode;
   if (pay && pay.code) parkingRow(card, 'Pay by phone', pay.provider + ' location ' + pay.code);
-  parkingRow(card, 'Walk', r.walk + ' min to ' + parkPlace.name);
+  if (zone) parkingRow(card, 'Nearest street', r.street);
+  parkingRow(card, 'Walk', r.inside ? 'About 1 min: ' + parkPlace.name + ' is in this zone' : r.walk + ' min to ' + parkPlace.name);
   card.appendChild(pkEl('p', 'pk-small', 'Check the signs on the street: bays can be suspended.'));
+  // A zone's streets with rules of their own, listed in the results too.
+  var odd = zone ? parkOddStreets(r) : [];
+  if (odd.length) {
+    card.appendChild(pkEl('div', 'pk-section', 'Streets here with their own rules'));
+    var sub = pkEl('ul', 'park-list park-sublist');
+    odd.forEach(function(x) { sub.appendChild(parkRowEl(x)); });
+    card.appendChild(sub);
+  }
 
   var actions = pkEl('div', 'park-actions park-compact');
   var dir = pkLink('Directions', 'https://www.google.com/maps/dir/?api=1&destination='
@@ -3378,10 +3521,17 @@ function parkPriceDetail(card, r, borough) {
   }
 }
 
-// Tapping a result street on the map opens its card. Layer listeners outlive setStyle().
+// Tapping a result street or a listed zone on the map opens its card; a street drawn over a zone
+// wins. Layer listeners outlive setStyle().
 map.on('click', 'park-results-casing', function(e) {
   var f = e.features && e.features[0];
-  if (f && parkPlace && (parkView === 'results' || parkView === 'detail')) parkShowDetail(f.properties.i);
+  if (f) parkTapResult(f.properties.i);
+});
+map.on('click', 'park-zones-fill', function(e) {
+  var f = e.features && e.features[0];
+  if (!f) return;
+  if (map.getLayer('park-results-casing') && map.queryRenderedFeatures(e.point, { layers: ['park-results-casing'] }).length) return;
+  parkTapResult(f.properties.i);
 });
 map.on('mouseenter', 'park-results-casing', function() { map.getCanvas().style.cursor = 'pointer'; });
 map.on('mouseleave', 'park-results-casing', function() { map.getCanvas().style.cursor = ''; });
