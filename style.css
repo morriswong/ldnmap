@@ -583,3 +583,129 @@
     .pk-small { font-size: 12px; }
   }
   /* ===== END PARKING ===== */
+
+  /* ===== PARK NEAR HERE ===== */
+  /* The place card's button, and a panel that reuses .fuel-panel for its position, glass and
+     mobile sheet. Prices use a coloured dot with neutral text: red text is unreadable on dark. */
+  .park-cta {
+    width: 100%; min-height: 52px; display: flex; align-items: center; gap: 12px;
+    padding: 6px 14px; border: none; border-radius: 14px; cursor: pointer; text-align: left;
+    background: #3d6fd6; color: #fff; font-family: 'DM Sans', sans-serif;
+    box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.22);
+    transition: background 0.15s, opacity 0.15s;
+  }
+  .park-cta:not(:disabled):hover { background: #3463c4; }
+  .park-cta:not(:disabled):active { background: #2c55aa; }
+  .park-cta:disabled { opacity: 0.4; cursor: default; }
+  .park-cta .pk-sign { width: 26px; height: 26px; border-radius: 6px; background: #fff; color: #1d4ed8; font-size: 16px; flex-shrink: 0; }
+  .park-cta-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .park-cta-title { font-size: 15px; font-weight: 700; }
+  .park-cta-sub { font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.88); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .park-cta svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+  .park-panel {
+    --park-muted: rgba(255,255,255,0.62); --park-free: #2ecc71; --park-unknown: #9ca3af;
+    --park-on-bg: rgba(91,141,238,0.22); --park-on-border: rgba(91,141,238,0.6);
+  }
+  body.light .park-panel {
+    --park-muted: rgba(0,0,0,0.6); --park-free: #047857; --park-unknown: #4b5563;
+    --park-on-bg: rgba(91,141,238,0.16); --park-on-border: rgba(61,111,214,0.7);
+  }
+  .park-panel .travel-card-btn[hidden] { display: none; }
+  .park-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .park-body p { margin: 0; }
+  .park-body .pk-small { color: var(--park-muted); }
+  .park-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--park-muted); margin-top: 2px; }
+  .park-chips { display: flex; gap: 6px; flex-shrink: 0; }
+  .park-days { overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding-bottom: 1px; touch-action: pan-x; }
+  .park-days::-webkit-scrollbar { display: none; }
+  .park-stays { flex-wrap: wrap; }
+  .park-stays .park-chip { flex: 1 1 auto; }
+  .park-chip, .park-step, .park-time, .park-edit, .park-seg-btn, .park-secondary {
+    min-height: 44px; border-radius: 12px; border: 1px solid var(--glass-border);
+    background: var(--glass-tile-bg); color: var(--text); cursor: pointer;
+    font: 500 13px 'DM Sans', sans-serif;
+  }
+  .park-chip { flex: 0 0 auto; padding: 0 14px; border-radius: 999px; white-space: nowrap; }
+  .park-chip[aria-pressed="true"], .park-seg-btn[aria-pressed="true"] {
+    border-color: var(--park-on-border); background: var(--park-on-bg); font-weight: 700;
+  }
+  .park-time-row { display: flex; gap: 6px; align-items: stretch; }
+  .park-step { width: 44px; flex-shrink: 0; font-size: 18px; font-weight: 600; padding: 0; }
+  .park-time { flex: 1; min-width: 0; padding: 0 10px; font-size: 16px; font-weight: 700; text-align: center; cursor: text; }
+  body:not(.light) .park-time { color-scheme: dark; }
+  .park-summary { padding: 10px 12px; border-radius: 12px; background: var(--glass-tile-bg); border: 1px solid var(--glass-border); }
+  .park-summary-main { font-size: 15px; font-weight: 700; color: var(--text); }
+  .park-primary {
+    display: flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 16px;
+    border: none; border-radius: 12px; background: #3d6fd6; color: #fff; text-decoration: none;
+    font: 700 15px 'DM Sans', sans-serif; cursor: pointer; flex-shrink: 0;
+    box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.22);
+  }
+  .park-primary:hover { background: #3463c4; }
+  .park-primary:active { background: #2c55aa; }
+  .park-secondary { padding: 0 16px; font-weight: 600; }
+
+  .park-res-head { display: flex; align-items: center; gap: 8px; }
+  .park-res-when { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; color: var(--text); }
+  .park-edit { padding: 0 16px; font-weight: 600; }
+  .park-seg { display: flex; gap: 4px; padding: 3px; border-radius: 14px; background: var(--input-bg); border: 1px solid var(--glass-border); flex-shrink: 0; }
+  .park-seg-btn { flex: 1; min-height: 40px; border-color: transparent; background: transparent; border-radius: 11px; }
+  .park-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  .park-row {
+    width: 100%; min-height: 56px; display: grid; grid-template-columns: 40px 1fr auto; gap: 10px; align-items: center;
+    padding: 8px 10px; border-radius: 12px; border: 1px solid var(--glass-border); background: var(--glass-tile-bg);
+    color: var(--text); text-align: left; cursor: pointer; font-family: 'DM Sans', sans-serif;
+  }
+  .park-row:hover { background: var(--glass-tile-active); }
+  .park-row:active { opacity: 0.75; }
+  .park-walk { display: flex; flex-direction: column; align-items: center; line-height: 1.05; }
+  .park-walk b { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .park-walk span { font-size: 11px; color: var(--park-muted); }
+  .park-main { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .park-name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .park-zone, .park-fit { font-size: 12px; color: var(--park-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .park-cost { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; max-width: 132px; text-align: right; }
+  .park-price { display: inline-flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .park-price .pk-dot { width: 8px; height: 8px; border-radius: 4px; }
+  .park-price--free { color: var(--park-free); }
+  .park-price--unknown { color: var(--park-unknown); font-size: 13px; }
+  .park-when { font-size: 11px; line-height: 1.3; color: var(--park-muted); }
+  .park-foot { padding-top: 4px; }
+  .park-empty { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 14px; background: var(--glass-tile-bg); border: 1px solid var(--glass-border); }
+  .park-empty-title { font-size: 14px; font-weight: 700; color: var(--text); }
+
+  .park-detail { gap: 9px; }
+  .park-pill {
+    align-self: flex-start; display: inline-flex; align-items: center; gap: 7px; padding: 5px 11px;
+    border-radius: 999px; border: 1px solid var(--glass-border); background: var(--input-bg);
+    font-size: 13px; font-weight: 700; color: var(--text);
+  }
+  .park-walkline { font-size: 13px; color: var(--text); }
+  .park-bar { display: flex; gap: 3px; height: 28px; }
+  .park-bar-seg { min-width: 6px; border-radius: 4px; border: 1.5px solid transparent; }
+  .park-bar-seg:first-child { border-radius: 9px 4px 4px 9px; }
+  .park-bar-seg:last-child { border-radius: 4px 9px 9px 4px; }
+  .park-bar-seg:only-child { border-radius: 9px; }
+  .park-ticks { display: flex; font-size: 11px; color: var(--park-muted); font-variant-numeric: tabular-nums; margin-top: -4px; }
+  .park-ticks span { min-width: 0; white-space: nowrap; }
+  .park-ticks .park-tick-end { flex: 0 0 auto; margin-left: auto; }
+  .park-costs { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+  .park-cost-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 0; border-top: 1px solid var(--divider); font-size: 13px; color: var(--text); }
+  .park-cost-label { display: flex; flex-direction: column; gap: 1px; }
+  .park-cost-label span { font-size: 12px; color: var(--park-muted); }
+  .park-cost-amount { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .park-cost-total { font-weight: 700; }
+  .park-actions { display: flex; gap: 8px; margin-top: 4px; }
+  .park-actions > * { flex: 1; }
+  @media (max-width: 768px) {
+    /* The sheet takes over from the place card while it is open. */
+    body.park-open .postcode-chip,
+    body.park-open .travel-card { opacity: 0 !important; pointer-events: none !important; }
+    .park-panel .park-body { touch-action: pan-y; }
+    .park-panel .travel-card-btn { width: 44px; height: 44px; }
+    .park-panel .travel-card-btn svg { width: 18px; height: 18px; }
+    .park-cta-title { font-size: 16px; }
+    .park-chip, .park-edit, .park-seg-btn, .park-secondary { font-size: 14px; }
+  }
+  /* ===== END PARK NEAR HERE ===== */

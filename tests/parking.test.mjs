@@ -237,3 +237,185 @@ test('Richmond prices follow the July 2026 rise', () => {
   assert.equal(rules.rules['richmond:D'].price.perHour, 2.8);
   assert.equal(rules.rules['richmond:N'].price.perHour, 1.95);
 });
+
+// ---- Park near here: planStay / maxStayMinutes ----
+
+const { planStay, maxStayMinutes } = ctx;
+const THU = 4;
+const plain = (x) => JSON.parse(JSON.stringify(x));   // VM-context objects → this realm, for deepEqual
+const seg = (start, end, status) => ({ start, end, status });
+
+test('maxStayMinutes reads one length and never guesses', () => {
+  assert.equal(maxStayMinutes('4 hours'), 240);
+  assert.equal(maxStayMinutes('1 hour'), 60);
+  assert.equal(maxStayMinutes('90 minutes'), 90);
+  assert.equal(maxStayMinutes('12 hours'), 720);
+  assert.equal(maxStayMinutes('1.5 hours'), 90);
+  assert.equal(maxStayMinutes('1 hour 30 minutes'), 90);
+  assert.equal(maxStayMinutes('2 hours (pay and display bays)'), 120);
+  assert.equal(maxStayMinutes('2 hours (visitors)'), 120);
+  assert.equal(maxStayMinutes(' 4 Hours '), 240);
+  for (const bad of [undefined, null, '', 'See signs', '2 or 4 hours', '1, 2 or 4 hours', '0 hours',
+    '6 hours in the new pay and display bays on parts of these roads; 2 hours in other bays', 'hours', 42]) {
+    assert.equal(maxStayMinutes(bad), null, String(bad));
+  }
+});
+
+test('every maxStay in the data is either read or deliberately null', () => {
+  for (const [key, r] of Object.entries(rules.rules)) {
+    if (!r.maxStay) continue;
+    const m = maxStayMinutes(r.maxStay);
+    assert.ok(m === null || (Number.isInteger(m) && m > 0 && m <= 1440), key + ': ' + r.maxStay);
+    if (/^\d+ (hours?|minutes)$/.test(r.maxStay)) assert.ok(m > 0, key + ' should read ' + r.maxStay);
+  }
+});
+
+test('planStay: Lewisham E Thursday 17:00 for 3 hours pays until 19:00', () => {
+  const p = planStay('lewisham:E', THU, at(17), 180, false, false);
+  assert.equal(p.ok, true);
+  assert.equal(p.status, 'ok');
+  assert.deepEqual(plain(p.segments), [seg(0, 120, 'ctrl'), seg(120, 180, 'free')]);
+  assert.equal(p.paidMin, 120);
+  assert.equal(p.cost, 4.64);
+  assert.equal(p.perHour, 2.32);
+  assert.equal(p.maxStayMin, 240);
+  assert.equal(p.longestPaidMin, 120);
+  assert.equal(p.freeAll, false);
+  assert.equal(planStay('lewisham:L', THU, at(17), 180, false, false).cost, 6.72);
+});
+
+test('planStay: Saturday in Lewisham E is free all stay', () => {
+  const p = planStay('lewisham:E', SAT, at(10), 300, false, false);
+  assert.equal(p.status, 'ok');
+  assert.equal(p.freeAll, true);
+  assert.equal(p.paidMin, 0);
+  assert.equal(p.cost, 0);
+  assert.deepEqual(plain(p.segments), [seg(0, 300, 'free')]);
+});
+
+test('planStay: a paid stretch over the max stay is excluded, exactly the max stay is fine', () => {
+  const p = planStay('lewisham:E', THU, at(10), 300, false, false);
+  assert.equal(p.status, 'maxstay');
+  assert.equal(p.ok, false);
+  assert.equal(p.longestPaidMin, 300);
+  assert.equal(p.cost, 11.6);   // still priced, so the UI can say why
+  assert.equal(planStay('lewisham:E', THU, at(10), 240, false, false).status, 'ok');
+  // 16:00 + 5h: only 3h of it is paid, so within the 4h max
+  assert.equal(planStay('lewisham:E', THU, at(16), 300, false, false).status, 'ok');
+});
+
+test('planStay: permit-holders-only time excludes the stay', () => {
+  const qq = planStay('hf:QQ', SAT, at(10), 60, false, false);
+  assert.equal(qq.status, 'permit');
+  assert.equal(qq.ok, false);
+  assert.deepEqual(plain(qq.segments), [seg(0, 60, 'permit')]);
+  // hf:G: permit only 18:30–20:00, then pay again until 22:00
+  const g = planStay('hf:G', SUN, at(18), 180, false, false);
+  assert.deepEqual(plain(g.segments), [seg(0, 30, 'ctrl'), seg(30, 120, 'permit'), seg(120, 180, 'ctrl')]);
+  assert.equal(g.status, 'permit');
+  // permit beats maxstay (G's max stay is 2 hours; 15:00–18:30 is 3.5h paid)
+  assert.equal(planStay('hf:G', SUN, at(15), 240, false, false).status, 'permit');
+});
+
+test('planStay: unreadable hours and unknown keys are unknown, never ok', () => {
+  const nope = planStay('nope:Z', SUN, at(10), 60, false, false);
+  assert.equal(nope.status, 'unknown');
+  assert.equal(nope.ok, false);
+  assert.deepEqual(plain(nope.segments), [seg(0, 60, 'unknown')]);
+  assert.equal(nope.perHour, null);
+  assert.equal(nope.maxStayMin, null);
+  ctx.setParkingRules({ boroughs: {}, rules: {
+    'x:A': { hours: 'See signs', periods: null, maxStay: '1 hour' },
+    'x:B': { hours: 'Mon-Sat 9am-7pm', periods: [{ days: [1, 2, 3, 4, 5, 6], from: '09:00', to: '19:00' }],
+      unsure: [{ days: [0], from: '09:00', to: '13:30' }], maxStay: '1 hour', price: { perHour: 2 } },
+    'x:C': { hours: 'Permit holders 9-5', periods: [{ days: [0, 1, 2, 3, 4, 5, 6], from: '09:00', to: '17:00' }],
+      unsure: [{ days: [0, 1, 2, 3, 4, 5, 6], from: '17:00', to: '18:00' }], permitOnly: true },
+  } });
+  try {
+    assert.equal(planStay('x:A', SUN, at(10), 60, false, false).status, 'unknown');
+    // unknown beats maxstay: Sat 16:00 → Sun 11:00 has 3h paid (> 1h max) and Sunday-morning unknown
+    const b = planStay('x:B', SAT, at(16), 19 * 60, false, false);
+    assert.equal(b.status, 'unknown');
+    assert.equal(b.longestPaidMin, 180);
+    assert.deepEqual(plain(b.segments), [seg(0, 180, 'ctrl'), seg(180, 1020, 'free'), seg(1020, 1140, 'unknown')]);
+    // permit beats unknown
+    assert.equal(planStay('x:C', MON, at(16), 120, false, false).status, 'permit');
+  } finally {
+    ctx.setParkingRules(rules);
+  }
+});
+
+test('planStay: paid time with no price in the data has a null cost but is still ok', () => {
+  // hf:H: every day 8:30am–10pm, max stay 2 hours, no price. Saturday 21:00 for 12 hours crosses midnight.
+  const p = planStay('hf:H', SAT, at(21), 720, false, false);
+  assert.equal(p.status, 'ok');
+  assert.deepEqual(plain(p.segments), [seg(0, 60, 'ctrl'), seg(60, 690, 'free'), seg(690, 720, 'ctrl')]);
+  assert.equal(p.paidMin, 90);
+  assert.equal(p.longestPaidMin, 60);
+  assert.equal(p.perHour, null);
+  assert.equal(p.cost, null);
+});
+
+test('planStay: crossing midnight continues into the next day, and Saturday wraps to Sunday', () => {
+  // Lewisham E Friday 18:00 for 24h: 1h paid Friday, Saturday free
+  const p = planStay('lewisham:E', FRI, at(18), 1440, false, false);
+  assert.deepEqual(plain(p.segments), [seg(0, 60, 'ctrl'), seg(60, 1440, 'free')]);
+  assert.equal(p.cost, 2.32);
+  // Sunday 22:00 for 12h: Monday 09:00–10:00 is paid
+  const q = planStay('lewisham:E', SUN, at(22), 720, false, false);
+  assert.deepEqual(plain(q.segments), [seg(0, 660, 'free'), seg(660, 720, 'ctrl')]);
+  // A 24-hour zone merges across midnight into one paid run
+  ctx.setParkingRules({ boroughs: {}, rules: { 'x:D': { hours: '24h', maxStay: '4 hours',
+    periods: [{ days: [0, 1, 2, 3, 4, 5, 6], from: '00:00', to: '24:00' }] } } });
+  try {
+    const d = planStay('x:D', SAT, at(22), 240, false, false);
+    assert.deepEqual(plain(d.segments), [seg(0, 240, 'ctrl')]);
+    assert.equal(d.longestPaidMin, 240);
+    assert.equal(d.status, 'ok');
+    assert.equal(planStay('x:D', SAT, at(22), 241, false, false).status, 'maxstay');
+  } finally {
+    ctx.setParkingRules(rules);
+  }
+});
+
+test('planStay: bank holiday and event day apply to the starting day only', () => {
+  // hf:H on Christmas Day (Friday) is free; Saturday 08:30 is paid again
+  const p = planStay('hf:H', FRI, at(21), 720, false, '12-25');
+  assert.deepEqual(plain(p.segments), [seg(0, 690, 'free'), seg(690, 720, 'ctrl')]);
+  // hf:T: Sunday 15:00 is paid on an event day only
+  assert.equal(planStay('hf:T', SUN, at(15), 60, true, false).paidMin, 60);
+  assert.equal(planStay('hf:T', SUN, at(15), 60, false, false).paidMin, 0);
+});
+
+test('planStay agrees with isControlled minute by minute', () => {
+  const keys = Object.keys(rules.rules);
+  const starts = [[MON, at(0)], [THU, at(8, 45)], [FRI, at(17, 59)], [SAT, at(23, 30)], [SUN, at(12, 1)]];
+  for (let i = 0; i < keys.length; i += 20) {
+    const key = keys[i];
+    for (const [day, minutes] of starts) {
+      const p = planStay(key, day, minutes, 1440, false, false);
+      const segs = plain(p.segments);
+      assert.equal(segs[0].start, 0);
+      assert.equal(segs[segs.length - 1].end, 1440);
+      for (const s of segs) {
+        for (let t = s.start; t < s.end; t += 1) {
+          const abs = minutes + t;
+          const want = isControlled(key, (day + Math.floor(abs / 1440)) % 7, abs % 1440, false, false);
+          if (want !== s.status) assert.fail(`${key} day ${day} ${minutes}+${t}: ${s.status} ≠ ${want}`);
+        }
+      }
+      for (let j = 1; j < segs.length; j++) {
+        assert.equal(segs[j].start, segs[j - 1].end, key);
+        assert.notEqual(segs[j].status, segs[j - 1].status, key + ' segments are merged');
+      }
+    }
+  }
+});
+
+test('planStay is fast enough to plan hundreds of streets', () => {
+  const keys = Object.keys(rules.rules).slice(0, 500);
+  const t0 = performance.now();
+  for (const key of keys) planStay(key, THU, at(8), 1440, false, false);
+  const ms = performance.now() - t0;
+  assert.ok(ms < 200, `500 × 24h plans took ${ms.toFixed(1)}ms`);
+});

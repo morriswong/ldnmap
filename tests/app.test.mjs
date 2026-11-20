@@ -3,6 +3,7 @@
 // card is showing, and what happens when answers arrive late or out of order.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { loadApp, reply, deferred, settle, isochrones } from './helpers/browser-stub.mjs';
 
 const BIG_BEN = { lng: -0.1246, lat: 51.5007, name: 'Big Ben', address: '', postcode: null };
@@ -429,4 +430,241 @@ test('a shared link restores its view; a bad one does nothing', async () => {
   const bad = loadApp({ routes: [ISO, NO_STATIONS], hash: '#p=abc,def&m=cycling' });
   await settle();
   assert.equal(bad.appState, 'idle');
+});
+
+// ---- Park near here ----
+// A place at D in zone A of borough x, with streets a known number of metres east of it.
+const D = [-0.25, 51.45];
+const M_LNG = 1 / (111320 * Math.cos(51.45 * Math.PI / 180)), M_LAT = 1 / 110540;
+const at = (east, north = 0) => [D[0] + east * M_LNG, D[1] + north * M_LAT];
+const street = (name, rule, east, extra) => ({ type: 'Feature', properties: { name, zone: rule.split(':')[1], rule, cls: 4, ...extra },
+  geometry: { type: 'LineString', coordinates: [at(east, -40), at(east, 40)] } });
+const ALL_DAY = [{ days: [0, 1, 2, 3, 4, 5, 6], from: '00:00', to: '24:00' }];
+const rule = (zone, more) => ({ borough: 'x', zone, name: zone + ' zone', hours: 'Every day, all day', ...more });
+const PARK_RULES = { checked: '2026-11-01', bankHolidays: [],
+  boroughs: { x: { name: 'Xshire', bbox: [-0.3, 51.4, -0.2, 51.5], zoneCount: 4, knownHours: 3, detail: true } },
+  rules: {
+    'x:A': rule('A', { name: 'Alpha', periods: ALL_DAY, price: { perHour: 2 }, maxStay: '4 hours', payCode: { provider: 'PayByPhone', code: '1234' } }),
+    'x:B': rule('B', { hours: 'No controls', periods: [] }),
+    'x:P': rule('P', { periods: ALL_DAY, permitOnly: true }),
+    'x:U': rule('U', { hours: 'Wording the map can’t read' }) } };
+const SQUARE_AT = (c, r) => ({ type: 'Polygon', coordinates: [[[c[0] - r, c[1] - r], [c[0] + r, c[1] - r], [c[0] + r, c[1] + r], [c[0] - r, c[1] + r], [c[0] - r, c[1] - r]]] });
+const PARK_ZONES = { type: 'FeatureCollection', features: [
+  { type: 'Feature', properties: { b: 'x', zone: 'A', rule: 'x:A', lx: D[0], ly: D[1] }, geometry: SQUARE_AT(D, 0.001) }] };
+const STREETS = [
+  street('Alpha Road', 'x:A', 100),
+  street('Alpha Road', 'x:A', 400, { cls: 5 }),          // another piece of the same street: one result
+  street('Bravo Street', 'x:B', 300),
+  street('Unknown Way', 'x:U', 200),
+  street('Permit Lane', 'x:P', 50),                       // permit holders only: never listed
+  street('Red Route', 'x:A', 30, { tfl: 1 }),             // TfL rules, not the zone's
+  street('', 'x:A', 20),                                   // unnamed
+  street('Far Avenue', 'x:B', 3000)];                      // well over a 25 min walk
+const collection = (features) => () => reply({ type: 'FeatureCollection', features });
+// Walking seconds by how far east a point is: the Matrix answer.
+const WALK_SECS = { 100: 60, 200: 300, 300: 480, 400: 600 };
+function matrixReply(url) {
+  const coords = url.split('/walking/')[1].split('?')[0].split(';').map((c) => c.split(',').map(Number));
+  return reply({ code: 'Ok', durations: [coords.map((c, i) => (i === 0 ? 0 : WALK_SECS[Math.round((c[0] - D[0]) / M_LNG / 100) * 100]))] });
+}
+const parkRoutes = (streets, matrix) => [
+  [/data\/parking\/rules\.json/, () => reply(PARK_RULES)],
+  [/data\/parking\/zones\.geojson/, () => reply(PARK_ZONES)],
+  [/data\/parking\/x\/streets/, collection(streets || STREETS)],
+  [/data\/parking\/x\/(kerb|machines)/, collection([])],
+  [/directions-matrix\/v1\/mapbox\/walking\//, matrix || matrixReply]];
+const parkNames = (app) => app.el('park-body').querySelectorAll('.park-name').map((e) => e.textContent);
+const parkRows = (app) => app.el('park-body').querySelectorAll('.park-row').map((e) => e.textContent);
+const parkLayers = (app) => app.map.layerIds().filter((id) => id.indexOf('park-results') === 0);
+
+// Open the view for a place at `where` and plan 10:00 today for 2 hours (the default stay).
+function openPark(app, where) {
+  const c = where || D;
+  app.pendingPlace = { name: 'The Venue', lat: c[1], lng: c[0], postcode: 'X1 1AA' };
+  app.openParkNear();
+  app.parkPlan.dayIdx = 0;
+  app.parkPlan.minutes = 600;
+}
+
+test('park near here: the place card has the button, usable once the place has a point', async () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  assert.match(html, /<button class="park-cta" id="postcode-park-btn" type="button" onclick="openParkNear\(\)" disabled>/);
+  assert.ok(html.indexOf('id="postcode-park-btn"') < html.indexOf('id="postcode-cta-btn"'), 'above Check Travel Time');
+  const app = loadApp({ routes: [BOUNDARY] });
+  app.goToPostcode('SW6 1AA');
+  assert.equal(app.el('postcode-park-btn').disabled, true, 'a bare postcode has no point until its boundary loads');
+  await settle();
+  assert.equal(app.el('postcode-park-btn').disabled, false);
+  app.openParkNear();
+  assert.equal(app.parkView, 'plan');
+  assert.ok(app.el('park-panel').classList.contains('open'));
+  assert.match(app.el('park-body').textContent, /ArrivalToday.*Now.*Stay30m1h2h3h4hAll day/);
+  assert.equal(app.el('park-body').querySelectorAll('.park-primary')[0].textContent, 'Find parking');
+});
+
+test('park near here: plan, then the streets where the whole stay is allowed', async () => {
+  const app = loadApp({ routes: parkRoutes() });
+  openPark(app);
+  app.parkPlanChanged();
+  assert.match(app.el('park-body').querySelectorAll('.park-summary-main')[0].textContent, /^\w{3} 10:00am – 12:00pm$/);
+  await app.parkFind();
+  assert.equal(app.parkView, 'results');
+  assert.equal(app.el('park-title').textContent, 'Parking near The Venue');
+  assert.match(app.el('park-body').textContent, /^\w{3} 10:00am–12:00pm · 2hEdit/);
+  // Walks from the Matrix answer (Alpha 1 min, Bravo 8), not the straight line; unreadable hours last.
+  assert.deepEqual(parkNames(app), ['Alpha Road', 'Bravo Street', 'Unknown Way']);
+  const matrix = app.fetched.filter((u) => /directions-matrix/.test(u));
+  assert.equal(matrix.length, 1);
+  assert.match(matrix[0], /\/walking\/-0\.250000,51\.450000;[^?]*\?sources=0&annotations=duration&access_token=/);
+  assert.equal(matrix[0].split('?')[0].split(';').length, 4, 'the place and the three streets left after planning');
+  const rows = parkRows(app);
+  assert.match(rows[0], /^1minAlpha RoadZone A · Alpha4h max · fits 2h£4\.00paid all stay$/);
+  assert.match(rows[1], /^8minBravo StreetZone B · B zoneFree$/);
+  assert.match(rows[2], /Check signs$/);
+  assert.match(app.el('park-body').textContent, /not whether a space is free\. Check the signs\.$/);
+  assert.equal(app.el('park-body').querySelectorAll('.pk-note').length, 0, 'the place is in a zone');
+
+  app.parkSetSort('cheapest');
+  assert.deepEqual(parkNames(app), ['Bravo Street', 'Alpha Road', 'Unknown Way']);
+
+  // On the map: the results over the parking layer, which this turned on with its panel shut.
+  assert.deepEqual(parkLayers(app), ['park-results-casing', 'park-results-line', 'park-results-sel']);
+  assert.equal(app.map.layerIds().slice(-3).join(), 'park-results-casing,park-results-line,park-results-sel');
+  assert.ok(app.map.getLayer('parking-zones-fill'));
+  assert.equal(app.el('parking-panel').classList.contains('open'), false);
+  const feats = app.map.getSource('park-results').def.data.features;
+  assert.deepEqual(plain(feats.map((f) => app.parkResults[f.properties.i].name + ':' + f.properties.state)).sort(),
+    ['Alpha Road:paid', 'Alpha Road:paid', 'Bravo Street:free', 'Unknown Way:unknown']);
+  assert.equal(app.map.calls.pop().name, 'fitBounds');
+
+  // A street's card.
+  const alpha = app.parkResults.findIndex((r) => r.name === 'Alpha Road');
+  app.parkShowDetail(alpha);
+  const card = app.el('park-body').textContent;
+  assert.match(card, /^Alpha RoadZone A · Alpha · XshirePay to park all stay1 min walk to The Venue/);
+  assert.match(card, /10am–12pm2h × £2\.00£4\.00Total£4\.00/);
+  assert.match(card, /Max stay4 hours · your 2h stay fits/);
+  assert.match(card, /Pay by phonePayByPhone location 1234/);
+  const dir = app.el('park-body').querySelectorAll('.park-primary')[0];
+  assert.equal(dir.textContent, 'Directions');
+  assert.match(dir.href, /^https:\/\/www\.google\.com\/maps\/dir\/\?api=1&destination=51\.450000,-0\.248\d+&travelmode=driving$/);
+  assert.equal(dir.target, '_blank');
+  const fly = app.map.calls.pop();
+  assert.equal(fly.name, 'flyTo');
+  assert.equal(fly.options.padding, undefined);
+  app.parkBack();
+  assert.equal(app.parkView, 'results');
+  app.parkBack();
+  assert.equal(app.parkView, 'plan', 'back from the list is Edit');
+  assert.deepEqual(parkLayers(app), [], 'results for the old plan come off the map');
+});
+
+test('park near here: nearest and cheapest orders', async () => {
+  const plans = {
+    'x:A': { ok: true, status: 'ok', segments: [{ start: 0, end: 120, status: 'ctrl' }], paidMin: 120, cost: 4.64, perHour: 2.32, maxStayMin: 240, longestPaidMin: 120, freeAll: false },
+    'x:B': { ok: true, status: 'ok', segments: [{ start: 0, end: 120, status: 'free' }], paidMin: 0, cost: 0, perHour: null, maxStayMin: null, longestPaidMin: 0, freeAll: true },
+    'x:C': { ok: true, status: 'ok', segments: [{ start: 0, end: 60, status: 'ctrl' }, { start: 60, end: 120, status: 'free' }], paidMin: 60, cost: null, perHour: null, maxStayMin: null, longestPaidMin: 60, freeAll: false },
+    'x:D': { ok: false, status: 'unknown', segments: [{ start: 0, end: 120, status: 'unknown' }], paidMin: 0, cost: null, perHour: null, maxStayMin: null, longestPaidMin: 0, freeAll: false },
+    'x:E': { ok: true, status: 'ok', segments: [{ start: 0, end: 60, status: 'free' }, { start: 60, end: 120, status: 'ctrl' }], paidMin: 60, cost: 2, perHour: 2, maxStayMin: null, longestPaidMin: 60, freeAll: false },
+    'x:P': { ok: false, status: 'permit', segments: [], paidMin: 0, cost: null, perHour: null, maxStayMin: null, longestPaidMin: 0, freeAll: false },
+    'x:M': { ok: false, status: 'maxstay', segments: [], paidMin: 240, cost: 9, perHour: 2, maxStayMin: 60, longestPaidMin: 240, freeAll: false } };
+  const streets = [street('Ash', 'x:A', 100), street('Beech', 'x:B', 500), street('Cedar', 'x:C', 150), street('Dock', 'x:D', 50),
+    street('Elm', 'x:E', 400), street('Pine', 'x:P', 60), street('Maple', 'x:M', 70)];
+  // No Matrix answer (an error): the straight-line estimates stand.
+  const app = loadApp({ routes: parkRoutes(streets, () => reply({ message: 'Not Authorized' }, 401)) });
+  app.planStay = (key) => plans[key];
+  openPark(app);
+  await app.parkFind();
+  assert.deepEqual(parkNames(app), ['Ash', 'Cedar', 'Elm', 'Beech', 'Dock']);
+  assert.deepEqual(plain(app.parkResults.map((r) => r.walk)), [2, 9, 3, 1, 7]);
+  const rows = parkRows(app);
+  assert.match(rows[1], /^3minCedar.*Price unknownpaid 10–11am, free after$/);
+  assert.match(rows[2], /^7minElm.*£2\.00free 10–11am, paid after$/);
+  app.parkSetSort('cheapest');
+  assert.deepEqual(parkNames(app), ['Beech', 'Elm', 'Ash', 'Cedar', 'Dock']);
+});
+
+test('park near here: a place outside every zone says so, and still lists zone streets in reach', async () => {
+  const app = loadApp({ routes: parkRoutes() });
+  openPark(app, at(-250));                                // 250 m west of zone A's square
+  await app.parkFind();
+  assert.equal(app.parkInfo.inZone, false);
+  assert.match(app.el('park-body').querySelectorAll('.pk-note')[0].textContent,
+    /^The Venue isn’t in a controlled parking zone: most streets nearby have no parking controls\. Watch for yellow lines and signs\.$/);
+  assert.ok(parkNames(app).indexOf('Alpha Road') !== -1);
+});
+
+test('park near here: nothing fits the stay offers to shorten it', async () => {
+  const app = loadApp({ routes: parkRoutes([street('Permit Lane', 'x:P', 50)]) });
+  openPark(app);
+  await app.parkFind();
+  assert.match(app.el('park-body').textContent, /No streets within a 20 min walk allow this stay/);
+  app.el('park-body').querySelectorAll('.park-primary')[0].dispatch('click');
+  assert.equal(app.parkView, 'plan');
+});
+
+test('park near here: a late Matrix answer after closing or editing is dropped', async () => {
+  for (const leave of ['close', 'edit', 'new place']) {
+    const matrix = deferred();
+    const app = loadApp({ routes: parkRoutes(null, () => matrix.promise).concat([ISO, NO_STATIONS]) });
+    openPark(app);
+    app.parkFind();
+    await settle();
+    assert.equal(app.parkView, 'loading');
+    if (leave === 'close') app.closeParkNear();
+    else if (leave === 'edit') app.parkShowPlan();
+    else app.goToPlace({ ...BIG_BEN });
+    matrix.resolve(matrixReply(app.fetched.filter((u) => /directions-matrix/.test(u))[0]));
+    await settle();
+    assert.equal(app.parkResults.length, 0, leave);
+    assert.deepEqual(parkLayers(app), [], leave);
+    assert.equal(app.parkView, leave === 'edit' ? 'plan' : null, leave);
+    if (leave !== 'edit') {
+      assert.equal(app.parkingOn, false, 'the parking layer it turned on goes too');
+      assert.equal(app.map.layerIds().filter((id) => id.indexOf('parking-') === 0).length, 0);
+      assert.equal(app.el('park-panel').classList.contains('open'), false);
+    }
+  }
+});
+
+test('park near here: results come back after a theme switch and go when it closes', async () => {
+  const app = loadApp({ routes: parkRoutes() });
+  openPark(app);
+  await app.parkFind();
+  app.parkShowDetail(0);
+  app.toggleTheme();
+  assert.deepEqual(app.map.layerIds(), []);
+  app.map.finishStyle();
+  assert.equal(app.map.layerIds().slice(-3).join(), 'park-results-casing,park-results-line,park-results-sel');
+  assert.ok(app.map.getLayer('parking-zones-fill'));
+  app.rehydrateLayers();                               // twice on one style is harmless
+  assert.deepEqual(parkLayers(app), ['park-results-casing', 'park-results-line', 'park-results-sel']);
+  app.closeParkNear();
+  assert.deepEqual(app.map.layerIds(), []);
+  assert.equal(app.parkData, null);
+});
+
+test('park near here: the parking layer, if it was on, is handed back as it was', async () => {
+  const app = loadApp({ routes: parkRoutes() });
+  app.toggleParking(true);
+  await settle();
+  const before = plain(app.parkingWhen);
+  openPark(app);
+  assert.equal(app.el('parking-panel').classList.contains('open'), false, 'the panels share a spot');
+  await app.parkFind();
+  assert.equal(app.parkingNow, false, 'coloured for the arrival');
+  assert.equal(app.parkingWhen.minutes, 600);
+  app.closeParkNear();
+  assert.equal(app.parkingOn, true);
+  assert.equal(app.parkingNow, true);
+  assert.deepEqual(plain(app.parkingWhen), before);
+  assert.ok(app.el('parking-panel').classList.contains('open'));
+  assert.ok(app.map.getLayer('parking-zones-fill'));
+  assert.deepEqual(parkLayers(app), []);
+  // The P button with the view open turns both off.
+  openPark(app);
+  await app.parkFind();
+  app.toggleParking(false);
+  assert.equal(app.parkPlace, null);
+  assert.deepEqual(app.map.layerIds(), []);
 });

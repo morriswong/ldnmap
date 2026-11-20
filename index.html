@@ -90,6 +90,26 @@
   <div class="fuel-attrib">Parking data: London borough councils; streets © OpenStreetMap contributors</div>
 </div>
 
+<!-- [park] Park near here: opened from the place card's Park near here button -->
+<div id="park-panel" class="fuel-panel park-panel" role="dialog" aria-label="Park near here">
+  <div class="sheet-grabber" id="park-grabber"><span></span></div>
+  <div class="fuel-header">
+    <button class="travel-card-btn" id="park-back" type="button" onclick="parkBack()" aria-label="Back" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+    </button>
+    <div class="fuel-title park-title" id="park-title">Park near here</div>
+    <button class="travel-card-btn" type="button" onclick="closeParkNear()" aria-label="Close Park near here">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M18 6L6 18M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+  <div class="fuel-results park-body" id="park-body" aria-live="polite"></div>
+  <div class="fuel-attrib">Parking data: London borough councils; streets © OpenStreetMap contributors · walks by Mapbox</div>
+</div>
+
 <div id="search-overlay" class="search-overlay">
   <div class="search-overlay-header">
     <button class="search-overlay-back" id="search-back-btn">
@@ -171,6 +191,14 @@
     </button>
   </div>
   <div class="postcode-cta-row">
+    <button class="park-cta" id="postcode-park-btn" type="button" onclick="openParkNear()" disabled>
+      <span class="pk-sign" aria-hidden="true">P</span>
+      <span class="park-cta-text">
+        <span class="park-cta-title">Park near here</span>
+        <span class="park-cta-sub">Streets you can park on for your whole visit</span>
+      </span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+    </button>
     <div class="postcode-cta-btns">
       <button class="travel-mode-btn" id="postcode-cta-btn" disabled onclick="launchFromPostcodeDefault()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
