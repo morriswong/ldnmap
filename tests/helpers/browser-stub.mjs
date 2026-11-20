@@ -136,7 +136,9 @@ class FakeMap {
   }
   removeLayer(id) { this.layers = this.layers.filter((l) => l.id !== id); }
   layerIds() { return this.layers.map((l) => l.id); }
-  setPaintProperty() {}
+  // Kept on the layer, like the real map's getPaintProperty().
+  setPaintProperty(id, prop, value) { const l = this.getLayer(id); if (l) l.paint = { ...l.paint, [prop]: value }; }
+  getPaintProperty(id, prop) { const l = this.getLayer(id); return l && l.paint ? l.paint[prop] : undefined; }
   setFilter() {}
   resize() {}
   getContainer() { return this.container; }

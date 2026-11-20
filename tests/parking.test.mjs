@@ -569,3 +569,106 @@ test('planStay is fast enough to plan hundreds of streets', () => {
   const ms = performance.now() - t0;
   assert.ok(ms < 200, `500 × 24h plans took ${ms.toFixed(1)}ms`);
 });
+
+// ---- Park near here with no stay chosen: stayFromNow ----
+
+test('stayFromNow: paid now, then free, then a paid stretch that hits the max stay', () => {
+  const { stayFromNow } = ctx;
+  // Lewisham E (Mon–Fri 9am–7pm, 4 hours max): Thursday 17:00 pays until 19:00, is free overnight,
+  // and from Friday 9:00 can stay 4 more hours: leave by Friday 13:00.
+  const p = stayFromNow('lewisham:E', THU, at(17), false, false);
+  assert.equal(p.ok, true);
+  assert.equal(p.now, 'ctrl');
+  assert.deepEqual(plain(p.segments), [seg(0, 120, 'ctrl'), seg(120, 960, 'free'), seg(960, 1200, 'ctrl')]);
+  assert.equal(p.untilMin, 1200);
+  assert.equal(p.limit, 'maxstay');
+  assert.equal(p.maxStayMin, 240);
+  assert.equal(p.tariff.basis, 'from');
+  assert.equal(p.tariff.min, 2.32);
+  assert.equal(p.perHour, null);
+  // Thursday 10:00: 9 hours of paid time left today, so the max stay ends it.
+  const q = stayFromNow('lewisham:E', THU, at(10), false, false);
+  assert.deepEqual(plain(q.segments), [seg(0, 240, 'ctrl')]);
+  assert.equal(q.untilMin, 240);
+  assert.equal(q.limit, 'maxstay');
+});
+
+test('stayFromNow: free now until the controls start, over the weekend', () => {
+  const { stayFromNow } = ctx;
+  // Saturday 10:00 in Lewisham E: free until Monday 9:00 (47 hours), then 4 hours paid.
+  const p = stayFromNow('lewisham:E', SAT, at(10), false, false);
+  assert.equal(p.now, 'free');
+  assert.deepEqual(plain(p.segments), [seg(0, 2820, 'free'), seg(2820, 3060, 'ctrl')]);
+  assert.equal(p.untilMin, 3060);
+  // A shorter horizon sees only the free part, and nothing that ends it.
+  const day = stayFromNow('lewisham:E', SAT, at(10), false, false, 1440);
+  assert.deepEqual(plain(day.segments), [seg(0, 1440, 'free')]);
+  assert.equal(day.untilMin, null);
+  assert.equal(day.limit, null);
+});
+
+test('stayFromNow: permit-holders-only time ends the stay, or stops it starting', () => {
+  const { stayFromNow } = ctx;
+  // hf:G: paid 9am–10pm with 2 hours max, permit holders only 6:30–8pm. Sunday 17:00: 90 min paid.
+  const g = stayFromNow('hf:G', SUN, at(17), false, false);
+  assert.equal(g.ok, true);
+  assert.deepEqual(plain(g.segments), [seg(0, 90, 'ctrl')]);
+  assert.equal(g.untilMin, 90);
+  assert.equal(g.limit, 'permit');
+  const now = stayFromNow('hf:G', SUN, at(19), false, false);
+  assert.equal(now.ok, false);
+  assert.equal(now.now, 'permit');
+  assert.deepEqual(plain(now.segments), []);
+  assert.equal(now.untilMin, null);
+  // hf:QQ is permit holders only Mon–Sat 9am–5pm: Saturday 18:00 is free until Monday 9:00.
+  const qq = stayFromNow('hf:QQ', SAT, at(18), false, false);
+  assert.deepEqual(plain(qq.segments), [seg(0, 2340, 'free')]);
+  assert.equal(qq.untilMin, 2340);
+  assert.equal(qq.limit, 'permit');
+  assert.equal(stayFromNow('hf:QQ', SAT, at(10), false, false).ok, false);
+});
+
+test('stayFromNow: unclear hours stop it starting or end it; no controls have no limit', () => {
+  const { stayFromNow } = ctx;
+  const nope = stayFromNow('nope:Z', SUN, at(10), false, false);
+  assert.equal(nope.ok, false);
+  assert.equal(nope.now, 'unknown');
+  assert.deepEqual(plain(nope.segments), []);
+  ctx.setParkingRules({ boroughs: {}, rules: {
+    'x:B': { hours: 'Mon-Sat 9am-7pm', periods: [{ days: [1, 2, 3, 4, 5, 6], from: '09:00', to: '19:00' }],
+      unsure: [{ days: [0], from: '09:00', to: '13:30' }], maxStay: '1 hour', price: { perHour: 2 } },
+    'x:D': { hours: '24h', maxStay: '4 hours', periods: [{ days: [0, 1, 2, 3, 4, 5, 6], from: '00:00', to: '24:00' }] },
+    'x:E': { hours: '24h', periods: [{ days: [0, 1, 2, 3, 4, 5, 6], from: '00:00', to: '24:00' }], price: { perHour: 3 } },
+    'x:F': { hours: 'No controls', periods: [] } } });
+  try {
+    // Saturday 18:30: 30 min paid, free from 7pm, then Sunday morning's hours are unclear.
+    const b = stayFromNow('x:B', SAT, at(18, 30), false, false);
+    assert.deepEqual(plain(b.segments), [seg(0, 30, 'ctrl'), seg(30, 870, 'free')]);
+    assert.equal(b.untilMin, 870);
+    assert.equal(b.limit, 'unknown');
+    assert.equal(b.perHour, 2);
+    // Paid round the clock: the max stay across midnight, or no limit without one.
+    const d = stayFromNow('x:D', SAT, at(22), false, false);
+    assert.deepEqual(plain(d.segments), [seg(0, 240, 'ctrl')]);
+    assert.equal(d.limit, 'maxstay');
+    const e = stayFromNow('x:E', SAT, at(22), false, false);
+    assert.deepEqual(plain(e.segments), [seg(0, 7 * 1440, 'ctrl')]);
+    assert.equal(e.untilMin, null);
+    assert.equal(e.limit, null);
+    const f = stayFromNow('x:F', SAT, at(22), false, false);
+    assert.equal(f.now, 'free');
+    assert.deepEqual(plain(f.segments), [seg(0, 7 * 1440, 'free')]);
+    assert.equal(f.untilMin, null);
+  } finally {
+    ctx.setParkingRules(rules);
+  }
+});
+
+test('stayFromNow: a bank holiday applies to the starting day only', () => {
+  const { stayFromNow } = ctx;
+  // hf:H on Christmas Day (a Friday) is free; Saturday 8:30am is paid again, 2 hours max.
+  const p = stayFromNow('hf:H', FRI, at(21), false, '12-25');
+  assert.deepEqual(plain(p.segments), [seg(0, 690, 'free'), seg(690, 810, 'ctrl')]);
+  assert.equal(p.untilMin, 810);
+  assert.equal(p.limit, 'maxstay');
+});

@@ -68,6 +68,14 @@ nothing to pay). Diesel surcharges and visitor rates are left out. A rule with n
 the borough's `maxStayDefault`; a `maxStay` that can't be read as one length is never replaced
 by it. The list's **Cheapest** order sorts by `costMin`.
 
+Park near here opens with no stay chosen ("Now · any length"). Then `stayFromNow()` works out how
+long you can park from the arrival under each rule, looking a week ahead with the same status
+segments as `planStay()`: the stay ends at the first permit-holders-only or unclear time, or when
+a paid stretch reaches the max stay (free time in between starts a new stretch). Streets that are
+permit-only at the arrival are left out. Each row shows the hourly rate (`ruleTariff()`: `£2.32/hr`,
+`£4.78–£10.58/hr`, `from £2.32/hr`, or "Price unknown"), and **Cheapest** sorts by its lowest rate,
+free first. A street's card prices the time you can stay, up to 24 hours.
+
 ## Coverage
 
 Every London borough (and the City) is in `tools/parking_sources.json`. Where a council publishes zone

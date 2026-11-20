@@ -168,7 +168,6 @@ function postcodeCentre(pc, seq) {
 // The card's place has its coordinates: its buttons can be used.
 function postcodeReady() {
   document.getElementById('postcode-cta-btn').disabled = false;
-  document.getElementById('postcode-parking-btn').disabled = false;
   document.getElementById('postcode-park-btn').disabled = false;
 }
 
@@ -216,6 +215,7 @@ setState('idle');
 function toggleTheme() {
   isDark = !isDark;
   document.body.classList.toggle('light', !isDark);
+  syncParkingColors();   // [parking] before setStyle, so rehydrateLayers() draws with the new theme's set
   var iconHtml = isDark
     ? '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>'
     : '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
@@ -436,7 +436,6 @@ function showPostcodeChip() {
   // Travel times wait for the boundary (they start from its centre); parking only needs a point,
   // which a bare postcode doesn't have until its boundary loads. postcodeReady() enables both.
   document.getElementById('postcode-cta-btn').disabled = true;
-  document.getElementById('postcode-parking-btn').disabled = !pendingPlace.lat;
   document.getElementById('postcode-park-btn').disabled = !pendingPlace.lat;
   document.getElementById('postcode-chip').classList.add('postcode-chip-active');
   postcodeChipVisible = true;
@@ -1495,15 +1494,35 @@ probeFuel();
 // rules (data/parking/, see its README) are fetched once, the first time the layer goes
 // on; each borough's streets, kerbs and ticket machines are fetched when the map is over
 // it at street level. The status logic lives in parking-rules.js (isControlled), so it
-// can be unit-tested. The P map button and the postcode card's P button turn it on; the
+// can be unit-tested. The P map button turns it on; the
 // panel's close button turns it off. Below street level a tap zooms in; at street level
 // it opens a card.
 var PARKING_URL = '/data/parking/';
 var PARKING_ATTRIB = 'Parking data: London borough councils; streets © OpenStreetMap contributors';
-var PARKING_COVER = [[-0.52, 51.28], [0.34, 51.70]];   // Greater London, SW and NE corners
 var PARKING_STREET_ZOOM = 15;
 var PARKING_DETAIL_ZOOM = 14.5;                        // start loading a borough's streets a little early
-var PARKING_COLORS = { ctrl: '#e74c3c', free: '#2ecc71', permit: '#8e44ad', unknown: '#9ca3af', tfl: '#7f1d1d' };
+// Red means only "you can't park here" (TfL red routes); paying is the blue of UK parking
+// signs; permit-only is magenta, well away from that blue. Each theme has its own shades so the
+// lines keep their contrast on the beige light map and the near-black dark one. The .pk-dot
+// swatches in style.css (--pk-*) match. PARKING_COLORS holds the current theme's set and is
+// refilled in place by syncParkingColors() when the theme changes.
+var PARKING_PALETTES = {
+  light: { ctrl: '#1d4ed8', free: '#15803d', permit: '#a21caf', unknown: '#6b7280', tfl: '#dc2626' },
+  dark:  { ctrl: '#60a5fa', free: '#4ade80', permit: '#e879f9', unknown: '#9ca3af', tfl: '#f87171' }
+};
+var PARKING_COLORS = {};
+function syncParkingColors() {
+  var p = PARKING_PALETTES[isDark ? 'dark' : 'light'];
+  Object.keys(p).forEach(function(k) { PARKING_COLORS[k] = p[k]; });
+  // Park near here's copies (declared further down; undefined on the first call).
+  if (typeof PARK_STATE_COLORS === 'object') {
+    PARK_STATE_COLORS.free = p.free; PARK_STATE_COLORS.paid = p.ctrl; PARK_STATE_COLORS.unknown = p.unknown;
+  }
+  if (typeof PARK_SEG_COLORS === 'object') {
+    PARK_SEG_COLORS.free = p.free; PARK_SEG_COLORS.ctrl = p.ctrl; PARK_SEG_COLORS.permit = p.permit; PARK_SEG_COLORS.unknown = p.unknown;
+  }
+}
+syncParkingColors();
 var PARKING_PILLS = { ctrl: 'Pay to park', free: 'Free', permit: 'Permit holders only', unknown: 'Hours unknown' };
 var PARKING_NEXT = { ctrl: 'pay to park', free: 'free', permit: 'permit holders only' };
 var PARKING_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -1517,7 +1536,6 @@ var parkingOn = false;
 var parkingData = null;        // { zones, labels } once loaded; borough detail is in parkingDetail
 var parkingLoading = null;     // the in-flight load, so double taps share it
 var parkingDetail = {};        // borough id → 'loading' | { streets, kerb, machines } (feature arrays)
-var parkingNote = '';          // a one-off message above the hint, until the user moves the map or opens a card
 var parkingNow = true;         // follow the clock, or a day/time picked in the panel
 var parkingWhen = londonDayTime(new Date());
 var parkingEvent = false;
@@ -1665,7 +1683,6 @@ function toggleParking(on) {
     closeParkingPanel();
     removeParkingLayers();
     parkingSel = null;
-    parkingNote = '';
     clearInterval(parkingTimer);
     return;
   }
@@ -1722,31 +1739,6 @@ function parkingBoroughAt(lng, lat) {
     return lng >= bb[0] && lng <= bb[2] && lat >= bb[1] && lat <= bb[3];
   });
   return ids[0] || null;
-}
-
-// Postcode card button: parking around the place the user just picked.
-function parkingFromPostcode() {
-  var p = pendingPlace;
-  toggleParking(true);
-  loadParkingData().then(function() {
-    if (!parkingOn) return;
-    if (p && p.lat && parkingBoroughAt(p.lng, p.lat)) {
-      map.flyTo({ center: [p.lng, p.lat], zoom: 16, offset: paddingOffset(parkingMapPadding()) });
-    } else {
-      map.fitBounds(PARKING_COVER, { padding: parkingMapPadding() });
-      parkingNote = 'No parking data for that place yet. The coloured areas are the boroughs covered.';
-      renderParkingBody();
-    }
-  }).catch(function() {});   // toggleParking() has already said the data couldn't be loaded
-}
-
-// Keep the place clear of the panel (desktop) or the sheet (mobile).
-function parkingMapPadding() {
-  if (isMobileView()) {
-    var vis = window.__parkingSheet ? window.__parkingSheet.visibleAt('compact') : 200;
-    return fitPadding({ top: 60, right: 20, bottom: vis + 20, left: 20 });
-  }
-  return fitPadding({ top: 40, right: 380, bottom: 40, left: 40 });
 }
 
 /* --- time controls --- */
@@ -1911,10 +1903,10 @@ function addParkingLayers() {
         'fill-opacity': ['interpolate', ['linear'], ['zoom'], 9, 0.35, 12, 0.28, 15, 0.12, 17, 0.06] } }, underRoads);
     map.addLayer({ id: 'parking-zones-line', type: 'line', source: 'parking-zones', filter: ['!', ['has', 'outline']],
       paint: { 'line-color': ruleColor, 'line-width': ['interpolate', ['linear'], ['zoom'], 9, 0.5, 12, 1, 16, 2.5],
-        'line-opacity': 0.8 } }, underLabels);
+        'line-opacity': parkingLineOpacity().zones } }, underLabels);
     map.addLayer({ id: 'parking-streets', type: 'line', source: 'parking-streets', minzoom: PARKING_STREET_ZOOM,
       layout: { 'line-cap': 'round', 'line-join': 'round' },
-      paint: { 'line-color': parkingStreetColor(), 'line-opacity': 0.75,
+      paint: { 'line-color': parkingStreetColor(), 'line-opacity': parkingLineOpacity().streets,
         'line-width': ['interpolate', ['linear'], ['zoom'], 15, 3, 18, 9] } }, underLabels);
     map.addLayer({ id: 'parking-streets-sel', type: 'line', source: 'parking-streets', minzoom: PARKING_STREET_ZOOM,
       filter: parkingSelFilter(), layout: { 'line-cap': 'round', 'line-join': 'round' },
@@ -1960,6 +1952,17 @@ function recolourParking() {
   map.setPaintProperty('parking-zones-label', 'text-color', rc);
   map.setPaintProperty('parking-streets', 'line-color', parkingStreetColor());
   renderParkingBody();
+}
+
+// While Park near here's results are on the map (parkData), the general layer steps back so
+// the result streets stand out over it; otherwise it's drawn at full strength.
+function parkingLineOpacity() {
+  return parkData ? { zones: 0.35, streets: 0.3 } : { zones: 0.8, streets: 0.85 };
+}
+function parkingSetDimmed() {
+  var o = parkingLineOpacity();
+  if (map.getLayer('parking-zones-line')) map.setPaintProperty('parking-zones-line', 'line-opacity', o.zones);
+  if (map.getLayer('parking-streets')) map.setPaintProperty('parking-streets', 'line-opacity', o.streets);
 }
 
 // The selected street is outlined: all pieces with its name in its zone.
@@ -2009,7 +2012,6 @@ map.on('click', function(e) {
 // Open a card (or, with null, close it): the selected street's outline and the panel follow.
 function setParkingSel(sel) {
   parkingSel = sel;
-  if (sel) parkingNote = '';
   if (map.getLayer('parking-streets-sel')) map.setFilter('parking-streets-sel', parkingSelFilter());
   renderParkingBody();
 }
@@ -2091,7 +2093,6 @@ function renderParkingBody() {
   parkingBody.innerHTML = '';
   if (parkingSel) parkingBody.appendChild(renderParkingCard(parkingSel));
   else {
-    if (parkingNote) parkingBody.appendChild(pkEl('div', 'fuel-msg fuel-msg--warn', parkingNote));
     var hint = pkEl('div', 'pk-hint');
     hint.appendChild(pkEl('p', '', map.getZoom() < PARKING_STREET_ZOOM
       ? 'Tap a zone to zoom in, then tap a street to see its rules.'
@@ -2363,22 +2364,23 @@ function renderParkingCharges(borough) {
 map.on('moveend', function(e) {
   if (!parkingOn || !parkingRules) return;
   loadParkingDetail();
-  if (e && e.originalEvent) parkingNote = '';   // the user moved the map themselves: the note has been seen
   if (!parkingSel) renderParkingBody();
 });
 /* ===== END PARKING ===== */
 
 /* ===== PARK NEAR HERE ===== */
-// For drivers: from a place's card, pick an arrival day and time and how long to stay, then list
-// the streets within a 20 min walk where the whole stay is allowed (no permit-only time, no paid
-// stretch over the max stay), nearest or cheapest first, with what it costs. Candidates are the
-// named, non-red-route pieces of each nearby borough's streets.geojson, one per street name and
-// rule; planStay() in parking-rules.js works out each stay. Walks are straight-line estimates,
+// For drivers: from a place's card, straight to the streets within a 20 min walk where you can
+// park now and for how long (no stay chosen: stayFromNow() in parking-rules.js; permit-only-now
+// streets go), with the hourly rate, nearest or cheapest first. "Change" opens a plan (arrival day
+// and time, and how long to stay); with a stay chosen the list is the streets where the whole stay
+// is allowed (no permit-only time, no paid stretch over the max stay), with what it costs
+// (planStay()). Candidates are the named, non-red-route pieces of each nearby borough's
+// streets.geojson, one per street name and rule. Walks are straight-line estimates,
 // refined for the nearest 24 with one Mapbox Matrix call. The parking layer goes on too, set to
 // the arrival time, for context (zones and permit-only streets); the results are drawn over it as
 // the `park-results` source. closeParkNear() is the one way out: it puts the parking layer back
 // as it was. Every lookup takes a number from parkSeq.
-var PARK_STAYS = [[30, '30m'], [60, '1h'], [120, '2h'], [180, '3h'], [240, '4h'], ['day', 'All day']];
+var PARK_STAYS = [[null, 'Any'], [30, '30m'], [60, '1h'], [120, '2h'], [180, '3h'], [240, '4h'], ['day', 'All day']];
 var PARK_REACH_M = 1800;       // boroughs with a zone this close to the place are searched
 var PARK_EST_MAX = 25;         // minutes: the straight-line estimate a street must be within
 var PARK_WALK_MAX = 20;        // minutes: the walk a listed street must be within
@@ -2389,8 +2391,9 @@ var PARK_SEG_WORDS = { free: 'free', ctrl: 'paid', permit: 'permit only', unknow
 var PARK_LAYERS = ['park-results-sel', 'park-results-line', 'park-results-casing'];
 var parkSeq = 0;               // the newest lookup; closing, editing or a new search moves it on
 var parkPlace = null;          // { name, lat, lng } while the view is open, else null
-var parkPlan = null;           // { dayIdx, minutes, stay (minutes or 'day'), now }
-var parkView = null;           // 'plan' | 'loading' | 'results' | 'detail' | 'error'
+var parkPlan = null;           // { dayIdx, minutes, stay (minutes, 'day', or null for any length), now }
+var parkPrevPlan = null;       // the plan of the results the plan screen was opened from (its Back)
+var parkView = null;           // 'loading' | 'results' | 'detail' | 'plan' | 'error'
 var parkResults = [];          // see parkResult(); `i` on the map features is the index here
 var parkInfo = null;           // { arrival, inZone, outline, covered } for the results showing
 var parkSort = 'nearest';
@@ -2419,21 +2422,26 @@ function parkDays() {
   return out;
 }
 
-// Now, rounded up to the next quarter hour; a 2 hour stay.
+// Now, with no stay chosen: where you can park now, and for how long.
 function parkDefaultPlan() {
-  var m = Math.ceil(parkNowMinutes() / 15) * 15, dayIdx = 0;
-  if (m >= 1440) { m -= 1440; dayIdx = 1; }
-  return { dayIdx: dayIdx, minutes: m, stay: 120, now: false };
+  return { dayIdx: 0, minutes: parkNowMinutes(), stay: null, now: true };
 }
 
-// The plan as planStay() takes it. Bank holidays as the parking panel works them out for a
-// date; event days can't be known ahead, so they're never assumed.
+// The plan as planStay() and stayFromNow() take it. Bank holidays as the parking panel works them
+// out for a date; event days can't be known ahead, so they're never assumed. `any` is true (and
+// `stayMin` null) when no stay is chosen; `now` when the arrival is now.
 function parkArrival() {
   var d = parkDays()[parkPlan.dayIdx];
-  var minutes = parkPlan.minutes;
-  return { day: d.day, minutes: minutes, label: PARKING_DAYS[d.day],
-    bh: parkingRules ? bankHolidayOn(d.date) : false, eventDay: false,
-    stayMin: parkPlan.stay === 'day' ? 1440 - minutes : parkPlan.stay };
+  var minutes = parkPlan.minutes, any = parkPlan.stay == null;
+  return { day: d.day, minutes: minutes, label: PARKING_DAYS[d.day], dayIdx: parkPlan.dayIdx,
+    bh: parkingRules ? bankHolidayOn(d.date) : false, eventDay: false, now: !!parkPlan.now,
+    any: any, stay: parkPlan.stay, stayMin: any ? null : parkPlan.stay === 'day' ? 1440 - minutes : parkPlan.stay };
+}
+
+// 'Now · any length', 'Fri 3:45pm · 2h', 'Now · all day'.
+function parkPlanSummary(a) {
+  return (a.now ? 'Now' : a.label + ' ' + parkClock(a.minutes)) + ' · '
+    + (a.any ? 'any length' : a.stay === 'day' ? 'all day' : parkDur(a.stayMin));
 }
 
 /* --- words --- */
@@ -2464,6 +2472,19 @@ function parkDurLong(m) {
   return h + (h === 1 ? ' hour' : ' hours') + (r ? ' ' + r + ' min' : '');
 }
 function parkMoney(x) { return '£' + x.toFixed(2); }
+// The time `off` minutes after arrival `a`: '7pm', '8:30am tomorrow', 'Mon 8:30am', 'midnight'.
+function parkAt(a, off) {
+  var abs = a.minutes + off, days = Math.floor(abs / 1440), m = abs % 1440;
+  if (m === 0 && days > 0) { days--; m = 1440; }        // the midnight that ends a day is that day's
+  var clock = m === 1440 ? 'midnight' : parkingClock(m);
+  if (!days) return clock;
+  if (days === 1 && a.dayIdx === 0) return clock + ' tomorrow';
+  return PARKING_DAYS[(a.day + days) % 7] + ' ' + clock;
+}
+// An hourly rate: '£2.32/hr', '£4.78–£10.58/hr', 'from £2.32/hr'; '' when the price isn't known.
+function parkRate(t) {
+  return t ? parkAmount(t.min, t.max) + '/hr' : '';
+}
 
 /* --- geometry --- */
 // Metres east and north of `o` ([lng, lat]): flat is near enough at walking distances.
@@ -2535,6 +2556,8 @@ function parkArea(lng, lat) {
 /* --- candidates and results --- */
 // One candidate per street name and rule in the loaded boroughs: its point nearest the place,
 // an estimated walk, and the stay planned under its rule. Permit-only and over-max stays go.
+// With no stay chosen, `now` is stayFromNow()'s answer (streets that are permit-only at the
+// arrival go) and `plan` covers the time it allows, up to 24 hours (parkWindow()), for the card.
 function parkCandidates(ids, o, a) {
   var groups = {};
   ids.forEach(function(id) {
@@ -2550,15 +2573,32 @@ function parkCandidates(ids, o, a) {
       if (near.d < g.d) { g.d = near.d; g.point = near.c; }
     });
   });
-  var plans = {};
+  var plans = {}, nows = {};
   return Object.keys(groups).map(function(k) { return groups[k]; }).filter(function(g) {
     g.walk = Math.max(1, Math.ceil(g.d * 1.3 / 80));
     if (g.walk > PARK_EST_MAX) return false;
+    if (a.any) {
+      var n = nows[g.rule];
+      if (!n) {
+        n = nows[g.rule] = stayFromNow(g.rule, a.day, a.minutes, a.eventDay, a.bh);
+        n.plan = planStay(g.rule, a.day, a.minutes, parkWindow(n), a.eventDay, a.bh);
+      }
+      if (n.now === 'permit') return false;
+      g.now = n;
+      g.plan = n.plan;
+      return true;
+    }
     var plan = plans[g.rule] || (plans[g.rule] = planStay(g.rule, a.day, a.minutes, a.stayMin, a.eventDay, a.bh));
     if (!plan || plan.status === 'permit' || plan.status === 'maxstay') return false;
     g.plan = plan;
     return true;
   });
+}
+
+// The minutes from the arrival a card's time bar covers with no stay chosen: until you must leave,
+// or 24 hours when that's later or never.
+function parkWindow(n) {
+  return n.untilMin != null && n.untilMin < 1440 ? n.untilMin : 1440;
 }
 
 // Walking times for the nearest candidates from one Matrix call. Any failure keeps the estimates.
@@ -2586,10 +2626,23 @@ function parkRefineWalks(cands, o) {
 // `price` is what the stay costs when that's exact (0 when free), else null. `costMin`/`costMax`
 // are its lowest and highest cost (a range when it depends on the car; costMax null for a 'from'
 // price), both null when the price isn't known. `tariff` is planStay()'s (ruleTariff()).
+// With no stay chosen (`now` set), the state is the street's at the arrival, the costs are for
+// the time the card covers (parkWindow()), and `rateMin`/`rateMax` are the hourly rate the list
+// shows and sorts by (0 when free now; null when unknown).
 function parkResult(c) {
-  var plan = c.plan;
-  var state = plan.status === 'unknown' ? 'unknown' : (plan.freeAll || plan.paidMin === 0) ? 'free' : 'paid';
+  var plan = c.plan, n = c.now || null;
   var num = function(x) { return typeof x === 'number' ? x : null; };
+  if (n) {
+    var nowState = n.now === 'free' ? 'free' : n.now === 'ctrl' ? 'paid' : 'unknown';
+    var known = plan.status !== 'unknown', t = n.tariff || null;
+    var cMin = known ? num(plan.costMin) : null;
+    return { name: c.name, rule: c.rule, zone: c.zone, b: c.b, d: c.d, walk: c.walk, refined: !!c.refined,
+      point: c.point, lines: c.lines, plan: plan, now: n, window: parkWindow(n), state: nowState, tariff: t,
+      price: known ? num(plan.cost) : null, costMin: cMin, costMax: cMin !== null ? num(plan.costMax) : null,
+      rateMin: nowState === 'free' ? 0 : nowState === 'paid' && t ? t.min : null,
+      rateMax: nowState === 'free' ? 0 : nowState === 'paid' && t ? t.max : null };
+  }
+  var state = plan.status === 'unknown' ? 'unknown' : (plan.freeAll || plan.paidMin === 0) ? 'free' : 'paid';
   var paid = state === 'paid', free = state === 'free';
   return { name: c.name, rule: c.rule, zone: c.zone, b: c.b, d: c.d, walk: c.walk, refined: !!c.refined,
     point: c.point, lines: c.lines, plan: plan, state: state, tariff: plan.tariff || null,
@@ -2599,17 +2652,19 @@ function parkResult(c) {
 }
 
 // Nearest: by walk. Cheapest: free first, then by the lowest cost (a range or 'from' price by its
-// bottom), then by walk; unknown prices after known ones. Streets whose hours couldn't be read go
-// last in both.
+// bottom; with no stay chosen, the lowest hourly rate now), then by walk; unknown prices after
+// known ones. Streets whose hours couldn't be read go last in both.
 function parkSorted() {
+  var key = function(r) { return r.now ? r.rateMin : r.costMin; };
   return parkResults.map(function(r, i) { return { r: r, i: i }; }).sort(function(x, y) {
     var a = x.r, b = y.r;
     var u = (a.state === 'unknown') - (b.state === 'unknown');
     if (u) return u;
     if (parkSort === 'cheapest') {
-      var n = (a.costMin === null) - (b.costMin === null);
+      var ka = key(a), kb = key(b);
+      var n = (ka === null) - (kb === null);
       if (n) return n;
-      if (a.costMin !== null && a.costMin !== b.costMin) return a.costMin - b.costMin;
+      if (ka !== null && ka !== kb) return ka - kb;
     }
     return a.walk - b.walk || a.d - b.d || (a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
   });
@@ -2654,7 +2709,7 @@ function parkSegments(r) {
     if (last && last.status === s.status && last.end === s.start) last.end = s.end;
     else out.push({ start: s.start, end: s.end, status: s.status });
   });
-  if (!out.length) out.push({ start: 0, end: parkInfo.arrival.stayMin, status: r.state === 'unknown' ? 'unknown' : r.state === 'free' ? 'free' : 'ctrl' });
+  if (!out.length) out.push({ start: 0, end: parkSpan(r), status: r.state === 'unknown' ? 'unknown' : r.state === 'free' ? 'free' : 'ctrl' });
   return out;
 }
 
@@ -2673,6 +2728,30 @@ function parkSegLine(r) {
 function parkZoneLine(r) {
   var zr = parkingRule(r.b + ':' + r.zone) || {};
   return 'Zone ' + r.zone + (zr.name && zr.name !== r.zone ? ' · ' + zr.name : '');
+}
+
+// The minutes a street's card covers: the stay, or with none chosen, parkWindow().
+function parkSpan(r) {
+  return r.now ? r.window : parkInfo.arrival.stayMin;
+}
+
+// With no stay chosen, how long you can stay: 'Free until 7pm, then paid until 11pm', 'Up to 4h,
+// until 2:15pm', 'Paid until 6:30pm, then free', 'Free until 8:30am tomorrow, then permit holders
+// only', 'Free, no time limit'. Times are from parkAt(); within stayFromNow()'s week.
+var PARK_LIMIT_WORDS = { permit: 'permit holders only', unknown: 'check the signs' };
+function parkStayLine(r) {
+  var n = r.now, a = parkInfo.arrival, segs = n.segments;
+  var at = function(off) { return parkAt(a, off); };
+  if (r.state === 'unknown') return 'Hours couldn’t be read';
+  var two = segs.length === 2 && n.limit ? ' until ' + at(n.untilMin) : '';
+  if (r.state === 'free') {
+    if (segs.length > 1) return 'Free until ' + at(segs[0].end) + ', then paid' + two;
+    return n.limit ? 'Free until ' + at(n.untilMin) + ', then ' + PARK_LIMIT_WORDS[n.limit] : 'Free, no time limit';
+  }
+  if (segs.length > 1) return 'Paid until ' + at(segs[0].end) + ', then free' + two;
+  if (n.limit === 'maxstay') return 'Up to ' + parkDur(n.maxStayMin) + ', until ' + at(n.untilMin);
+  if (n.limit) return 'Paid until ' + at(n.untilMin) + ', then ' + PARK_LIMIT_WORDS[n.limit];
+  return 'No max stay listed';
 }
 
 // '4h max · fits 3h', when the max stay is known and the stay has paid time.
@@ -2699,12 +2778,14 @@ function addParkResultsLayers() {
   whenStyleReady(function() {
     if (!parkData) return;
     removeParkResultsLayers();
-    var width = ['interpolate', ['linear'], ['zoom'], 13, 3, 16, 5, 18, 10];
+    // About twice the general layer's street width, on a casing in the map's background colour,
+    // with the general layer dimmed underneath (parkingSetDimmed()), so the matches stand out.
+    var width = ['interpolate', ['linear'], ['zoom'], 13, 4, 15, 6, 16, 7, 18, 12];
     map.addSource('park-results', { type: 'geojson', data: parkData });
     map.addLayer({ id: 'park-results-casing', type: 'line', source: 'park-results',
       layout: { 'line-cap': 'round', 'line-join': 'round' },
-      paint: { 'line-color': isDark ? '#0a0a0a' : '#ffffff', 'line-opacity': 0.85,
-        'line-width': ['interpolate', ['linear'], ['zoom'], 13, 6, 16, 9, 18, 15] } });
+      paint: { 'line-color': isDark ? '#0a0a0a' : '#ffffff', 'line-opacity': 1,
+        'line-width': ['interpolate', ['linear'], ['zoom'], 13, 8, 15, 10.5, 16, 12, 18, 18] } });
     map.addLayer({ id: 'park-results-line', type: 'line', source: 'park-results',
       layout: { 'line-cap': 'round', 'line-join': 'round' },
       paint: { 'line-color': ['match', ['get', 'state'], 'free', PARK_STATE_COLORS.free, 'paid', PARK_STATE_COLORS.paid, PARK_STATE_COLORS.unknown],
@@ -2712,12 +2793,14 @@ function addParkResultsLayers() {
     map.addLayer({ id: 'park-results-sel', type: 'line', source: 'park-results', filter: parkSelFilter(),
       layout: { 'line-cap': 'round', 'line-join': 'round' },
       paint: { 'line-color': isDark ? '#ffffff' : '#111111', 'line-width': 2.5, 'line-gap-width': width } });
+    parkingSetDimmed();
   });
 }
 
 function removeParkResultsLayers() {
   PARK_LAYERS.forEach(function(id) { if (map.getLayer(id)) map.removeLayer(id); });
   if (map.getSource('park-results')) map.removeSource('park-results');
+  parkingSetDimmed();   // back to full strength once parkData is gone
 }
 
 function clearParkResults() {
@@ -2774,7 +2857,7 @@ function parkSyncParkingTime() {
 }
 
 /* --- opening, closing, the views --- */
-// The place card's Park near here button.
+// The place card's Park near here button: straight to where you can park now, and for how long.
 function openParkNear() {
   var p = pendingPlace;
   if (!p || !p.lat) return;
@@ -2786,10 +2869,12 @@ function openParkNear() {
   parkResults = [];
   parkSelIdx = -1;
   parkInfo = null;
+  parkPrevPlan = null;
   parkUseParkingLayer();
   parkPanel.classList.add('open');
   document.body.classList.add('park-open');
-  parkShowPlan();
+  parkSheetTo('half');
+  return parkFind();
 }
 
 // Close the view: results off the map, any lookup dropped, the parking layer as it was.
@@ -2798,6 +2883,7 @@ function closeParkNear() {
   parkSeq++;
   parkPlace = null;
   parkPlan = null;
+  parkPrevPlan = null;
   parkView = null;
   parkResults = [];
   parkInfo = null;
@@ -2824,19 +2910,30 @@ function closeParkNear() {
   }
 }
 
-// The header's back button: detail → list, list → plan.
+// The header's back button: a street's card → the list; the plan → the results it was opened
+// from, looked up again (a "now" list is for the time it's shown); an error → the plan.
 function parkBack() {
   if (parkView === 'detail') parkShowList();
-  else if (parkView !== 'plan') parkShowPlan();
+  else if (parkView === 'plan') {
+    if (!parkPrevPlan) return;
+    parkPlan = parkPrevPlan;
+    return parkFind();
+  }
+  else if (parkView === 'error') parkShowPlan();
 }
 
 function parkSheetTo(snap) {
   if (isMobileView() && window.__parkSheet) window.__parkSheet.open(snap);
 }
 
+// The plan: arrival and stay ("Change" on the results). It remembers the plan it was opened from
+// for its Back button.
 function parkShowPlan() {
   if (!parkPlace) return;
   parkSeq++;                   // a search still on its way was for the old plan
+  if (parkView !== 'plan' && parkPlan) {
+    parkPrevPlan = { dayIdx: parkPlan.dayIdx, minutes: parkPlan.minutes, stay: parkPlan.stay, now: parkPlan.now };
+  }
   parkView = 'plan';
   parkSelIdx = -1;
   parkResults = [];
@@ -2874,6 +2971,7 @@ function parkSetSort(s) {
 function parkFind() {
   if (!parkPlace || !parkPlan) return Promise.resolve();
   var seq = ++parkSeq;
+  parkPrevPlan = null;
   if (parkPlan.now) { parkPlan.dayIdx = 0; parkPlan.minutes = parkNowMinutes(); }
   var place = parkPlace, o = [place.lng, place.lat], area = null, arrival = null;
   parkView = 'loading';
@@ -2933,8 +3031,9 @@ function parkGroup(cls, label) {
 function parkRender() {
   if (!parkPlace) return;
   parkTitle.textContent = (parkView === 'plan' ? 'Park near ' : 'Parking near ') + parkPlace.name;
-  parkBackBtn.hidden = parkView === 'plan' || parkView === 'loading';
-  parkBackBtn.setAttribute('aria-label', parkView === 'detail' ? 'Back to list' : 'Change arrival or stay');
+  parkBackBtn.hidden = !(parkView === 'detail' || parkView === 'error' || (parkView === 'plan' && parkPrevPlan));
+  parkBackBtn.setAttribute('aria-label', parkView === 'detail' ? 'Back to list'
+    : parkView === 'plan' ? 'Back to results' : 'Change arrival or stay');
   parkBody.innerHTML = '';
   parkBody.scrollTop = 0;
   if (parkView === 'plan') parkRenderPlan();
@@ -3003,23 +3102,29 @@ function parkRenderPlan() {
     stays.appendChild(parkChip(s[1], parkPlan.stay === s[0], function() {
       parkPlan.stay = s[0];
       parkPlanChanged();
-    }, s[0] === 'day' ? 'All day, until midnight' : null));
+    }, s[0] === 'day' ? 'All day, until midnight' : s[0] === null ? 'Any length: how long you can stay' : null));
   });
   parkBody.appendChild(stays);
 
   var sum = pkEl('div', 'park-summary');
-  sum.appendChild(pkEl('div', 'park-summary-main', a.label + ' ' + parkClock(a.minutes) + ' – ' + parkClock(a.minutes + a.stayMin)));
-  sum.appendChild(pkEl('div', 'pk-small', (parkPlan.stay === 'day' ? 'Until midnight (' + parkDurLong(a.stayMin) + ')' : parkDurLong(a.stayMin))
-    + ' · within a ' + PARK_WALK_MAX + ' min walk'));
+  if (a.any) {
+    sum.appendChild(pkEl('div', 'park-summary-main', (a.now ? 'Now' : a.label + ' ' + parkClock(a.minutes)) + ' · any length'));
+    sum.appendChild(pkEl('div', 'pk-small', 'Where you can park, and for how long · within a ' + PARK_WALK_MAX + ' min walk'));
+  } else {
+    sum.appendChild(pkEl('div', 'park-summary-main', a.label + ' ' + parkClock(a.minutes) + ' – ' + parkClock(a.minutes + a.stayMin)));
+    sum.appendChild(pkEl('div', 'pk-small', (parkPlan.stay === 'day' ? 'Until midnight (' + parkDurLong(a.stayMin) + ')' : parkDurLong(a.stayMin))
+      + ' · within a ' + PARK_WALK_MAX + ' min walk'));
+  }
   parkBody.appendChild(sum);
   parkBody.appendChild(parkButton('park-primary park-compact', 'Find parking', parkFind));
 }
 
 function parkRenderResults() {
   var a = parkInfo.arrival;
+  // 'Now · any length  [Change]', 'Fri 3:45pm · 2h  [Change]': Change opens the plan.
   var head = pkEl('div', 'park-res-head');
-  head.appendChild(pkEl('div', 'park-res-when', a.label + ' ' + parkRange(a.minutes, a.minutes + a.stayMin) + ' · ' + parkDur(a.stayMin)));
-  head.appendChild(parkButton('park-edit', 'Edit', parkShowPlan, 'Edit arrival and stay'));
+  head.appendChild(pkEl('div', 'park-res-when', parkPlanSummary(a)));
+  head.appendChild(parkButton('park-edit', 'Change', parkShowPlan, 'Change arrival time or stay length'));
   parkBody.appendChild(head);
 
   var name = parkPlace.name;
@@ -3038,6 +3143,11 @@ function parkRenderResults() {
       empty.appendChild(pkEl('p', 'pk-small', 'Check the signs where you park.'));
     } else if (!parkInfo.inZone) {
       empty.appendChild(pkEl('p', 'pk-small', 'No controlled-zone streets within a ' + PARK_WALK_MAX + ' min walk.'));
+    } else if (a.any) {
+      empty.appendChild(pkEl('p', 'park-empty-title', 'Nowhere within a ' + PARK_WALK_MAX + ' min walk you can park '
+        + (a.now ? 'now' : 'at ' + a.label + ' ' + parkClock(a.minutes))));
+      empty.appendChild(pkEl('p', 'pk-small', 'The streets nearby are for permit holders only then.'));
+      empty.appendChild(parkButton('park-primary', 'Plan for later', parkShowPlan));
     } else {
       empty.appendChild(pkEl('p', 'park-empty-title', 'No streets within a ' + PARK_WALK_MAX + ' min walk allow this stay'));
       empty.appendChild(pkEl('p', 'pk-small', a.label + ' ' + parkClock(a.minutes) + ' · ' + parkDur(a.stayMin) + ' stay.'));
@@ -3060,6 +3170,7 @@ function parkRenderResults() {
     var r = x.r;
     var li = pkEl('li', '');
     var row = parkButton('park-row', undefined, function() { parkShowDetail(x.i); });
+    parkRowSwatch(row, r);
     var walk = pkEl('span', 'park-walk');
     walk.appendChild(pkEl('b', '', String(r.walk)));
     walk.appendChild(pkEl('span', '', 'min'));
@@ -3067,8 +3178,11 @@ function parkRenderResults() {
     var main = pkEl('span', 'park-main');
     main.appendChild(pkEl('span', 'park-name', r.name));
     main.appendChild(pkEl('span', 'park-zone', parkZoneLine(r)));
-    var fit = parkFitLine(r);
-    if (fit) main.appendChild(pkEl('span', 'park-fit', fit));
+    if (r.now) main.appendChild(pkEl('span', 'park-stay', parkStayLine(r)));
+    else {
+      var fit = parkFitLine(r);
+      if (fit) main.appendChild(pkEl('span', 'park-fit', fit));
+    }
     row.appendChild(main);
     row.appendChild(parkCostEl(r));
     li.appendChild(row);
@@ -3078,41 +3192,56 @@ function parkRenderResults() {
   parkBody.appendChild(pkEl('p', 'pk-small park-foot', 'Shows where you’re allowed to park, not whether a space is free. Check the signs.'));
 }
 
+// A result row's left edge in its street's colour on the map, so the list and the map's result
+// lines match up. The colour comes from style.css (.park-row--free / --paid / --unknown, the
+// theme's --pk-* swatches), so it follows a theme change.
+function parkRowSwatch(row, r) {
+  row.classList.add('park-row--line');
+  row.classList.add('park-row--' + (PARK_STATE_COLORS[r.state] ? r.state : 'unknown'));
+}
+
 // The price column: 'Free'; '£4.64', '£9.56–£21.16' or 'from £4.64' with when it's paid and, for
 // a price that depends on the car, 'by car emissions' / 'by fuel type'; 'Price unknown'; or
 // 'Check signs'. A range may wrap after its dash, so the street name keeps its room.
+// With no stay chosen it's the hourly rate now ('£2.32/hr', '£4.78–£10.58/hr', 'from £2.32/hr'),
+// and a street that's free now but paid later says 'then £2.32/hr' under 'Free'.
 function parkCostEl(r) {
   var box = pkEl('span', 'park-cost');
-  var price, basis = '';
+  var price, basis = '', any = !!r.now, unit = any ? '/hr' : '';
+  var lo = any ? r.rateMin : r.costMin, hi = any ? r.rateMax : r.costMax;
+  var exact = any ? (r.tariff && r.tariff.exact ? r.rateMin : null) : r.price;
   if (r.state === 'unknown') price = pkEl('span', 'park-price park-price--unknown', 'Check signs');
   else if (r.state === 'free') price = pkEl('span', 'park-price park-price--free', 'Free');
   else {
     price = pkEl('span', 'park-price');
     price.appendChild(pkEl('i', 'pk-dot pk-ctrl'));
     var amt = pkEl('span', 'park-amt');
-    if (r.price !== null) amt.textContent = parkMoney(r.price);
-    else if (r.costMin === null) { amt.textContent = 'Price unknown'; price.className += ' park-price--none'; }
-    else if (r.costMax === null) {
+    if (exact !== null) amt.textContent = parkMoney(exact) + unit;
+    else if (lo === null) { amt.textContent = 'Price unknown'; price.className += ' park-price--none'; }
+    else if (hi === null) {
       amt.appendChild(pkEl('span', 'park-from', 'from '));
-      amt.appendChild(document.createTextNode(parkMoney(r.costMin)));
-    } else if (r.costMax === r.costMin) amt.textContent = parkMoney(r.costMin);
+      amt.appendChild(document.createTextNode(parkMoney(lo) + unit));
+    } else if (hi === lo) amt.textContent = parkMoney(lo) + unit;
     else {
-      amt.appendChild(document.createTextNode(parkMoney(r.costMin) + '–'));
+      amt.appendChild(document.createTextNode(parkMoney(lo) + '–'));
       amt.appendChild(document.createElement('wbr'));
-      amt.appendChild(document.createTextNode(parkMoney(r.costMax)));
+      amt.appendChild(document.createTextNode(parkMoney(hi) + unit));
     }
     price.appendChild(amt);
-    if (r.price === null && r.costMin !== null) basis = parkBasisWords(r.tariff);
+    if (exact === null && lo !== null) basis = parkBasisWords(r.tariff);
   }
   box.appendChild(price);
-  var when = parkSegLine(r);
+  var when = !any ? parkSegLine(r)
+    : r.state === 'free' && r.now.segments.length > 1 && r.tariff ? 'then ' + parkRate(r.tariff) : '';
   if (when) box.appendChild(pkEl('span', 'park-when', when));
   if (basis) box.appendChild(pkEl('span', 'park-when park-basis', basis));
   return box;
 }
 
-// The pill on a street's card: 'Pay to park until 7pm', 'Free for your stay'.
+// The pill on a street's card: 'Pay to park until 7pm', 'Free for your stay'; with no stay
+// chosen, how long you can stay (parkStayLine()).
 function parkPillText(r) {
+  if (r.now) return parkStayLine(r);
   if (r.state === 'unknown') return 'Hours unclear: check the signs';
   if (r.state === 'free') return 'Free for your stay';
   var segs = parkSegments(r), m0 = parkInfo.arrival.minutes, first = segs[0];
@@ -3141,7 +3270,11 @@ function parkRenderDetail() {
   card.appendChild(pill);
   card.appendChild(pkEl('p', 'park-walkline', r.walk + ' min walk to ' + parkPlace.name + (r.refined ? '' : ' (estimate)')));
 
-  card.appendChild(pkEl('div', 'pk-section', 'Your stay · ' + a.label + ' ' + parkRange(a.minutes, a.minutes + a.stayMin)));
+  // With no stay chosen the bar covers the time you can stay, up to 24 hours (parkWindow()).
+  var span = parkSpan(r), limited = r.now && r.now.untilMin === span;
+  card.appendChild(pkEl('div', 'pk-section', !r.now ? 'Your stay · ' + a.label + ' ' + parkRange(a.minutes, a.minutes + a.stayMin)
+    : (a.now ? 'From now' : 'From ' + a.label + ' ' + parkClock(a.minutes)) + ' · '
+      + (limited ? 'until ' + parkAt(a, span) : 'next ' + parkDur(span))));
   var segs = parkSegments(r);
   var bar = pkEl('div', 'park-bar');
   bar.setAttribute('aria-hidden', 'true');
@@ -3157,7 +3290,7 @@ function parkRenderDetail() {
     t.style.flex = String(s.end - s.start);
     ticks.appendChild(t);
   });
-  ticks.appendChild(pkEl('span', 'park-tick-end', parkingClock((a.minutes + a.stayMin) % 1440)));
+  ticks.appendChild(pkEl('span', 'park-tick-end', parkingClock((a.minutes + span) % 1440)));
   card.appendChild(bar);
   card.appendChild(ticks);
 
@@ -3185,16 +3318,17 @@ function parkRenderDetail() {
     costs.appendChild(li);
   });
   var total = pkEl('li', 'park-cost-row park-cost-total');
-  total.appendChild(pkEl('span', 'park-cost-label', 'Total'));
-  total.appendChild(pkEl('span', 'park-cost-amount', r.state === 'free' ? 'Free'
-    : r.state === 'paid' && r.costMin !== null ? parkAmount(r.costMin, r.costMax) : 'Unknown'));
+  total.appendChild(pkEl('span', 'park-cost-label', !r.now ? 'Total'
+    : 'Total, ' + (limited ? 'until ' + parkAt(a, span) : parkDur(span))));
+  total.appendChild(pkEl('span', 'park-cost-amount', r.state === 'unknown' || r.costMin === null ? 'Unknown'
+    : r.costMin === 0 ? 'Free' : parkAmount(r.costMin, r.costMax)));
   costs.appendChild(total);
   card.appendChild(costs);
-  if (r.state === 'paid') parkPriceDetail(card, r, borough);
+  if (r.state !== 'unknown' && plan.paidMin > 0) parkPriceDetail(card, r, borough);
 
   var max = rule.maxStay || zoneRule.maxStay || (borough.maxStayDefault ? borough.maxStayDefault + ' (council default)' : '')
     || (plan.maxStayMin != null ? parkDurLong(plan.maxStayMin) : '');
-  parkingRow(card, 'Max stay', max ? max + (plan.maxStayMin != null && plan.paidMin ? ' · your ' + parkDur(a.stayMin) + ' stay fits' : '') : 'No limit listed');
+  parkingRow(card, 'Max stay', max ? max + (!r.now && plan.maxStayMin != null && plan.paidMin ? ' · your ' + parkDur(a.stayMin) + ' stay fits' : '') : 'No limit listed');
   parkingRow(card, 'Controlled', rule.hours || zoneRule.hours);
   if (rule.event) parkingRow(card, 'Event days', rule.event.hours.replace(/^Event days: /, ''));
   var pay = rule.payCode || zoneRule.payCode;
@@ -3546,7 +3680,7 @@ window.__parkingSheet = makeSnapSheet({
   compact: '.parking-legend', initial: 'compact',
   isOpen: function () { return parkingPanel.classList.contains('open'); }
 });
-// Park near here: the plan opens with Find parking showing; the list and a street's card at half height.
+// Park near here: the list (it opens on it) and a street's card at half height; the plan with Find parking showing.
 window.__parkSheet = makeSnapSheet({
   card: 'park-panel', grabber: 'park-grabber', header: '.fuel-header',
   compact: '.park-compact', initial: 'half',

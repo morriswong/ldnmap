@@ -58,7 +58,7 @@
   <div class="fuel-attrib">Prices from the UK Fuel Finder service · Open Government Licence v3.0</div>
 </div>
 
-<!-- [parking] opened from the P map button or the postcode card's P button -->
+<!-- [parking] opened from the P map button -->
 <div id="parking-panel" class="fuel-panel parking-panel" role="dialog" aria-label="Parking">
   <div class="sheet-grabber" id="parking-grabber"><span></span></div>
   <div class="fuel-header">
@@ -84,7 +84,7 @@
     <span><i class="pk-dot pk-free"></i>Free</span>
     <span><i class="pk-dot pk-permit"></i>Permit holders only</span>
     <span><i class="pk-dot pk-unknown"></i>Hours unknown</span>
-    <span><i class="pk-dot pk-tfl"></i>Red route</span>
+    <span><i class="pk-dot pk-tfl"></i>Red route: no parking</span>
   </div>
   <div class="fuel-results parking-body" id="parking-body" aria-live="polite"></div>
   <div class="fuel-attrib">Parking data: London borough councils; streets © OpenStreetMap contributors</div>
@@ -105,6 +105,14 @@
         <path d="M18 6L6 18M6 6l12 12"/>
       </svg>
     </button>
+  </div>
+  <!-- The key to the parking layer's colours on the map (this panel keeps the parking panel shut). -->
+  <div class="parking-legend park-legend" id="park-legend" role="group" aria-label="Map key">
+    <span><i class="pk-dot pk-ctrl"></i>Pay to park</span>
+    <span><i class="pk-dot pk-free"></i>Free</span>
+    <span><i class="pk-dot pk-permit"></i>Permit only</span>
+    <span><i class="pk-dot pk-unknown"></i>Hours unknown</span>
+    <span><i class="pk-dot pk-tfl"></i>Red route: no parking</span>
   </div>
   <div class="fuel-results park-body" id="park-body" aria-live="polite"></div>
   <div class="fuel-attrib">Parking data: London borough councils; streets © OpenStreetMap contributors · walks by Mapbox</div>
@@ -195,7 +203,7 @@
       <span class="pk-sign" aria-hidden="true">P</span>
       <span class="park-cta-text">
         <span class="park-cta-title">Park near here</span>
-        <span class="park-cta-sub">Streets you can park on for your whole visit</span>
+        <span class="park-cta-sub">Where you can park now, and for how long</span>
       </span>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
     </button>
@@ -212,9 +220,6 @@
           <path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 4 0V9.8a2 2 0 0 0-.6-1.4L18 5"/>
         </svg>
         Fuel Prices
-      </button>
-      <button class="travel-mode-btn" id="postcode-parking-btn" onclick="parkingFromPostcode()" aria-label="Parking here" title="Parking here">
-        <span class="pk-sign" aria-hidden="true">P</span>
       </button>
     </div>
   </div>

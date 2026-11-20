@@ -505,8 +505,6 @@
   }
   .mapboxgl-ctrl-group .parking-ctrl { display: flex; align-items: center; justify-content: center; }
   .mapboxgl-ctrl-group .parking-ctrl[aria-pressed="true"] { background: rgba(29,78,216,0.16); }
-  #postcode-parking-btn { flex: 0 0 44px; padding: 8px 0; }
-  #postcode-parking-btn .pk-sign { width: 20px; height: 20px; font-size: 14px; }
   .parking-area { font-weight: 400; color: var(--text-dim); margin-left: 4px; }
   .parking-when { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; flex-shrink: 0; }
   .parking-day, .parking-time {
@@ -518,8 +516,12 @@
   .parking-event { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-soft); cursor: pointer; }
   .parking-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 10px 0 8px; font-size: 11px; color: var(--text-dim); flex-shrink: 0; }
   .parking-legend span { display: inline-flex; align-items: center; gap: 5px; }
-  .pk-dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
-  .pk-ctrl { background: #e74c3c; } .pk-free { background: #2ecc71; } .pk-permit { background: #8e44ad; } .pk-unknown { background: #9ca3af; } .pk-tfl { background: #7f1d1d; }
+  /* The map's parking colours (PARKING_PALETTES in app.js): red only for red routes, sign blue for
+     pay to park, magenta for permit only. Dark map shades by default, light ones in body.light. */
+  :root { --pk-ctrl: #60a5fa; --pk-free: #4ade80; --pk-permit: #e879f9; --pk-unknown: #9ca3af; --pk-tfl: #f87171; }
+  body.light { --pk-ctrl: #1d4ed8; --pk-free: #15803d; --pk-permit: #a21caf; --pk-unknown: #6b7280; --pk-tfl: #dc2626; }
+  .pk-dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; flex-shrink: 0; }
+  .pk-ctrl { background: var(--pk-ctrl); } .pk-free { background: var(--pk-free); } .pk-permit { background: var(--pk-permit); } .pk-unknown { background: var(--pk-unknown); } .pk-tfl { background: var(--pk-tfl); }
   .parking-body p { margin: 0; }
   .pk-hint { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--text); padding: 2px 0; }
   .pk-small { font-size: 11px; line-height: 1.45; color: var(--text-dim); }
@@ -539,7 +541,8 @@
   .pk-card-close svg { width: 14px; height: 14px; }
   .pk-pill { align-self: flex-start; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; color: #fff; }
   .pk-headline { margin: 6px 0 2px; font-size: 13px; font-weight: 600; color: var(--text); }
-  .pk-pill--ctrl { background: #e74c3c; } .pk-pill--free { background: #16a34a; } .pk-pill--permit { background: #8e44ad; } .pk-pill--unknown { background: #6b7280; } .pk-pill--tfl { background: #7f1d1d; }
+  /* White text on these, so the light theme's darker shades in both themes. */
+  .pk-pill--ctrl { background: #1d4ed8; } .pk-pill--free { background: #15803d; } .pk-pill--permit { background: #a21caf; } .pk-pill--unknown { background: #6b7280; } .pk-pill--tfl { background: #dc2626; }
   .pk-row { display: flex; gap: 10px; font-size: 12px; line-height: 1.4; }
   .pk-row-label { flex: 0 0 96px; color: var(--text-dim); }
   .pk-row-value { flex: 1; color: var(--text); }
@@ -612,6 +615,10 @@
     --park-on-bg: rgba(91,141,238,0.16); --park-on-border: rgba(61,111,214,0.7);
   }
   .park-panel .travel-card-btn[hidden] { display: none; }
+  /* The map key, between the header and the body: one or two short lines on a phone. */
+  .park-legend { gap: 3px 10px; margin: -4px 0 8px; color: var(--park-muted); }
+  .park-legend span { gap: 4px; white-space: nowrap; }
+  .park-legend .pk-dot { width: 12px; height: 5px; border-radius: 3px; }   /* line-shaped, like the streets */
   .park-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .park-body p { margin: 0; }
   .park-body .pk-small { color: var(--park-muted); }
@@ -657,6 +664,11 @@
     padding: 8px 10px; border-radius: 12px; border: 1px solid var(--glass-border); background: var(--glass-tile-bg);
     color: var(--text); text-align: left; cursor: pointer; font-family: 'DM Sans', sans-serif;
   }
+  /* Left edge in the colour of the row's street on the map (parkRowSwatch() in app.js). */
+  .park-row--line { box-shadow: inset 5px 0 0 0 var(--park-line, var(--pk-unknown)); padding-left: 13px; }
+  .park-row--free { --park-line: var(--pk-free); }
+  .park-row--paid { --park-line: var(--pk-ctrl); }
+  .park-row--unknown { --park-line: var(--pk-unknown); }
   .park-row:hover { background: var(--glass-tile-active); }
   .park-row:active { opacity: 0.75; }
   .park-walk { display: flex; flex-direction: column; align-items: center; line-height: 1.05; }
@@ -668,6 +680,8 @@
   .park-name { font-size: 14px; font-weight: 600; line-height: 1.25; overflow: hidden; overflow-wrap: anywhere;
     display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
   .park-zone, .park-fit { font-size: 12px; color: var(--park-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* With no stay chosen: how long you can stay. It's the answer, so it wraps rather than being cut. */
+  .park-stay { font-size: 12px; line-height: 1.3; font-weight: 600; color: var(--text); overflow-wrap: anywhere; }
   .park-cost { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; max-width: 112px; text-align: right; }
   .park-price { display: inline-flex; align-items: flex-start; gap: 6px; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
   .park-price .pk-dot { width: 8px; height: 8px; border-radius: 4px; flex-shrink: 0; margin-top: 5px; }   /* centred on the first line */

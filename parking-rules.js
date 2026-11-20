@@ -203,6 +203,44 @@ function ruleTariff(ruleKey) {
   return null;
 }
 
+// The status of a rule from London `day` (0 = Sun … 6 = Sat) at `minutes` after midnight for
+// `spanMin` minutes: [{start, end, status}], merged runs of one status, minutes from the start,
+// covering 0..spanMin. eventDay/bankHoliday apply to the starting day only (as in nextChange);
+// later days are normal days.
+function staySegments(ruleKey, day, minutes, spanMin, eventDay, bankHoliday) {
+  var rule = parkingRule(ruleKey);
+  var points = rule ? ruleChangePoints(rule) : [0];
+  var segments = [];
+  var t = 0;
+  while (t < spanMin) {
+    var abs = minutes + t;
+    var dayOffset = Math.floor(abs / 1440);
+    var d = (day + dayOffset) % 7, m = abs % 1440;
+    var first = dayOffset === 0;
+    var s = isControlled(ruleKey, d, m, first && eventDay, first && bankHoliday);
+    var next = 1440;   // next change point after m on this day
+    for (var i = 0; i < points.length; i++) {
+      if (points[i] > m) { next = points[i]; break; }
+    }
+    var end = Math.min(spanMin, t + (next - m));
+    var last = segments[segments.length - 1];
+    if (last && last.status === s) last.end = end;
+    else segments.push({ start: t, end: end, status: s });
+    t = end;
+  }
+  return segments;
+}
+
+// A rule's max stay in minutes: its own maxStay when it has one (unreadable stays null: never
+// guess), else its borough's maxStayDefault; null for neither or an unknown key.
+function ruleMaxStayMin(ruleKey) {
+  var rule = parkingRule(ruleKey);
+  if (!rule) return null;
+  if (rule.maxStay) return maxStayMinutes(rule.maxStay);
+  var borough = parkingRules && parkingRules.boroughs ? parkingRules.boroughs[rule.borough || String(ruleKey).split(':')[0]] : null;
+  return maxStayMinutes(borough && borough.maxStayDefault);
+}
+
 // Plan a stay of `stayMin` minutes (1..1440) from London `day` (0 = Sun … 6 = Sat) at `minutes`
 // after midnight under rule `ruleKey`. eventDay/bankHoliday apply to the starting day only (as in
 // nextChange); a stay past midnight carries on into the next day as a normal day.
@@ -218,25 +256,7 @@ function ruleTariff(ruleKey) {
 function planStay(ruleKey, day, minutes, stayMin, eventDay, bankHoliday) {
   var rule = parkingRule(ruleKey);
   stayMin = Math.max(1, Math.min(1440, Math.round(stayMin)));
-  var points = rule ? ruleChangePoints(rule) : [0];
-  var segments = [];
-  var t = 0;
-  while (t < stayMin) {
-    var abs = minutes + t;
-    var dayOffset = Math.floor(abs / 1440);
-    var d = (day + dayOffset) % 7, m = abs % 1440;
-    var first = dayOffset === 0;
-    var s = isControlled(ruleKey, d, m, first && eventDay, first && bankHoliday);
-    var next = 1440;   // next change point after m on this day
-    for (var i = 0; i < points.length; i++) {
-      if (points[i] > m) { next = points[i]; break; }
-    }
-    var end = Math.min(stayMin, t + (next - m));
-    var last = segments[segments.length - 1];
-    if (last && last.status === s) last.end = end;
-    else segments.push({ start: t, end: end, status: s });
-    t = end;
-  }
+  var segments = staySegments(ruleKey, day, minutes, stayMin, eventDay, bankHoliday);
 
   var paidMin = 0, longestPaidMin = 0, hasPermit = false, hasUnknown = false, freeAll = true;
   segments.forEach(function(seg) {
@@ -251,10 +271,7 @@ function planStay(ruleKey, day, minutes, stayMin, eventDay, bankHoliday) {
   });
 
   var tariff = rule ? ruleTariff(ruleKey) : null;
-  var borough = rule && parkingRules && parkingRules.boroughs ? parkingRules.boroughs[rule.borough || ruleKey.split(':')[0]] : null;
-  // The rule's own max stay when it has one (unreadable stays null: never guess), else the borough's default.
-  var maxStayMin = !rule ? null : rule.maxStay ? maxStayMinutes(rule.maxStay)
-    : maxStayMinutes(borough && borough.maxStayDefault);
+  var maxStayMin = ruleMaxStayMin(ruleKey);
   // Unknown minutes could be paid, so the cost of such a stay is unknown too, never £0.
   var costMin = null, costMax = null, cost = null;
   if (!hasUnknown) {
@@ -271,5 +288,43 @@ function planStay(ruleKey, day, minutes, stayMin, eventDay, bankHoliday) {
     ok: status === 'ok', status: status, segments: segments, paidMin: paidMin, cost: cost,
     costMin: costMin, costMax: costMax, tariff: tariff,
     perHour: tariff && tariff.exact ? tariff.min : null, maxStayMin: maxStayMin, longestPaidMin: longestPaidMin, freeAll: freeAll
+  };
+}
+
+// How long you can park from London `day`/`minutes` under a rule, with no stay length chosen,
+// looking up to `horizonMin` ahead (default a week). The stay runs while the street is free or
+// paid and ends at whichever comes first: permit-holders-only time, time whose hours are unclear,
+// or a paid stretch reaching the max stay (ruleMaxStayMin(); a paid run equal to it is allowed,
+// and free time in between starts a new run, as in planStay()).
+// Returns { ok, now: the status at the start ('free'|'ctrl'|'permit'|'unknown'), segments: the
+// stay's runs [{start, end, status}] (free and ctrl only; empty when it can't start), untilMin:
+// minutes from the start when you must leave, or null when nothing ends it within the horizon,
+// limit: 'maxstay'|'permit'|'unknown'|null (what ends it), maxStayMin, tariff (ruleTariff()),
+// perHour (the exact hourly rate, else null) }. `ok` is true when parking is allowed now.
+function stayFromNow(ruleKey, day, minutes, eventDay, bankHoliday, horizonMin) {
+  var rule = parkingRule(ruleKey);
+  horizonMin = Math.max(1, Math.round(horizonMin || 7 * 1440));
+  var all = staySegments(ruleKey, day, minutes, horizonMin, eventDay, bankHoliday);
+  var maxStayMin = ruleMaxStayMin(ruleKey);
+  var segments = [], untilMin = null, limit = null;
+  for (var i = 0; i < all.length; i++) {
+    var s = all[i];
+    if (s.status === 'permit' || s.status === 'unknown') {
+      if (i > 0) { untilMin = s.start; limit = s.status; }
+      break;
+    }
+    if (s.status === 'ctrl' && maxStayMin !== null && s.end - s.start > maxStayMin) {
+      segments.push({ start: s.start, end: s.start + maxStayMin, status: 'ctrl' });
+      untilMin = s.start + maxStayMin;
+      limit = 'maxstay';
+      break;
+    }
+    segments.push({ start: s.start, end: s.end, status: s.status });
+  }
+  var now = all[0].status;
+  var tariff = rule ? ruleTariff(ruleKey) : null;
+  return {
+    ok: now === 'free' || now === 'ctrl', now: now, segments: segments, untilMin: untilMin, limit: limit,
+    maxStayMin: maxStayMin, tariff: tariff, perHour: tariff && tariff.exact ? tariff.min : null
   };
 }
