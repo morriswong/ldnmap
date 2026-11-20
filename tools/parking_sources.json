@@ -7258,12 +7258,74 @@
     "A1": {
      "hours": "0830 - 1830 Mon - Fri",
      "name": "Zone A - Knightsbridge, Belgravia and Pimlico",
-     "note": "Resident bays: 0830 - 1830 Mon - Fri."
+     "note": "Resident bays: 0830 - 1830 Mon - Fri.",
+     "price": {
+      "bands": [
+       {
+        "band": "1",
+        "co2": "0 g/km",
+        "perHour": 3.29
+       },
+       {
+        "band": "2",
+        "co2": "1–90 g/km",
+        "perHour": 3.9
+       },
+       {
+        "band": "3",
+        "co2": "91–150 g/km",
+        "perHour": 5.35
+       },
+       {
+        "band": "4",
+        "co2": "151–255 g/km",
+        "perHour": 6.01
+       },
+       {
+        "band": "5",
+        "co2": "256+ g/km",
+        "perHour": 7.28
+       }
+      ],
+      "note": "Zone A paid-for bays, by CO2 band (DVLA), from 2 March 2026. Motorcycles £4.70/hour. Pre-2015 diesels pay 50% more.",
+      "url": "https://www.westminster.gov.uk/sites/default/files/media/documents/hours-of-control-parking-tariffs-from-march-2026.pdf"
+     }
     },
     "A2": {
      "hours": "0830 - 1830 Mon - Fri and 0830 - 1330 Sat",
      "name": "Zone A",
-     "note": "Resident bays: 0830 - 2200 Mon - Sat."
+     "note": "Resident bays: 0830 - 2200 Mon - Sat.",
+     "price": {
+      "bands": [
+       {
+        "band": "1",
+        "co2": "0 g/km",
+        "perHour": 3.29
+       },
+       {
+        "band": "2",
+        "co2": "1–90 g/km",
+        "perHour": 3.9
+       },
+       {
+        "band": "3",
+        "co2": "91–150 g/km",
+        "perHour": 5.35
+       },
+       {
+        "band": "4",
+        "co2": "151–255 g/km",
+        "perHour": 6.01
+       },
+       {
+        "band": "5",
+        "co2": "256+ g/km",
+        "perHour": 7.28
+       }
+      ],
+      "note": "Zone A paid-for bays, by CO2 band (DVLA), from 2 March 2026. Motorcycles £4.70/hour. Pre-2015 diesels pay 50% more.",
+      "url": "https://www.westminster.gov.uk/sites/default/files/media/documents/hours-of-control-parking-tariffs-from-march-2026.pdf"
+     }
     },
     "A3": {
      "name": "Zone A",
@@ -7282,22 +7344,146 @@
        "from": "08:30",
        "to": "18:30"
       }
-     ]
+     ],
+     "price": {
+      "bands": [
+       {
+        "band": "1",
+        "co2": "0 g/km",
+        "perHour": 3.29
+       },
+       {
+        "band": "2",
+        "co2": "1–90 g/km",
+        "perHour": 3.9
+       },
+       {
+        "band": "3",
+        "co2": "91–150 g/km",
+        "perHour": 5.35
+       },
+       {
+        "band": "4",
+        "co2": "151–255 g/km",
+        "perHour": 6.01
+       },
+       {
+        "band": "5",
+        "co2": "256+ g/km",
+        "perHour": 7.28
+       }
+      ],
+      "note": "Zone A paid-for bays, by CO2 band (DVLA), from 2 March 2026. Motorcycles £4.70/hour. Pre-2015 diesels pay 50% more.",
+      "url": "https://www.westminster.gov.uk/sites/default/files/media/documents/hours-of-control-parking-tariffs-from-march-2026.pdf"
+     }
     },
     "A4": {
      "hours": "0830 - 1830 Mon - Sat",
      "name": "Zone A",
-     "note": "Resident bays: 24 hours everyday (incl. Bank/Public Holidays)."
+     "note": "Resident bays: 24 hours everyday (incl. Bank/Public Holidays).",
+     "price": {
+      "bands": [
+       {
+        "band": "1",
+        "co2": "0 g/km",
+        "perHour": 3.29
+       },
+       {
+        "band": "2",
+        "co2": "1–90 g/km",
+        "perHour": 3.9
+       },
+       {
+        "band": "3",
+        "co2": "91–150 g/km",
+        "perHour": 5.35
+       },
+       {
+        "band": "4",
+        "co2": "151–255 g/km",
+        "perHour": 6.01
+       },
+       {
+        "band": "5",
+        "co2": "256+ g/km",
+        "perHour": 7.28
+       }
+      ],
+      "note": "Zone A paid-for bays, by CO2 band (DVLA), from 2 March 2026. Motorcycles £4.70/hour. Pre-2015 diesels pay 50% more.",
+      "url": "https://www.westminster.gov.uk/sites/default/files/media/documents/hours-of-control-parking-tariffs-from-march-2026.pdf"
+     }
     },
     "B/C1": {
      "hours": "0830 - 1830 Mon - Fri",
      "name": "Zone B/C1 (listed with BC1)",
-     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+     "note": "Applies to paid-for bays, single yellow lines and resident bays.",
+     "price": {
+      "bands": [
+       {
+        "band": "1",
+        "co2": "0 g/km",
+        "perHour": 2.66
+       },
+       {
+        "band": "2",
+        "co2": "1–90 g/km",
+        "perHour": 3.16
+       },
+       {
+        "band": "3",
+        "co2": "91–150 g/km",
+        "perHour": 4.34
+       },
+       {
+        "band": "4",
+        "co2": "151–255 g/km",
+        "perHour": 4.87
+       },
+       {
+        "band": "5",
+        "co2": "256+ g/km",
+        "perHour": 5.9
+       }
+      ],
+      "note": "Zone B paid-for bays, by CO2 band (DVLA), from 2 March 2026. Motorcycles £3.81/hour. Pre-2015 diesels pay 50% more.",
+      "url": "https://www.westminster.gov.uk/sites/default/files/media/documents/hours-of-control-parking-tariffs-from-march-2026.pdf"
+     }
     },
     "B10": {
      "hours": "0830 - 1830 Mon - Fri",
      "name": "Zone B",
-     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+     "note": "Applies to paid-for bays, single yellow lines and resident bays.",
+     "price": {
+      "bands": [
+       {
+        "band": "1",
+        "co2": "0 g/km",
+        "perHour": 2.66
+       },
+       {
+        "band": "2",
+        "co2": "1–90 g/km",
+        "perHour": 3.16
+       },
+       {
+        "band": "3",
+        "co2": "91–150 g/km",
+        "perHour": 4.34
+       },
+       {
+        "band": "4",
+        "co2": "151–255 g/km",
+        "perHour": 4.87
+       },
+       {
+        "band": "5",
+        "co2": "256+ g/km",
+        "perHour": 5.9
+       }
+      ],
+      "note": "Zone B paid-for bays, by CO2 band (DVLA), from 2 March 2026. Motorcycles £3.81/hour. Pre-2015 diesels pay 50% more.",
+      "url": "https://www.westminster.gov.uk/sites/default/files/media/documents/hours-of-control-parking-tariffs-from-march-2026.pdf"
+     }
     },
     "B11": {
      "hours": "Mon–Fri 8:30am–6:30pm",
@@ -7315,12 +7501,74 @@
        "from": "08:30",
        "to": "18:30"
       }
-     ]
+     ],
+     "price": {
+      "bands": [
+       {
+        "band": "1",
+        "co2": "0 g/km",
+        "perHour": 2.66
+       },
+       {
+        "band": "2",
+        "co2": "1–90 g/km",
+        "perHour": 3.16
+       },
+       {
+        "band": "3",
+        "co2": "91–150 g/km",
+        "perHour": 4.34
+       },
+       {
+        "band": "4",
+        "co2": "151–255 g/km",
+        "perHour": 4.87
+       },
+       {
+        "band": "5",
+        "co2": "256+ g/km",
+        "perHour": 5.9
+       }
+      ],
+      "note": "Zone B paid-for bays, by CO2 band (DVLA), from 2 March 2026. Motorcycles £3.81/hour. Pre-2015 diesels pay 50% more.",
+      "url": "https://www.westminster.gov.uk/sites/default/files/media/documents/hours-of-control-parking-tariffs-from-march-2026.pdf"
+     }
     },
     "B2": {
      "hours": "0830 - 1830 Mon - Fri and 0830 - 1330 Sat",
      "name": "Zone B",
-     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+     "note": "Applies to paid-for bays, single yellow lines and resident bays.",
+     "price": {
+      "bands": [
+       {
+        "band": "1",
+        "co2": "0 g/km",
+        "perHour": 2.66
+       },
+       {
+        "band": "2",
+        "co2": "1–90 g/km",
+        "perHour": 3.16
+       },
+       {
+        "band": "3",
+        "co2": "91–150 g/km",
+        "perHour": 4.34
+       },
+       {
+        "band": "4",
+        "co2": "151–255 g/km",
+        "perHour": 4.87
+       },
+       {
+        "band": "5",
+        "co2": "256+ g/km",
+        "perHour": 5.9
+       }
+      ],
+      "note": "Zone B paid-for bays, by CO2 band (DVLA), from 2 March 2026. Motorcycles £3.81/hour. Pre-2015 diesels pay 50% more.",
+      "url": "https://www.westminster.gov.uk/sites/default/files/media/documents/hours-of-control-parking-tariffs-from-march-2026.pdf"
+     }
     },
     "B3": {
      "hours": "Mon–Fri 8:30am–6:30pm, Sat 8:30am–1:30pm",
@@ -7345,47 +7593,326 @@
        "from": "08:30",
        "to": "13:30"
       }
-     ]
+     ],
+     "price": {
+      "bands": [
+       {
+        "band": "1",
+        "co2": "0 g/km",
+        "perHour": 2.66
+       },
+       {
+        "band": "2",
+        "co2": "1–90 g/km",
+        "perHour": 3.16
+       },
+       {
+        "band": "3",
+        "co2": "91–150 g/km",
+        "perHour": 4.34
+       },
+       {
+        "band": "4",
+        "co2": "151–255 g/km",
+        "perHour": 4.87
+       },
+       {
+        "band": "5",
+        "co2": "256+ g/km",
+        "perHour": 5.9
+       }
+      ],
+      "note": "Zone B paid-for bays, by CO2 band (DVLA), from 2 March 2026. Motorcycles £3.81/hour. Pre-2015 diesels pay 50% more.",
+      "url": "https://www.westminster.gov.uk/sites/default/files/media/documents/hours-of-control-parking-tariffs-from-march-2026.pdf"
+     }
     },
     "B4": {
      "hours": "0830 - 1830 Mon - Fri",
      "name": "Zone B",
-     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+     "note": "Applies to paid-for bays, single yellow lines and resident bays.",
+     "price": {
+      "bands": [
+       {
+        "band": "1",
+        "co2": "0 g/km",
+        "perHour": 2.66
+       },
+       {
+        "band": "2",
+        "co2": "1–90 g/km",
+        "perHour": 3.16
+       },
+       {
+        "band": "3",
+        "co2": "91–150 g/km",
+        "perHour": 4.34
+       },
+       {
+        "band": "4",
+        "co2": "151–255 g/km",
+        "perHour": 4.87
+       },
+       {
+        "band": "5",
+        "co2": "256+ g/km",
+        "perHour": 5.9
+       }
+      ],
+      "note": "Zone B paid-for bays, by CO2 band (DVLA), from 2 March 2026. Motorcycles £3.81/hour. Pre-2015 diesels pay 50% more.",
+      "url": "https://www.westminster.gov.uk/sites/default/files/media/documents/hours-of-control-parking-tariffs-from-march-2026.pdf"
+     }
     },
     "B5": {
      "hours": "0830 - 1830 Mon - Sat",
      "name": "Zone B",
-     "note": "Resident bays: 0830 - 2030 everyday (incl. Bank/Public Holidays)."
+     "note": "Resident bays: 0830 - 2030 everyday (incl. Bank/Public Holidays).",
+     "price": {
+      "bands": [
+       {
+        "band": "1",
+        "co2": "0 g/km",
+        "perHour": 2.66
+       },
+       {
+        "band": "2",
+        "co2": "1–90 g/km",
+        "perHour": 3.16
+       },
+       {
+        "band": "3",
+        "co2": "91–150 g/km",
+        "perHour": 4.34
+       },
+       {
+        "band": "4",
+        "co2": "151–255 g/km",
+        "perHour": 4.87
+       },
+       {
+        "band": "5",
+        "co2": "256+ g/km",
+        "perHour": 5.9
+       }
+      ],
+      "note": "Zone B paid-for bays, by CO2 band (DVLA), from 2 March 2026. Motorcycles £3.81/hour. Pre-2015 diesels pay 50% more.",
+      "url": "https://www.westminster.gov.uk/sites/default/files/media/documents/hours-of-control-parking-tariffs-from-march-2026.pdf"
+     }
     },
     "B6": {
      "hours": "0830 - 1830 Mon - Fri and 0830 - 1330 Sat",
      "name": "Zone B",
-     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+     "note": "Applies to paid-for bays, single yellow lines and resident bays.",
+     "price": {
+      "bands": [
+       {
+        "band": "1",
+        "co2": "0 g/km",
+        "perHour": 2.66
+       },
+       {
+        "band": "2",
+        "co2": "1–90 g/km",
+        "perHour": 3.16
+       },
+       {
+        "band": "3",
+        "co2": "91–150 g/km",
+        "perHour": 4.34
+       },
+       {
+        "band": "4",
+        "co2": "151–255 g/km",
+        "perHour": 4.87
+       },
+       {
+        "band": "5",
+        "co2": "256+ g/km",
+        "perHour": 5.9
+       }
+      ],
+      "note": "Zone B paid-for bays, by CO2 band (DVLA), from 2 March 2026. Motorcycles £3.81/hour. Pre-2015 diesels pay 50% more.",
+      "url": "https://www.westminster.gov.uk/sites/default/files/media/documents/hours-of-control-parking-tariffs-from-march-2026.pdf"
+     }
     },
     "B7": {
      "hours": "0830 - 1830 Mon - Sat",
      "name": "Zone B",
-     "note": "Resident bays: 24 hours everyday (incl. Bank/Public Holidays)."
+     "note": "Resident bays: 24 hours everyday (incl. Bank/Public Holidays).",
+     "price": {
+      "bands": [
+       {
+        "band": "1",
+        "co2": "0 g/km",
+        "perHour": 2.66
+       },
+       {
+        "band": "2",
+        "co2": "1–90 g/km",
+        "perHour": 3.16
+       },
+       {
+        "band": "3",
+        "co2": "91–150 g/km",
+        "perHour": 4.34
+       },
+       {
+        "band": "4",
+        "co2": "151–255 g/km",
+        "perHour": 4.87
+       },
+       {
+        "band": "5",
+        "co2": "256+ g/km",
+        "perHour": 5.9
+       }
+      ],
+      "note": "Zone B paid-for bays, by CO2 band (DVLA), from 2 March 2026. Motorcycles £3.81/hour. Pre-2015 diesels pay 50% more.",
+      "url": "https://www.westminster.gov.uk/sites/default/files/media/documents/hours-of-control-parking-tariffs-from-march-2026.pdf"
+     }
     },
     "C/B1": {
      "hours": "0830 - 1830 Mon - Fri",
      "name": "Zone C/B1 (listed with CB1, C1, C2)",
-     "note": "Resident bays: 0830 - 1830 Mon - Fri (except Kilburn Pk Rd area* 0800 - 1830 Mon - Sat)."
+     "note": "Resident bays: 0830 - 1830 Mon - Fri (except Kilburn Pk Rd area* 0800 - 1830 Mon - Sat).",
+     "price": {
+      "bands": [
+       {
+        "band": "1",
+        "co2": "0 g/km",
+        "perHour": 1.51
+       },
+       {
+        "band": "2",
+        "co2": "1–90 g/km",
+        "perHour": 1.79
+       },
+       {
+        "band": "3",
+        "co2": "91–150 g/km",
+        "perHour": 2.46
+       },
+       {
+        "band": "4",
+        "co2": "151–255 g/km",
+        "perHour": 2.76
+       },
+       {
+        "band": "5",
+        "co2": "256+ g/km",
+        "perHour": 3.34
+       }
+      ],
+      "note": "Zone C paid-for bays, by CO2 band (DVLA), from 2 March 2026. Motorcycles £2.16/hour. Pre-2015 diesels pay 50% more.",
+      "url": "https://www.westminster.gov.uk/sites/default/files/media/documents/hours-of-control-parking-tariffs-from-march-2026.pdf"
+     }
     },
     "C1": {
      "hours": "0830 - 1830 Mon - Fri",
      "name": "Zone C1 (listed with CB1, C1, C2)",
-     "note": "Resident bays: 0830 - 1830 Mon - Fri (except Kilburn Pk Rd area* 0800 - 1830 Mon - Sat)."
+     "note": "Resident bays: 0830 - 1830 Mon - Fri (except Kilburn Pk Rd area* 0800 - 1830 Mon - Sat).",
+     "price": {
+      "bands": [
+       {
+        "band": "1",
+        "co2": "0 g/km",
+        "perHour": 1.51
+       },
+       {
+        "band": "2",
+        "co2": "1–90 g/km",
+        "perHour": 1.79
+       },
+       {
+        "band": "3",
+        "co2": "91–150 g/km",
+        "perHour": 2.46
+       },
+       {
+        "band": "4",
+        "co2": "151–255 g/km",
+        "perHour": 2.76
+       },
+       {
+        "band": "5",
+        "co2": "256+ g/km",
+        "perHour": 3.34
+       }
+      ],
+      "note": "Zone C paid-for bays, by CO2 band (DVLA), from 2 March 2026. Motorcycles £2.16/hour. Pre-2015 diesels pay 50% more.",
+      "url": "https://www.westminster.gov.uk/sites/default/files/media/documents/hours-of-control-parking-tariffs-from-march-2026.pdf"
+     }
     },
     "C2": {
      "hours": "0830 - 1830 Mon - Fri",
      "name": "Zone C2 (listed with CB1, C1, C2)",
-     "note": "Resident bays: 0830 - 1830 Mon - Fri (except Kilburn Pk Rd area* 0800 - 1830 Mon - Sat)."
+     "note": "Resident bays: 0830 - 1830 Mon - Fri (except Kilburn Pk Rd area* 0800 - 1830 Mon - Sat).",
+     "price": {
+      "bands": [
+       {
+        "band": "1",
+        "co2": "0 g/km",
+        "perHour": 1.51
+       },
+       {
+        "band": "2",
+        "co2": "1–90 g/km",
+        "perHour": 1.79
+       },
+       {
+        "band": "3",
+        "co2": "91–150 g/km",
+        "perHour": 2.46
+       },
+       {
+        "band": "4",
+        "co2": "151–255 g/km",
+        "perHour": 2.76
+       },
+       {
+        "band": "5",
+        "co2": "256+ g/km",
+        "perHour": 3.34
+       }
+      ],
+      "note": "Zone C paid-for bays, by CO2 band (DVLA), from 2 March 2026. Motorcycles £2.16/hour. Pre-2015 diesels pay 50% more.",
+      "url": "https://www.westminster.gov.uk/sites/default/files/media/documents/hours-of-control-parking-tariffs-from-march-2026.pdf"
+     }
     },
     "D1": {
      "hours": "0830 - 1830 Mon - Fri",
      "name": "Zone D - Victoria, Westminster and Millbank",
-     "note": "Applies to paid-for bays, single yellow lines and resident bays."
+     "note": "Applies to paid-for bays, single yellow lines and resident bays.",
+     "price": {
+      "bands": [
+       {
+        "band": "1",
+        "co2": "0 g/km",
+        "perHour": 2.2
+       },
+       {
+        "band": "2",
+        "co2": "1–90 g/km",
+        "perHour": 2.61
+       },
+       {
+        "band": "3",
+        "co2": "91–150 g/km",
+        "perHour": 3.59
+       },
+       {
+        "band": "4",
+        "co2": "151–255 g/km",
+        "perHour": 4.03
+       },
+       {
+        "band": "5",
+        "co2": "256+ g/km",
+        "perHour": 4.88
+       }
+      ],
+      "note": "Zone D paid-for bays, by CO2 band (DVLA), from 2 March 2026. Motorcycles £3.15/hour. Pre-2015 diesels pay 50% more.",
+      "url": "https://www.westminster.gov.uk/sites/default/files/media/documents/hours-of-control-parking-tariffs-from-march-2026.pdf"
+     }
     },
     "D4": {
      "hours": "Mon–Fri 8:30am–6:30pm",
@@ -7403,17 +7930,110 @@
        "from": "08:30",
        "to": "18:30"
       }
-     ]
+     ],
+     "price": {
+      "bands": [
+       {
+        "band": "1",
+        "co2": "0 g/km",
+        "perHour": 2.2
+       },
+       {
+        "band": "2",
+        "co2": "1–90 g/km",
+        "perHour": 2.61
+       },
+       {
+        "band": "3",
+        "co2": "91–150 g/km",
+        "perHour": 3.59
+       },
+       {
+        "band": "4",
+        "co2": "151–255 g/km",
+        "perHour": 4.03
+       },
+       {
+        "band": "5",
+        "co2": "256+ g/km",
+        "perHour": 4.88
+       }
+      ],
+      "note": "Zone D paid-for bays, by CO2 band (DVLA), from 2 March 2026. Motorcycles £3.15/hour. Pre-2015 diesels pay 50% more.",
+      "url": "https://www.westminster.gov.uk/sites/default/files/media/documents/hours-of-control-parking-tariffs-from-march-2026.pdf"
+     }
     },
     "E1": {
      "hours": "0830 - 1830 Mon - Sat",
      "name": "Zone E - Mayfair & St. James'",
-     "note": "Resident bays: 24 hours everyday (incl. Bank/Public Holidays)."
+     "note": "Resident bays: 24 hours everyday (incl. Bank/Public Holidays).",
+     "price": {
+      "bands": [
+       {
+        "band": "1",
+        "co2": "0 g/km",
+        "perHour": 4.56
+       },
+       {
+        "band": "2",
+        "co2": "1–90 g/km",
+        "perHour": 5.41
+       },
+       {
+        "band": "3",
+        "co2": "91–150 g/km",
+        "perHour": 7.43
+       },
+       {
+        "band": "4",
+        "co2": "151–255 g/km",
+        "perHour": 8.34
+       },
+       {
+        "band": "5",
+        "co2": "256+ g/km",
+        "perHour": 10.1
+       }
+      ],
+      "note": "Zone E paid-for bays, by CO2 band (DVLA), from 2 March 2026. Motorcycles £6.52/hour. Pre-2015 diesels pay 50% more.",
+      "url": "https://www.westminster.gov.uk/sites/default/files/media/documents/hours-of-control-parking-tariffs-from-march-2026.pdf"
+     }
     },
     "F1": {
      "hours": "0830 - 1830 Mon - Sat",
      "name": "Zone F - Hyde Park, Marylebone and Fitzrovia",
-     "note": "Resident bays: 24 hours everyday (incl. Bank/Public Holidays)."
+     "note": "Resident bays: 24 hours everyday (incl. Bank/Public Holidays).",
+     "price": {
+      "bands": [
+       {
+        "band": "1",
+        "co2": "0 g/km",
+        "perHour": 4.78
+       },
+       {
+        "band": "2",
+        "co2": "1–90 g/km",
+        "perHour": 5.66
+       },
+       {
+        "band": "3",
+        "co2": "91–150 g/km",
+        "perHour": 7.78
+       },
+       {
+        "band": "4",
+        "co2": "151–255 g/km",
+        "perHour": 8.74
+       },
+       {
+        "band": "5",
+        "co2": "256+ g/km",
+        "perHour": 10.58
+       }
+      ],
+      "note": "Zone F paid-for bays, by CO2 band (DVLA), from 2 March 2026. Motorcycles £6.83/hour. Pre-2015 diesels pay 50% more.",
+      "url": "https://www.westminster.gov.uk/sites/default/files/media/documents/hours-of-control-parking-tariffs-from-march-2026.pdf"
+     }
     },
     "F2": {
      "hours": "Mon–Sat 8:30am–6:30pm",
@@ -7432,7 +8052,38 @@
        "from": "08:30",
        "to": "18:30"
       }
-     ]
+     ],
+     "price": {
+      "bands": [
+       {
+        "band": "1",
+        "co2": "0 g/km",
+        "perHour": 4.78
+       },
+       {
+        "band": "2",
+        "co2": "1–90 g/km",
+        "perHour": 5.66
+       },
+       {
+        "band": "3",
+        "co2": "91–150 g/km",
+        "perHour": 7.78
+       },
+       {
+        "band": "4",
+        "co2": "151–255 g/km",
+        "perHour": 8.74
+       },
+       {
+        "band": "5",
+        "co2": "256+ g/km",
+        "perHour": 10.58
+       }
+      ],
+      "note": "Zone F paid-for bays, by CO2 band (DVLA), from 2 March 2026. Motorcycles £6.83/hour. Pre-2015 diesels pay 50% more.",
+      "url": "https://www.westminster.gov.uk/sites/default/files/media/documents/hours-of-control-parking-tariffs-from-march-2026.pdf"
+     }
     },
     "F3": {
      "hours": "Mon–Sat 8:30am–6:30pm",
@@ -7451,7 +8102,38 @@
        "from": "08:30",
        "to": "18:30"
       }
-     ]
+     ],
+     "price": {
+      "bands": [
+       {
+        "band": "1",
+        "co2": "0 g/km",
+        "perHour": 4.78
+       },
+       {
+        "band": "2",
+        "co2": "1–90 g/km",
+        "perHour": 5.66
+       },
+       {
+        "band": "3",
+        "co2": "91–150 g/km",
+        "perHour": 7.78
+       },
+       {
+        "band": "4",
+        "co2": "151–255 g/km",
+        "perHour": 8.74
+       },
+       {
+        "band": "5",
+        "co2": "256+ g/km",
+        "perHour": 10.58
+       }
+      ],
+      "note": "Zone F paid-for bays, by CO2 band (DVLA), from 2 March 2026. Motorcycles £6.83/hour. Pre-2015 diesels pay 50% more.",
+      "url": "https://www.westminster.gov.uk/sites/default/files/media/documents/hours-of-control-parking-tariffs-from-march-2026.pdf"
+     }
     },
     "F4": {
      "hours": "Mon–Sat 8:30am–6:30pm",
@@ -7470,7 +8152,38 @@
        "from": "08:30",
        "to": "18:30"
       }
-     ]
+     ],
+     "price": {
+      "bands": [
+       {
+        "band": "1",
+        "co2": "0 g/km",
+        "perHour": 4.78
+       },
+       {
+        "band": "2",
+        "co2": "1–90 g/km",
+        "perHour": 5.66
+       },
+       {
+        "band": "3",
+        "co2": "91–150 g/km",
+        "perHour": 7.78
+       },
+       {
+        "band": "4",
+        "co2": "151–255 g/km",
+        "perHour": 8.74
+       },
+       {
+        "band": "5",
+        "co2": "256+ g/km",
+        "perHour": 10.58
+       }
+      ],
+      "note": "Zone F paid-for bays, by CO2 band (DVLA), from 2 March 2026. Motorcycles £6.83/hour. Pre-2015 diesels pay 50% more.",
+      "url": "https://www.westminster.gov.uk/sites/default/files/media/documents/hours-of-control-parking-tariffs-from-march-2026.pdf"
+     }
     },
     "F5": {
      "hours": "Mon–Sat 8:30am–6:30pm",
@@ -7489,7 +8202,38 @@
        "from": "08:30",
        "to": "18:30"
       }
-     ]
+     ],
+     "price": {
+      "bands": [
+       {
+        "band": "1",
+        "co2": "0 g/km",
+        "perHour": 4.78
+       },
+       {
+        "band": "2",
+        "co2": "1–90 g/km",
+        "perHour": 5.66
+       },
+       {
+        "band": "3",
+        "co2": "91–150 g/km",
+        "perHour": 7.78
+       },
+       {
+        "band": "4",
+        "co2": "151–255 g/km",
+        "perHour": 8.74
+       },
+       {
+        "band": "5",
+        "co2": "256+ g/km",
+        "perHour": 10.58
+       }
+      ],
+      "note": "Zone F paid-for bays, by CO2 band (DVLA), from 2 March 2026. Motorcycles £6.83/hour. Pre-2015 diesels pay 50% more.",
+      "url": "https://www.westminster.gov.uk/sites/default/files/media/documents/hours-of-control-parking-tariffs-from-march-2026.pdf"
+     }
     },
     "F6": {
      "hours": "Mon–Sat 8:30am–6:30pm",
@@ -7508,12 +8252,74 @@
        "from": "08:30",
        "to": "18:30"
       }
-     ]
+     ],
+     "price": {
+      "bands": [
+       {
+        "band": "1",
+        "co2": "0 g/km",
+        "perHour": 4.78
+       },
+       {
+        "band": "2",
+        "co2": "1–90 g/km",
+        "perHour": 5.66
+       },
+       {
+        "band": "3",
+        "co2": "91–150 g/km",
+        "perHour": 7.78
+       },
+       {
+        "band": "4",
+        "co2": "151–255 g/km",
+        "perHour": 8.74
+       },
+       {
+        "band": "5",
+        "co2": "256+ g/km",
+        "perHour": 10.58
+       }
+      ],
+      "note": "Zone F paid-for bays, by CO2 band (DVLA), from 2 March 2026. Motorcycles £6.83/hour. Pre-2015 diesels pay 50% more.",
+      "url": "https://www.westminster.gov.uk/sites/default/files/media/documents/hours-of-control-parking-tariffs-from-march-2026.pdf"
+     }
     },
     "G1": {
      "hours": "0830 - 1830 Mon - Sat",
      "name": "Zone G - Soho, West End and Covent Garden",
-     "note": "Resident bays: 24 hours everyday (incl. Bank/Public Holidays)."
+     "note": "Resident bays: 24 hours everyday (incl. Bank/Public Holidays).",
+     "price": {
+      "bands": [
+       {
+        "band": "1",
+        "co2": "0 g/km",
+        "perHour": 4.78
+       },
+       {
+        "band": "2",
+        "co2": "1–90 g/km",
+        "perHour": 5.66
+       },
+       {
+        "band": "3",
+        "co2": "91–150 g/km",
+        "perHour": 7.78
+       },
+       {
+        "band": "4",
+        "co2": "151–255 g/km",
+        "perHour": 8.74
+       },
+       {
+        "band": "5",
+        "co2": "256+ g/km",
+        "perHour": 10.58
+       }
+      ],
+      "note": "Zone G paid-for bays, by CO2 band (DVLA), from 2 March 2026. Motorcycles £6.83/hour. Pre-2015 diesels pay 50% more.",
+      "url": "https://www.westminster.gov.uk/sites/default/files/media/documents/hours-of-control-parking-tariffs-from-march-2026.pdf"
+     }
     },
     "G2": {
      "hours": "Mon–Sat 8:30am–6:30pm",
@@ -7532,7 +8338,38 @@
        "from": "08:30",
        "to": "18:30"
       }
-     ]
+     ],
+     "price": {
+      "bands": [
+       {
+        "band": "1",
+        "co2": "0 g/km",
+        "perHour": 4.78
+       },
+       {
+        "band": "2",
+        "co2": "1–90 g/km",
+        "perHour": 5.66
+       },
+       {
+        "band": "3",
+        "co2": "91–150 g/km",
+        "perHour": 7.78
+       },
+       {
+        "band": "4",
+        "co2": "151–255 g/km",
+        "perHour": 8.74
+       },
+       {
+        "band": "5",
+        "co2": "256+ g/km",
+        "perHour": 10.58
+       }
+      ],
+      "note": "Zone G paid-for bays, by CO2 band (DVLA), from 2 March 2026. Motorcycles £6.83/hour. Pre-2015 diesels pay 50% more.",
+      "url": "https://www.westminster.gov.uk/sites/default/files/media/documents/hours-of-control-parking-tariffs-from-march-2026.pdf"
+     }
     }
    },
    "notes": "Zone boundaries traced from the council’s CPZ map, which dates from February 2011; boundaries may have changed since and edges can be out by about 20–60 m. Hours from the council’s March 2026 tariffs and controlled hours table; the colour follows paid-for bays and single yellow lines. Taxi and coach bays aren’t shown.",
@@ -7543,10 +8380,10 @@
    },
    "bankHolidays": "free",
    "charges": {
-    "bands": [],
-    "note": "Hourly paid-for bay rate by parent zone and CO2 band (band 1 to 5 prices, £/hr), from 2 March 2026. Pre-2015 diesel vehicles pay an extra 50%. Motorcycles have a flat rate (A £4.70, B £3.81, C £2.16, D £3.15, E £6.52, F/G £6.83).",
+    "model": "zone",
+    "note": "Hourly paid-for bay rate by parent zone and CO2 band (bands 1–5), from 2 March 2026; each zone carries its own bands. Pre-2015 diesel vehicles pay an extra 50%. Motorcycles have a flat rate (A £4.70, B £3.81, C £2.16, D £3.15, E £6.52, F/G £6.83).",
     "url": "https://www.westminster.gov.uk/sites/default/files/media/documents/hours-of-control-parking-tariffs-from-march-2026.pdf",
-    "checked": "2026-11-18"
+    "checked": "2026-11-20"
    },
    "maxStayDefault": "4 hours"
   },

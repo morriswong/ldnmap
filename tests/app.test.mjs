@@ -560,28 +560,124 @@ test('park near here: plan, then the streets where the whole stay is allowed', a
 });
 
 test('park near here: nearest and cheapest orders', async () => {
+  const paid2h = [{ start: 0, end: 120, status: 'ctrl' }];
+  const tariff = (basis, min, max, by) => ({ min, max, exact: min === max, basis, by: by || null, bands: null, note: null, url: null });
+  const ok = (segments, paidMin, costMin, costMax, t) => ({ ok: true, status: 'ok', segments, paidMin,
+    cost: t && t.exact ? costMin : paidMin ? null : 0, costMin, costMax, tariff: t || null, perHour: t && t.exact ? t.min : null,
+    maxStayMin: null, longestPaidMin: paidMin, freeAll: paidMin === 0 });
   const plans = {
-    'x:A': { ok: true, status: 'ok', segments: [{ start: 0, end: 120, status: 'ctrl' }], paidMin: 120, cost: 4.64, perHour: 2.32, maxStayMin: 240, longestPaidMin: 120, freeAll: false },
-    'x:B': { ok: true, status: 'ok', segments: [{ start: 0, end: 120, status: 'free' }], paidMin: 0, cost: 0, perHour: null, maxStayMin: null, longestPaidMin: 0, freeAll: true },
-    'x:C': { ok: true, status: 'ok', segments: [{ start: 0, end: 60, status: 'ctrl' }, { start: 60, end: 120, status: 'free' }], paidMin: 60, cost: null, perHour: null, maxStayMin: null, longestPaidMin: 60, freeAll: false },
-    'x:D': { ok: false, status: 'unknown', segments: [{ start: 0, end: 120, status: 'unknown' }], paidMin: 0, cost: null, perHour: null, maxStayMin: null, longestPaidMin: 0, freeAll: false },
-    'x:E': { ok: true, status: 'ok', segments: [{ start: 0, end: 60, status: 'free' }, { start: 60, end: 120, status: 'ctrl' }], paidMin: 60, cost: 2, perHour: 2, maxStayMin: null, longestPaidMin: 60, freeAll: false },
-    'x:P': { ok: false, status: 'permit', segments: [], paidMin: 0, cost: null, perHour: null, maxStayMin: null, longestPaidMin: 0, freeAll: false },
-    'x:M': { ok: false, status: 'maxstay', segments: [], paidMin: 240, cost: 9, perHour: 2, maxStayMin: 60, longestPaidMin: 240, freeAll: false } };
+    'x:A': ok(paid2h, 120, 4.64, 4.64, tariff('zone', 2.32, 2.32)),
+    'x:B': ok([{ start: 0, end: 120, status: 'free' }], 0, 0, 0, null),
+    'x:C': ok([{ start: 0, end: 60, status: 'ctrl' }, { start: 60, end: 120, status: 'free' }], 60, null, null, null),
+    'x:D': { ok: false, status: 'unknown', segments: [{ start: 0, end: 120, status: 'unknown' }], paidMin: 0, cost: null, costMin: null, costMax: null, tariff: null, perHour: null, maxStayMin: null, longestPaidMin: 0, freeAll: false },
+    'x:E': ok([{ start: 0, end: 60, status: 'free' }, { start: 60, end: 120, status: 'ctrl' }], 60, 2, 2, tariff('flat', 2, 2)),
+    'x:F': ok(paid2h, 120, 3, 9, tariff('bands', 1.5, 4.5, 'emissions')),
+    'x:G': ok(paid2h, 120, 4, null, tariff('from', 2, null, 'emissions')),
+    'x:H': ok(paid2h, 120, 6, 12, tariff('fuel', 3, 6, 'fuel')),
+    'x:P': { ok: false, status: 'permit', segments: [], paidMin: 0, cost: null, costMin: null, costMax: null, tariff: null, perHour: null, maxStayMin: null, longestPaidMin: 0, freeAll: false },
+    'x:M': { ok: false, status: 'maxstay', segments: [], paidMin: 240, cost: 9, costMin: 9, costMax: 9, tariff: tariff('zone', 2, 2), perHour: 2, maxStayMin: 60, longestPaidMin: 240, freeAll: false } };
   const streets = [street('Ash', 'x:A', 100), street('Beech', 'x:B', 500), street('Cedar', 'x:C', 150), street('Dock', 'x:D', 50),
-    street('Elm', 'x:E', 400), street('Pine', 'x:P', 60), street('Maple', 'x:M', 70)];
+    street('Elm', 'x:E', 400), street('Fir', 'x:F', 250), street('Gorse', 'x:G', 320), street('Holly', 'x:H', 600),
+    street('Pine', 'x:P', 60), street('Maple', 'x:M', 70)];
   // No Matrix answer (an error): the straight-line estimates stand.
   const app = loadApp({ routes: parkRoutes(streets, () => reply({ message: 'Not Authorized' }, 401)) });
   app.planStay = (key) => plans[key];
   openPark(app);
   await app.parkFind();
-  assert.deepEqual(parkNames(app), ['Ash', 'Cedar', 'Elm', 'Beech', 'Dock']);
-  assert.deepEqual(plain(app.parkResults.map((r) => r.walk)), [2, 9, 3, 1, 7]);
+  assert.deepEqual(parkNames(app), ['Ash', 'Cedar', 'Fir', 'Gorse', 'Elm', 'Beech', 'Holly', 'Dock']);
+  assert.deepEqual(plain(app.parkResults.map((r) => r.name + ' ' + r.walk)),
+    ['Ash 2', 'Beech 9', 'Cedar 3', 'Dock 1', 'Elm 7', 'Fir 5', 'Gorse 6', 'Holly 10']);
   const rows = parkRows(app);
+  assert.match(rows[0], /^2minAsh.*£4\.64paid all stay$/, 'an exact price has no basis line');
   assert.match(rows[1], /^3minCedar.*Price unknownpaid 10–11am, free after$/);
-  assert.match(rows[2], /^7minElm.*£2\.00free 10–11am, paid after$/);
+  assert.match(rows[2], /^5minFir.*£3\.00–£9\.00paid all stayby car emissions$/);
+  assert.match(rows[3], /^6minGorse.*from £4\.00paid all stayby car emissions$/);
+  assert.match(rows[4], /^7minElm.*£2\.00free 10–11am, paid after$/);
+  assert.match(rows[6], /^10minHolly.*£6\.00–£12\.00paid all stayby fuel type$/);
+  assert.match(rows[7], /^1minDock.*Check signs$/);
+  // A range can wrap after its dash rather than squeeze the street name.
+  const fir = app.el('park-body').querySelectorAll('.park-amt')[2];
+  assert.deepEqual(fir.children.map((c) => c.tagName.toLowerCase()), ['#text', 'wbr', '#text']);
+  // Cheapest: free first, then by the lowest cost (a range or 'from' by its bottom), unknown prices
+  // after every known one, hours that couldn't be read last.
   app.parkSetSort('cheapest');
-  assert.deepEqual(parkNames(app), ['Beech', 'Elm', 'Ash', 'Cedar', 'Dock']);
+  assert.deepEqual(parkNames(app), ['Beech', 'Elm', 'Fir', 'Gorse', 'Ash', 'Holly', 'Cedar', 'Dock']);
+});
+
+// Prices the way the real data holds them: x prices by its rules (a Westminster-style rule with
+// its own emission bands, and a 4 hour council default max stay), y by borough emission bands (one
+// rule with a 'from' price of its own), z only has a note.
+const PRICE_ZONE = (b, east) => ({ type: 'Feature', properties: { b, zone: 'Q', rule: b + ':Q', lx: at(east)[0], ly: D[1] }, geometry: SQUARE_AT(at(east), 0.001) });
+const PRICE_NOTE = 'Prices are set street by street (e.g. Agdon Street is £7.30/hour, 2h max). Mon–Fri 10am–1pm adds a peak surcharge in most zones, '
+  + 'and diesel cars pay more everywhere. See the council’s list of streets for each tariff.';
+const PRICE_RULES = { checked: '2026-11-01', bankHolidays: [],
+  boroughs: {
+    x: { name: 'Xshire', bbox: [-0.3, 51.4, -0.2, 51.5], zoneCount: 1, knownHours: 1, detail: true, maxStayDefault: '4 hours',
+      charges: { model: 'zone', note: 'By parent zone and CO2 band.', url: 'https://x.example/tariffs.pdf' } },
+    y: { name: 'Yshire', bbox: [-0.3, 51.4, -0.2, 51.5], zoneCount: 1, knownHours: 1, detail: true,
+      charges: { bands: [{ band: 'A', co2: '0 g/km', perHour: 2.5 }, { band: 'B', co2: '1–100 g/km', perHour: 3 }, { band: 'C', co2: '101+ g/km', perHour: 5 }],
+        url: 'https://y.example/charges' } },
+    z: { name: 'Zshire', bbox: [-0.3, 51.4, -0.2, 51.5], zoneCount: 1, knownHours: 1, detail: true,
+      charges: { model: 'note', note: PRICE_NOTE, url: 'https://z.example/parking' } } },
+  rules: {
+    'x:W': rule('W', { name: 'West End', periods: ALL_DAY, price: { bands: [
+      { band: 1, co2: '0–50 g/km', perHour: 4.78 }, { band: 2, co2: '51–100 g/km', perHour: 6 }, { band: 3, co2: '101–150 g/km', perHour: 7.5 },
+      { band: 4, co2: '151–200 g/km', perHour: 9 }, { band: 5, co2: 'over 200 g/km', perHour: 10.58 }], url: 'https://x.example/zone-w.pdf' } }),
+    'y:F': { ...rule('F', { periods: ALL_DAY, price: { perHour: 2.5 } }), borough: 'y' },
+    'y:Y': { ...rule('Y', { periods: ALL_DAY }), borough: 'y' },
+    'z:N': { ...rule('N', { periods: ALL_DAY }), borough: 'z' } } };
+const priceRoutes = () => [
+  [/data\/parking\/rules\.json/, () => reply(PRICE_RULES)],
+  [/data\/parking\/zones\.geojson/, () => reply({ type: 'FeatureCollection', features: [PRICE_ZONE('x', 0), PRICE_ZONE('y', 600), PRICE_ZONE('z', -600)] })],
+  [/data\/parking\/x\/streets/, collection([street('Wren Street', 'x:W', 100)])],
+  [/data\/parking\/y\/streets/, collection([street('Yew Road', 'y:Y', 200), street('Fern Lane', 'y:F', 300)])],
+  [/data\/parking\/z\/streets/, collection([street('Nook Street', 'z:N', 150)])],
+  [/data\/parking\/[xyz]\/(kerb|machines)/, collection([])],
+  [/directions-matrix\/v1\/mapbox\/walking\//, () => reply({ message: 'Not Authorized' }, 401)]];
+
+test('park near here: prices from rule bands, borough bands, a "from" price and a council note', async () => {
+  const app = loadApp({ routes: priceRoutes() });
+  openPark(app);
+  await app.parkFind();
+  assert.deepEqual(parkNames(app), ['Wren Street', 'Nook Street', 'Yew Road', 'Fern Lane']);
+  const rows = parkRows(app);
+  // The rule's own bands: £4.78–£10.58 an hour for 2 hours; no maxStay, so the council's 4 hour default
+  assert.match(rows[0], /^2minWren StreetZone W · West End4h max · fits 2h£9\.56–£21\.16paid all stayby car emissions$/);
+  assert.match(rows[1], /^3minNook Street.*Price unknownpaid all stay$/);
+  assert.match(rows[2], /^4minYew Road.*£5\.00–£10\.00paid all stayby car emissions$/);
+  assert.match(rows[3], /^5minFern Lane.*from £5\.00paid all stayby car emissions$/);
+  app.parkSetSort('cheapest');
+  assert.deepEqual(parkNames(app), ['Yew Road', 'Fern Lane', 'Wren Street', 'Nook Street'], 'a tie at £5 goes to the shorter walk');
+
+  const priceLink = (body) => body.descendants().filter((e) => e.tagName === 'A' && /parking charges/.test(e.textContent))[0];
+  const card = (name) => {
+    app.parkShowDetail(app.parkResults.findIndex((r) => r.name === name));
+    return app.el('park-body');
+  };
+  // Bands: the paid time at the range, then what each band pays for this stay, and the council's prices.
+  let body = card('Wren Street');
+  let text = body.textContent;
+  assert.match(text, /10am–12pm2h × £4\.78–£10\.58£9\.56–£21\.16Total£9\.56–£21\.16/);
+  assert.match(text, /By emissions band · 2h paidBand 1 \(0–50 g\/km\)£9\.56Band 2 \(51–100 g\/km\)£12\.00Band 3 \(101–150 g\/km\)£15\.00Band 4 \(151–200 g\/km\)£18\.00Band 5 \(over 200 g\/km\)£21\.16/);
+  assert.match(text, /PricesXshire parking charges/);
+  assert.match(text, /Max stay4 hours \(council default\) · your 2h stay fits/);
+  assert.equal(priceLink(body).href, 'https://x.example/zone-w.pdf', 'the rule’s own link first');
+  // A 'from' price: the cheapest band's cost, said so.
+  text = card('Fern Lane').textContent;
+  assert.match(text, /10am–12pm2h × from £2\.50from £5\.00Totalfrom £5\.00/);
+  assert.match(text, /from £5\.00: the lowest rate published for this zone\. The price depends on your car’s emissions, so yours may be higher\./);
+  assert.match(text, /PricesYshire parking charges/);
+  assert.doesNotMatch(text, /By emissions band/);
+  // Borough bands
+  text = card('Yew Road').textContent;
+  assert.match(text, /By emissions band · 2h paidBand A \(0 g\/km\)£5\.00Band B \(1–100 g\/km\)£6\.00Band C \(101\+ g\/km\)£10\.00/);
+  // No prices in the data: the council's note, cut short, and its link.
+  body = card('Nook Street');
+  text = body.textContent;
+  assert.match(text, /10am–12pm2h, price unknown\?TotalUnknown/);
+  assert.match(text, /Prices are set street by street \(e\.g\. Agdon Street is £7\.30\/hour, 2h max\)\. Mon–Fri 10am–1pm adds a peak surcharge in most zones, and diesel cars pay more everywhere\.PricesZshire parking charges/);
+  assert.doesNotMatch(text, /list of streets for each tariff/, 'shortened to whole sentences');
+  assert.equal(priceLink(body).href, 'https://z.example/parking');
 });
 
 test('park near here: a place outside every zone says so, and still lists zone streets in reach', async () => {

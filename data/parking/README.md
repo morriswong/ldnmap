@@ -26,10 +26,12 @@ exclusive. Each rule has:
   (whole zone), `event` (different `periods`/`maxStay` on event days), `streets` (a street rule:
   the named streets in `zone` follow this rule instead of the zone's), `bankHolidays` (overrides the
   borough's) with `bankHolidayExcept` (`["12-25"]`: month-days that are free even so), `price`
-  (`{perHour, note}`: this zone's own hourly price, when it differs from the borough's charges) and
+  (this zone's own prices, when they differ from the borough's charges: `{perHour, note, url}` for
+  one hourly price, or `{bands: [{band, co2, perHour}], note, url}` when the zone is priced by
+  emissions band, as Westminster's parent zones are; `bands` wins over `perHour`) and
   `payCode` (`{provider: "RingGo", code}`: the pay-by-phone location code)
 
-Borough `charges` take one of three shapes: emissions `bands` (`[{band, co2, perHour}]`, with
+Borough `charges` take one of these shapes: emissions `bands` (`[{band, co2, perHour}]`, with
 `dieselPerHour`), `{model: "flat", perHour}`, `{model: "fuel", byFuel: {electric, petrol, diesel, other}}`
 (per hour, as RingGo lists them), `{model: "zone"}` (each rule has its own `price`) or `{model: "note"}`
 (prices set street by street; only the `note` and link). All can carry `visitorFromPerHour`, `note`,
@@ -45,6 +47,26 @@ that would be controlled shows as unknown.
 `parking-rules.js` turns these into `'ctrl'`, `'free'`, `'permit'` or `'unknown'`
 (`isControlled(ruleKey, day, minutes, eventDay, bankHoliday)`) and finds the next change
 (`nextChange`, for the card's "free from 10pm"); `tests/parking.test.mjs` tests it.
+
+### How Park near here prices a stay
+
+`ruleTariff(ruleKey)` in `parking-rules.js` finds a rule's hourly price, first match wins:
+
+1. the rule's `price.bands`: a range, lowest to highest band (`basis: "bands"`);
+2. the rule's `price.perHour`: exact (`"zone"`), unless the borough prices by emissions `bands` or
+   `byFuel`, where the zone's price is its cheapest band, so a `"from"` price with no known top
+   (Lambeth, Lewisham);
+3. the borough's flat `perHour` (`"flat"`, exact);
+4. the borough's emissions `bands` (`"bands"`, a range);
+5. the borough's `byFuel` rates (`"fuel"`, a range);
+6. none (`model: "note"`, or a `"zone"` borough's rule without a `price`): the price is unknown and
+   the street card shows the borough's `note` and links its `url`.
+
+`planStay()` multiplies the stay's paid minutes by the lowest and highest rate (`costMin`, `costMax`;
+`costMax` is null for a `"from"` price) and gives an exact `cost` only when there's one price (or
+nothing to pay). Diesel surcharges and visitor rates are left out. A rule with no `maxStay` takes
+the borough's `maxStayDefault`; a `maxStay` that can't be read as one length is never replaced
+by it. The list's **Cheapest** order sorts by `costMin`.
 
 ## Coverage
 

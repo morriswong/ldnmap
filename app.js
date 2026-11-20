@@ -2583,29 +2583,67 @@ function parkRefineWalks(cands, o) {
 }
 
 // A listed street: 'free' (nothing to pay), 'paid', or 'unknown' (hours couldn't be read).
-// `price` is what the stay costs (0 when free), null when that isn't known.
+// `price` is what the stay costs when that's exact (0 when free), else null. `costMin`/`costMax`
+// are its lowest and highest cost (a range when it depends on the car; costMax null for a 'from'
+// price), both null when the price isn't known. `tariff` is planStay()'s (ruleTariff()).
 function parkResult(c) {
   var plan = c.plan;
   var state = plan.status === 'unknown' ? 'unknown' : (plan.freeAll || plan.paidMin === 0) ? 'free' : 'paid';
+  var num = function(x) { return typeof x === 'number' ? x : null; };
+  var paid = state === 'paid', free = state === 'free';
   return { name: c.name, rule: c.rule, zone: c.zone, b: c.b, d: c.d, walk: c.walk, refined: !!c.refined,
-    point: c.point, lines: c.lines, plan: plan, state: state,
-    price: state === 'free' ? 0 : state === 'paid' && typeof plan.cost === 'number' ? plan.cost : null };
+    point: c.point, lines: c.lines, plan: plan, state: state, tariff: plan.tariff || null,
+    price: free ? 0 : paid ? num(plan.cost) : null,
+    costMin: free ? 0 : paid ? num(plan.costMin) : null,
+    costMax: free ? 0 : paid && num(plan.costMin) !== null ? num(plan.costMax) : null };
 }
 
-// Nearest: by walk. Cheapest: free first, then by price, then by walk; unknown prices after known
-// ones. Streets whose hours couldn't be read go last in both.
+// Nearest: by walk. Cheapest: free first, then by the lowest cost (a range or 'from' price by its
+// bottom), then by walk; unknown prices after known ones. Streets whose hours couldn't be read go
+// last in both.
 function parkSorted() {
   return parkResults.map(function(r, i) { return { r: r, i: i }; }).sort(function(x, y) {
     var a = x.r, b = y.r;
     var u = (a.state === 'unknown') - (b.state === 'unknown');
     if (u) return u;
     if (parkSort === 'cheapest') {
-      var n = (a.price === null) - (b.price === null);
+      var n = (a.costMin === null) - (b.costMin === null);
       if (n) return n;
-      if (a.price !== null && a.price !== b.price) return a.price - b.price;
+      if (a.costMin !== null && a.costMin !== b.costMin) return a.costMin - b.costMin;
     }
     return a.walk - b.walk || a.d - b.d || (a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
   });
+}
+
+// '£4.64', '£9.56–£21.16', or 'from £4.64' (max null) for amounts min..max; '' when min is unknown.
+function parkAmount(min, max) {
+  if (typeof min !== 'number') return '';
+  if (typeof max !== 'number') return 'from ' + parkMoney(min);
+  return min === max ? parkMoney(min) : parkMoney(min) + '–' + parkMoney(max);
+}
+
+// What a price that isn't exact depends on: 'by car emissions', 'by fuel type'; '' for one price.
+function parkBasisWords(t) {
+  if (!t || t.exact) return '';
+  return t.by === 'fuel' ? 'by fuel type' : 'by car emissions';
+}
+
+// A council's charges note cut to its first sentence or two (about `max` characters), never mid-bracket.
+function parkShortNote(text, max) {
+  max = max || 180;
+  text = String(text || '').replace(/\s+/g, ' ').trim();
+  if (text.length <= max) return text;
+  var cut = 0, depth = 0;
+  for (var i = 0; i < text.length && i < max; i++) {
+    var ch = text.charAt(i);
+    if (ch === '(') depth++;
+    else if (ch === ')') depth = Math.max(0, depth - 1);
+    else if ((ch === '.' || ch === '!' || ch === '?') && depth === 0 && text.charAt(i + 1) === ' ' &&
+      !/(^|\s)(e\.g|i\.e|etc|approx|St|Rd|No|Ave)$/.test(text.slice(0, i))) cut = i + 1;
+  }
+  if (cut) return text.slice(0, cut);
+  var sp = text.lastIndexOf(' ', max - 1);
+  return text.slice(0, sp > 40 ? sp : max - 1).replace(/[\s,;:(–-]+$/, '') + '…';
 }
 
 // A plan's segments, each run of one status as one piece.
@@ -3040,20 +3078,36 @@ function parkRenderResults() {
   parkBody.appendChild(pkEl('p', 'pk-small park-foot', 'Shows where you’re allowed to park, not whether a space is free. Check the signs.'));
 }
 
-// The price column: 'Free', '£4.64' with when it's paid, 'Price unknown', or 'Check signs'.
+// The price column: 'Free'; '£4.64', '£9.56–£21.16' or 'from £4.64' with when it's paid and, for
+// a price that depends on the car, 'by car emissions' / 'by fuel type'; 'Price unknown'; or
+// 'Check signs'. A range may wrap after its dash, so the street name keeps its room.
 function parkCostEl(r) {
   var box = pkEl('span', 'park-cost');
-  var price;
+  var price, basis = '';
   if (r.state === 'unknown') price = pkEl('span', 'park-price park-price--unknown', 'Check signs');
   else if (r.state === 'free') price = pkEl('span', 'park-price park-price--free', 'Free');
   else {
     price = pkEl('span', 'park-price');
     price.appendChild(pkEl('i', 'pk-dot pk-ctrl'));
-    price.appendChild(document.createTextNode(r.price !== null ? parkMoney(r.price) : 'Price unknown'));
+    var amt = pkEl('span', 'park-amt');
+    if (r.price !== null) amt.textContent = parkMoney(r.price);
+    else if (r.costMin === null) { amt.textContent = 'Price unknown'; price.className += ' park-price--none'; }
+    else if (r.costMax === null) {
+      amt.appendChild(pkEl('span', 'park-from', 'from '));
+      amt.appendChild(document.createTextNode(parkMoney(r.costMin)));
+    } else if (r.costMax === r.costMin) amt.textContent = parkMoney(r.costMin);
+    else {
+      amt.appendChild(document.createTextNode(parkMoney(r.costMin) + '–'));
+      amt.appendChild(document.createElement('wbr'));
+      amt.appendChild(document.createTextNode(parkMoney(r.costMax)));
+    }
+    price.appendChild(amt);
+    if (r.price === null && r.costMin !== null) basis = parkBasisWords(r.tariff);
   }
   box.appendChild(price);
   var when = parkSegLine(r);
   if (when) box.appendChild(pkEl('span', 'park-when', when));
+  if (basis) box.appendChild(pkEl('span', 'park-when park-basis', basis));
   return box;
 }
 
@@ -3108,11 +3162,13 @@ function parkRenderDetail() {
   card.appendChild(ticks);
 
   var costs = pkEl('ul', 'park-costs');
+  var t = r.tariff;
   segs.forEach(function(s) {
     var dur = s.end - s.start, detail, amount;
     if (s.status === 'ctrl') {
-      detail = plan.perHour != null ? parkDur(dur) + ' × ' + parkMoney(plan.perHour) : parkDur(dur) + ', price unknown';
-      amount = plan.perHour != null ? parkMoney(Math.round(plan.perHour * dur / 60 * 100) / 100) : '?';
+      // '2h × £2.00' → £4.00; '2h × £4.78–£10.58' → £9.56–£21.16; '2h × from £2.32' → from £4.64
+      detail = t ? parkDur(dur) + ' × ' + parkAmount(t.min, t.max) : parkDur(dur) + ', price unknown';
+      amount = t ? parkAmount(parkingCost(t.min, dur), t.max === null ? null : parkingCost(t.max, dur)) : '?';
     } else if (s.status === 'free') {
       detail = parkDur(dur) + ', no charge'; amount = 'Free';
     } else if (s.status === 'permit') {
@@ -3130,11 +3186,14 @@ function parkRenderDetail() {
   });
   var total = pkEl('li', 'park-cost-row park-cost-total');
   total.appendChild(pkEl('span', 'park-cost-label', 'Total'));
-  total.appendChild(pkEl('span', 'park-cost-amount', r.price === null ? 'Unknown' : r.price === 0 ? 'Free' : parkMoney(r.price)));
+  total.appendChild(pkEl('span', 'park-cost-amount', r.state === 'free' ? 'Free'
+    : r.state === 'paid' && r.costMin !== null ? parkAmount(r.costMin, r.costMax) : 'Unknown'));
   costs.appendChild(total);
   card.appendChild(costs);
+  if (r.state === 'paid') parkPriceDetail(card, r, borough);
 
-  var max = rule.maxStay || zoneRule.maxStay || (plan.maxStayMin != null ? parkDurLong(plan.maxStayMin) : '');
+  var max = rule.maxStay || zoneRule.maxStay || (borough.maxStayDefault ? borough.maxStayDefault + ' (council default)' : '')
+    || (plan.maxStayMin != null ? parkDurLong(plan.maxStayMin) : '');
   parkingRow(card, 'Max stay', max ? max + (plan.maxStayMin != null && plan.paidMin ? ' · your ' + parkDur(a.stayMin) + ' stay fits' : '') : 'No limit listed');
   parkingRow(card, 'Controlled', rule.hours || zoneRule.hours);
   if (rule.event) parkingRow(card, 'Event days', rule.event.hours.replace(/^Event days: /, ''));
@@ -3151,6 +3210,38 @@ function parkRenderDetail() {
   actions.appendChild(parkButton('park-secondary', 'Back to list', parkShowList));
   card.appendChild(actions);
   parkBody.appendChild(card);
+}
+
+// Under a paid stay's costs: what the stay costs in each emissions band or fuel type, what a
+// 'from' price means, or (no prices in the data) the council's own note; then a link to its prices.
+function parkPriceDetail(card, r, borough) {
+  var t = r.tariff, charges = borough.charges || {}, paidMin = r.plan.paidMin;
+  if (t && t.bands && !t.exact) {
+    card.appendChild(pkEl('div', 'pk-section', (t.by === 'fuel' ? 'By fuel type' : 'By emissions band')
+      + ' · ' + parkDur(paidMin) + ' paid'));
+    var list = pkEl('ul', 'park-bands');
+    t.bands.forEach(function(b) {
+      var li = pkEl('li', 'park-band-row');
+      li.appendChild(pkEl('span', 'park-band-label', b.label));
+      li.appendChild(pkEl('span', 'park-cost-amount', parkMoney(parkingCost(b.perHour, paidMin))));
+      list.appendChild(li);
+    });
+    card.appendChild(list);
+  } else if (t && t.basis === 'from') {
+    card.appendChild(pkEl('p', 'pk-small', parkAmount(r.costMin, null) + ': the lowest rate published for this zone. '
+      + 'The price depends on your car\u2019s ' + (t.by === 'fuel' ? 'fuel type' : 'emissions') + ', so yours may be higher.'));
+  } else if (!t && charges.note) {
+    card.appendChild(pkEl('p', 'pk-small park-price-note', parkShortNote(charges.note)));
+  }
+  var url = (t && t.url) || charges.url;
+  if (url) {
+    var row = pkEl('div', 'pk-row');
+    row.appendChild(pkEl('span', 'pk-row-label', 'Prices'));
+    var value = pkEl('span', 'pk-row-value');
+    value.appendChild(pkLink((borough.short || borough.name || 'Council') + ' parking charges', url)).className = 'pk-pdf';
+    row.appendChild(value);
+    card.appendChild(row);
+  }
 }
 
 // Tapping a result street on the map opens its card. Layer listeners outlive setStyle().

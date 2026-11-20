@@ -140,13 +140,81 @@ function ruleChangePoints(rule) {
   return pts.filter(function(v, i) { return v < 1440 && (i === 0 || v !== pts[i - 1]); });
 }
 
+// The labels a tariff's options get: 'Band 1 (0 g/km)', 'Electric'.
+var TARIFF_FUEL_LABELS = { electric: 'Electric', petrol: 'Petrol', diesel: 'Diesel', other: 'Other' };
+function tariffBandLabel(b, i) {
+  // '0 g/km (<1)' → '0 g/km'; '>138 g/km, pre-March-2001 and non-Euro-6 diesel' → '>138 g/km'
+  var co2 = typeof b.co2 === 'string' ? b.co2.replace(/\([^()]*\)/g, ' ').split(/[,;]/)[0].replace(/\s+/g, ' ').trim() : '';
+  var name = b.band != null && b.band !== '' ? 'Band ' + b.band : co2 ? '' : 'Band ' + (i + 1);
+  return name && co2 ? name + ' (' + co2 + ')' : name || co2;
+}
+function tariffRate(x) { return typeof x === 'number' && isFinite(x) && x >= 0; }
+
+// A range tariff over options [{label, perHour}], or null when none has a price.
+function tariffOver(basis, options, note, url) {
+  options = options.filter(function(o) { return tariffRate(o.perHour); });
+  if (!options.length) return null;
+  var rates = options.map(function(o) { return o.perHour; });
+  var min = Math.min.apply(null, rates), max = Math.max.apply(null, rates);
+  return { min: min, max: max, exact: min === max, basis: basis, by: basis === 'fuel' ? 'fuel' : 'emissions',
+    bands: options, note: note || null, url: url || null };
+}
+
+// The hourly price for a rule, or null when the data has none:
+// { min, max (null for a 'from' price), exact (min === max and certain),
+//   basis: 'zone' | 'flat' | 'bands' | 'fuel' | 'from', by: 'emissions' | 'fuel' | null (what a
+//   range depends on), bands ([{label, perHour}] for bands/fuel, else null), note, url }.
+// Precedence: the rule's own price.bands, then its price.perHour (exact unless the borough prices
+// by emissions band or fuel, when it's the cheapest band: a 'from' price), then the borough's flat
+// rate, its emissions bands, its fuel rates. 'zone'/'note' boroughs without a rule price: null.
+function ruleTariff(ruleKey) {
+  var rule = parkingRule(ruleKey);
+  if (!rule) return null;
+  var boroughs = (parkingRules && parkingRules.boroughs) || {};
+  var borough = boroughs[rule.borough || String(ruleKey).split(':')[0]] || {};
+  var c = borough.charges || {};
+  var own = rule.price || {};
+  var note = own.note || c.note, url = own.url || c.url;
+  var bBands = (c.bands || []).filter(function(b) { return b && tariffRate(b.perHour); });
+  var bFuel = c.byFuel ? Object.keys(c.byFuel).filter(function(k) { return tariffRate(c.byFuel[k]); }) : [];
+  if (own.bands && own.bands.length) {
+    var t = tariffOver('bands', own.bands.map(function(b, i) { return { label: tariffBandLabel(b, i), perHour: b.perHour }; }), note, url);
+    if (t) return t;
+  }
+  if (tariffRate(own.perHour)) {
+    var from = bBands.length > 0 || bFuel.length > 0;
+    return { min: own.perHour, max: from ? null : own.perHour, exact: !from, basis: from ? 'from' : 'zone',
+      by: from ? (bBands.length ? 'emissions' : 'fuel') : null, bands: null, note: note || null, url: url || null };
+  }
+  if (tariffRate(c.perHour) && (c.model === 'flat' || !c.model) && !bBands.length && !bFuel.length) {
+    return { min: c.perHour, max: c.perHour, exact: true, basis: 'flat', by: null, bands: null,
+      note: note || null, url: url || null };
+  }
+  if (bBands.length) {
+    return tariffOver('bands', bBands.map(function(b, i) { return { label: tariffBandLabel(b, i), perHour: b.perHour }; }), note, url);
+  }
+  if (bFuel.length) {
+    var order = ['electric', 'petrol', 'diesel', 'other'];
+    bFuel.sort(function(a, b) { return (order.indexOf(a) + 1 || 99) - (order.indexOf(b) + 1 || 99); });
+    return tariffOver('fuel', bFuel.map(function(k) {
+      return { label: TARIFF_FUEL_LABELS[k] || k.charAt(0).toUpperCase() + k.slice(1), perHour: c.byFuel[k] };
+    }), note, url);
+  }
+  return null;
+}
+
 // Plan a stay of `stayMin` minutes (1..1440) from London `day` (0 = Sun … 6 = Sat) at `minutes`
 // after midnight under rule `ruleKey`. eventDay/bankHoliday apply to the starting day only (as in
 // nextChange); a stay past midnight carries on into the next day as a normal day.
 // Returns { ok, status: 'ok'|'permit'|'unknown'|'maxstay', segments: [{start, end, status}] (merged,
-// minutes from arrival, covering 0..stayMin), paidMin, cost, perHour, maxStayMin, longestPaidMin,
-// freeAll }. Precedence: permit > unknown > maxstay > ok. `cost` is 0 with no paid time, null when
-// there is paid time but no known price. A paid stretch equal to the max stay is allowed.
+// minutes from arrival, covering 0..stayMin), paidMin, cost, costMin, costMax, perHour, tariff,
+// maxStayMin, longestPaidMin, freeAll }. Precedence: permit > unknown > maxstay > ok.
+// Prices come from ruleTariff(): `costMin`/`costMax` are the paid minutes at its lowest and highest
+// rate (both 0 with no paid time; costMax null for a 'from' price; both null when any of the stay
+// is unknown or there's paid time but no tariff). `cost` is the exact cost: 0 with no paid time,
+// else only when the tariff is exact. `perHour` is the exact hourly rate, else null.
+// `maxStayMin` is the rule's maxStay, or the borough's maxStayDefault when the rule has none.
+// A paid stretch equal to the max stay is allowed.
 function planStay(ruleKey, day, minutes, stayMin, eventDay, bankHoliday) {
   var rule = parkingRule(ruleKey);
   stayMin = Math.max(1, Math.min(1440, Math.round(stayMin)));
@@ -182,14 +250,26 @@ function planStay(ruleKey, day, minutes, stayMin, eventDay, bankHoliday) {
     if (seg.status !== 'free') freeAll = false;
   });
 
-  var perHour = rule && rule.price && typeof rule.price.perHour === 'number' ? rule.price.perHour : null;
-  var maxStayMin = rule ? maxStayMinutes(rule.maxStay) : null;
+  var tariff = rule ? ruleTariff(ruleKey) : null;
+  var borough = rule && parkingRules && parkingRules.boroughs ? parkingRules.boroughs[rule.borough || ruleKey.split(':')[0]] : null;
+  // The rule's own max stay when it has one (unreadable stays null: never guess), else the borough's default.
+  var maxStayMin = !rule ? null : rule.maxStay ? maxStayMinutes(rule.maxStay)
+    : maxStayMinutes(borough && borough.maxStayDefault);
   // Unknown minutes could be paid, so the cost of such a stay is unknown too, never £0.
-  var cost = hasUnknown ? null : paidMin === 0 ? 0 : perHour !== null ? parkingCost(perHour, paidMin) : null;
+  var costMin = null, costMax = null, cost = null;
+  if (!hasUnknown) {
+    if (paidMin === 0) costMin = costMax = cost = 0;
+    else if (tariff) {
+      costMin = parkingCost(tariff.min, paidMin);
+      costMax = tariff.max === null ? null : parkingCost(tariff.max, paidMin);
+      if (tariff.exact) cost = costMin;
+    }
+  }
   var status = hasPermit ? 'permit' : hasUnknown ? 'unknown'
     : maxStayMin !== null && longestPaidMin > maxStayMin ? 'maxstay' : 'ok';
   return {
     ok: status === 'ok', status: status, segments: segments, paidMin: paidMin, cost: cost,
-    perHour: perHour, maxStayMin: maxStayMin, longestPaidMin: longestPaidMin, freeAll: freeAll
+    costMin: costMin, costMax: costMax, tariff: tariff,
+    perHour: tariff && tariff.exact ? tariff.min : null, maxStayMin: maxStayMin, longestPaidMin: longestPaidMin, freeAll: freeAll
   };
 }

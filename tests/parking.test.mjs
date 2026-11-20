@@ -240,7 +240,7 @@ test('Richmond prices follow the July 2026 rise', () => {
 
 // ---- Park near here: planStay / maxStayMinutes ----
 
-const { planStay, maxStayMinutes } = ctx;
+const { planStay, maxStayMinutes, ruleTariff } = ctx;
 const THU = 4;
 const plain = (x) => JSON.parse(JSON.stringify(x));   // VM-context objects → this realm, for deepEqual
 const seg = (start, end, status) => ({ start, end, status });
@@ -276,12 +276,17 @@ test('planStay: Lewisham E Thursday 17:00 for 3 hours pays until 19:00', () => {
   assert.equal(p.status, 'ok');
   assert.deepEqual(plain(p.segments), [seg(0, 120, 'ctrl'), seg(120, 180, 'free')]);
   assert.equal(p.paidMin, 120);
-  assert.equal(p.cost, 4.64);
-  assert.equal(p.perHour, 2.32);
+  // Lewisham prices by emissions band: E's £2.32 is its cheapest band, so a 'from' price.
+  assert.equal(p.cost, null);
+  assert.equal(p.costMin, 4.64);
+  assert.equal(p.costMax, null);
+  assert.equal(p.perHour, null);
+  assert.equal(p.tariff.basis, 'from');
+  assert.equal(p.tariff.min, 2.32);
   assert.equal(p.maxStayMin, 240);
   assert.equal(p.longestPaidMin, 120);
   assert.equal(p.freeAll, false);
-  assert.equal(planStay('lewisham:L', THU, at(17), 180, false, false).cost, 6.72);
+  assert.equal(planStay('lewisham:L', THU, at(17), 180, false, false).costMin, 6.72);
 });
 
 test('planStay: Saturday in Lewisham E is free all stay', () => {
@@ -290,6 +295,8 @@ test('planStay: Saturday in Lewisham E is free all stay', () => {
   assert.equal(p.freeAll, true);
   assert.equal(p.paidMin, 0);
   assert.equal(p.cost, 0);
+  assert.equal(p.costMin, 0);
+  assert.equal(p.costMax, 0, 'nothing to pay is exact, whatever the tariff');
   assert.deepEqual(plain(p.segments), [seg(0, 300, 'free')]);
 });
 
@@ -298,7 +305,7 @@ test('planStay: a paid stretch over the max stay is excluded, exactly the max st
   assert.equal(p.status, 'maxstay');
   assert.equal(p.ok, false);
   assert.equal(p.longestPaidMin, 300);
-  assert.equal(p.cost, 11.6);   // still priced, so the UI can say why
+  assert.equal(p.costMin, 11.6);   // still priced, so the UI can say why
   assert.equal(planStay('lewisham:E', THU, at(10), 240, false, false).status, 'ok');
   // 16:00 + 5h: only 3h of it is paid, so within the 4h max
   assert.equal(planStay('lewisham:E', THU, at(16), 300, false, false).status, 'ok');
@@ -345,22 +352,42 @@ test('planStay: unreadable hours and unknown keys are unknown, never ok', () => 
   }
 });
 
-test('planStay: paid time with no price in the data has a null cost but is still ok', () => {
-  // hf:H: every day 8:30am–10pm, max stay 2 hours, no price. Saturday 21:00 for 12 hours crosses midnight.
+test('planStay: a borough priced by emissions band gives a range for the paid time', () => {
+  // hf:H: every day 8:30am–10pm, max stay 2 hours, no price of its own; H&F bands £2.80–£7.00.
+  // Saturday 21:00 for 12 hours crosses midnight.
   const p = planStay('hf:H', SAT, at(21), 720, false, false);
   assert.equal(p.status, 'ok');
   assert.deepEqual(plain(p.segments), [seg(0, 60, 'ctrl'), seg(60, 690, 'free'), seg(690, 720, 'ctrl')]);
   assert.equal(p.paidMin, 90);
   assert.equal(p.longestPaidMin, 60);
   assert.equal(p.perHour, null);
+  assert.equal(p.cost, null, 'not exact: it depends on the car');
+  assert.equal(p.costMin, 4.2);
+  assert.equal(p.costMax, 10.5);
+  assert.equal(p.tariff.basis, 'bands');
+});
+
+test('planStay: paid time with no price in the data has null costs but is still ok', () => {
+  // Islington sets prices street by street: only a note and a link.
+  const p = planStay('islington:A', THU, at(10), 60, false, false);
+  assert.equal(p.status, 'ok');
+  assert.equal(p.paidMin, 60);
+  assert.equal(p.tariff, null);
+  assert.equal(p.perHour, null);
   assert.equal(p.cost, null);
+  assert.equal(p.costMin, null);
+  assert.equal(p.costMax, null);
+  // Hours that can't be read: no cost at all, never £0
+  const u = planStay('nope:Z', SUN, at(10), 60, false, false);
+  assert.equal(u.costMin, null);
+  assert.equal(u.costMax, null);
 });
 
 test('planStay: crossing midnight continues into the next day, and Saturday wraps to Sunday', () => {
   // Lewisham E Friday 18:00 for 24h: 1h paid Friday, Saturday free
   const p = planStay('lewisham:E', FRI, at(18), 1440, false, false);
   assert.deepEqual(plain(p.segments), [seg(0, 60, 'ctrl'), seg(60, 1440, 'free')]);
-  assert.equal(p.cost, 2.32);
+  assert.equal(p.costMin, 2.32);
   // Sunday 22:00 for 12h: Monday 09:00–10:00 is paid
   const q = planStay('lewisham:E', SUN, at(22), 720, false, false);
   assert.deepEqual(plain(q.segments), [seg(0, 660, 'free'), seg(660, 720, 'ctrl')]);
@@ -385,6 +412,129 @@ test('planStay: bank holiday and event day apply to the starting day only', () =
   // hf:T: Sunday 15:00 is paid on an event day only
   assert.equal(planStay('hf:T', SUN, at(15), 60, true, false).paidMin, 60);
   assert.equal(planStay('hf:T', SUN, at(15), 60, false, false).paidMin, 0);
+});
+
+// ---- Prices: ruleTariff and planStay's costs ----
+
+test('ruleTariff: each way the data prices a rule', () => {
+  // model 'zone': the rule's own price is exact
+  assert.deepEqual(plain(ruleTariff('hackney:A')), { min: 5.7, max: 5.7, exact: true, basis: 'zone', by: null,
+    bands: null, note: rules.boroughs.hackney.charges.note, url: rules.boroughs.hackney.charges.url || null });
+  // model 'flat': the borough's one rate, in every zone
+  const w = plain(ruleTariff('wandsworth:A1'));
+  assert.equal(w.basis, 'flat');
+  assert.equal(w.exact, true);
+  assert.equal(w.min, 3.7);
+  assert.equal(w.max, 3.7);
+  // emissions bands: the range of the borough's bands, labelled for a table
+  const c = plain(ruleTariff('croydon:Centre'));
+  assert.equal(c.basis, 'bands');
+  assert.equal(c.by, 'emissions');
+  assert.equal(c.exact, false);
+  assert.equal(c.min, 1.57);
+  assert.equal(c.max, 2.1);
+  assert.deepEqual(c.bands, [{ label: 'Band 1 (0 g/km)', perHour: 1.57 }, { label: 'Band 2 (1–138 g/km)', perHour: 1.78 },
+    { label: 'Band 3 (>138 g/km)', perHour: 2.1 }]);
+  assert.equal(c.url, rules.boroughs.croydon.charges.url);
+  // by fuel type
+  const city = plain(ruleTariff('city:City'));
+  assert.equal(city.basis, 'fuel');
+  assert.equal(city.by, 'fuel');
+  assert.equal(city.min, 5);
+  assert.equal(city.max, 10);
+  assert.deepEqual(city.bands.map((b) => b.label), ['Electric', 'Petrol', 'Diesel', 'Other']);
+  assert.deepEqual(plain(ruleTariff('rbkc:1')).bands.map((b) => b.label), ['Electric', 'Petrol', 'Diesel']);
+  // model 'note' (prices street by street) and unknown keys: none
+  assert.equal(ruleTariff('islington:A'), null);
+  assert.equal(ruleTariff('nope:Z'), null);
+});
+
+test('ruleTariff: a rule price in a borough priced by band is a "from" price (Lambeth, Lewisham)', () => {
+  for (const [key, min] of [['lambeth:A', 5.68], ['lewisham:E', 2.32]]) {
+    const t = plain(ruleTariff(key));
+    assert.equal(t.basis, 'from', key);
+    assert.equal(t.min, min, key);
+    assert.equal(t.max, null, key);
+    assert.equal(t.exact, false, key);
+    assert.equal(t.by, 'emissions', key);
+    assert.equal(t.bands, null, key);
+  }
+  const p = planStay('lambeth:A', THU, at(10), 120, false, false);
+  assert.equal(p.costMin, 11.36);
+  assert.equal(p.costMax, null);
+  assert.equal(p.cost, null);
+});
+
+test('every rule in a borough with prices gets a tariff', () => {
+  for (const [key, r] of Object.entries(rules.rules)) {
+    const c = (rules.boroughs[r.borough] || {}).charges || {};
+    const priced = c.model === 'flat' || (c.bands && c.bands.length) || c.byFuel || (r.price && (r.price.perHour != null || (r.price.bands || []).length));
+    const t = ruleTariff(key);
+    if (!priced) continue;
+    assert.ok(t, key + ' has prices but no tariff');
+    assert.ok(t.min > 0 && (t.max === null || t.max >= t.min), key);
+    assert.equal(t.exact, t.max === t.min, key);
+  }
+});
+
+test('ruleTariff and planStay: a rule with its own emission bands (Westminster-style)', () => {
+  const band = (b, perHour) => ({ band: b, co2: b === 1 ? '0–50 g/km' : 'over ' + b * 50 + ' g/km', perHour });
+  ctx.setParkingRules({ boroughs: {
+    w: { name: 'W', maxStayDefault: '4 hours', charges: { model: 'zone', note: 'By parent zone and CO2 band.', url: 'https://w.example/tariffs' } },
+    v: { name: 'V', charges: { bands: [band(1, 1), band(2, 2)], url: 'https://v.example' } } },
+  rules: {
+    'w:G': { borough: 'w', zone: 'G', hours: 'Mon-Sat 8:30am-6:30pm', periods: [{ days: [1, 2, 3, 4, 5, 6], from: '08:30', to: '18:30' }],
+      price: { bands: [band(1, 4.78), band(2, 6.2), band(3, 8.1), band(4, 9.5), band(5, 10.58)], note: 'Zone G', url: 'https://w.example/g.pdf' } },
+    'w:D': { borough: 'w', zone: 'D', hours: 'Mon-Sat 8:30am-6:30pm', periods: [{ days: [1, 2, 3, 4, 5, 6], from: '08:30', to: '18:30' }],
+      maxStay: '2 or 4 hours', price: { bands: [band(1, 2.2), band(2, 4.88)] } },
+    'w:Z': { borough: 'w', zone: 'Z', hours: 'Mon-Sat 8:30am-6:30pm', periods: [{ days: [1, 2, 3, 4, 5, 6], from: '08:30', to: '18:30' }] },
+    // the rule's own bands win over the borough's
+    'v:A': { borough: 'v', zone: 'A', hours: 'x', periods: [{ days: [1, 2, 3, 4, 5, 6], from: '08:30', to: '18:30' }],
+      price: { bands: [band(1, 3), band(2, 5)] } },
+    'v:B': { borough: 'v', zone: 'B', hours: 'x', periods: [{ days: [1, 2, 3, 4, 5, 6], from: '08:30', to: '18:30' }] } } });
+  try {
+    const g = plain(ruleTariff('w:G'));
+    assert.equal(g.basis, 'bands');
+    assert.equal(g.min, 4.78);
+    assert.equal(g.max, 10.58);
+    assert.equal(g.exact, false);
+    assert.equal(g.note, 'Zone G');
+    assert.equal(g.url, 'https://w.example/g.pdf');
+    assert.deepEqual(g.bands[0], { label: 'Band 1 (0–50 g/km)', perHour: 4.78 });
+    assert.equal(g.bands.length, 5);
+    assert.equal(plain(ruleTariff('w:D')).url, 'https://w.example/tariffs', 'the borough link when the rule has none');
+    assert.equal(ruleTariff('w:Z'), null, "a 'zone' borough's rule with no price of its own");
+    assert.deepEqual(plain(ruleTariff('v:A')).bands.map((b) => b.perHour), [3, 5]);
+    assert.deepEqual(plain(ruleTariff('v:B')).bands.map((b) => b.perHour), [1, 2]);
+
+    // 2 hours from Thursday 10:00 in zone G
+    const p = planStay('w:G', THU, at(10), 120, false, false);
+    assert.equal(p.status, 'ok');
+    assert.equal(p.costMin, 9.56);
+    assert.equal(p.costMax, 21.16);
+    assert.equal(p.cost, null);
+    assert.equal(p.perHour, null);
+    // No maxStay of its own: the borough's 4 hour default applies
+    assert.equal(p.maxStayMin, 240);
+    assert.equal(planStay('w:G', THU, at(10), 300, false, false).status, 'maxstay');
+    assert.equal(planStay('w:Z', THU, at(10), 300, false, false).status, 'maxstay');
+    // A maxStay it can't read stays unknown, never the borough default
+    assert.equal(planStay('w:D', THU, at(10), 300, false, false).maxStayMin, null);
+    assert.equal(planStay('w:D', THU, at(10), 300, false, false).status, 'ok');
+    // A borough with no default and a rule with no maxStay: no limit
+    assert.equal(planStay('v:A', THU, at(10), 120, false, false).maxStayMin, null);
+    // Nothing paid: exact £0 whatever the bands
+    const sun = planStay('w:G', SUN, at(10), 120, false, false);
+    assert.deepEqual([sun.cost, sun.costMin, sun.costMax], [0, 0, 0]);
+  } finally {
+    ctx.setParkingRules(rules);
+  }
+});
+
+test('planStay: max stay falls back to the borough default (Lewisham)', () => {
+  const noOwn = Object.keys(rules.rules).filter((k) => k.startsWith('lewisham:') && !rules.rules[k].maxStay && rules.rules[k].periods);
+  assert.ok(noOwn.length > 0);
+  for (const key of noOwn) assert.equal(planStay(key, THU, at(10), 60, false, false).maxStayMin, 240, key);
 });
 
 test('planStay agrees with isControlled minute by minute', () => {
