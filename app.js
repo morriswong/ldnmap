@@ -2386,11 +2386,19 @@ map.on('moveend', function(e) {
 // `park-zones` source) and odd streets (`park-results`) are drawn over it, and a zone's card
 // frames the zone and colours its streets. closeParkNear() is the one way out: it puts the
 // parking layer back as it was. Every lookup takes a number from parkSeq.
+// For a place inside the Congestion Charge zone the results also show the trip's charge, a tip
+// that makes it free and the best parking just outside the zone (see "the Congestion Charge" below).
 var PARK_STAYS = [[null, 'Any'], [30, '30m'], [60, '1h'], [120, '2h'], [180, '3h'], [240, '4h'], ['day', 'All day']];
 var PARK_REACH_M = 1800;       // boroughs with a zone this close to the place are searched
 var PARK_EST_MAX = 25;         // minutes: the straight-line estimate a street must be within
 var PARK_WALK_MAX = 20;        // minutes: the walk a listed street must be within
 var PARK_MATRIX_MAX = 24;      // streets whose walks are refined (25 coordinates with the place)
+// Park just outside the Congestion Charge zone: one row for a place inside it when the trip is
+// charged, allowed a longer walk than the list and searched a little further out.
+var PARK_CCZ_WALK_MAX = 25;    // minutes: the walk that row may take
+var PARK_CCZ_EST_MAX = 30;     // minutes: the straight-line estimate its candidates must be within
+var PARK_CCZ_REACH_M = 2500;   // boroughs with a zone this close to the place are searched for it
+var PARK_CCZ_REFINE = 3;       // its nearest candidates whose walks the Matrix call refines
 var PARK_STATE_COLORS = { free: PARKING_COLORS.free, paid: PARKING_COLORS.ctrl, unknown: PARKING_COLORS.unknown };
 var PARK_SEG_COLORS = { free: PARKING_COLORS.free, ctrl: PARKING_COLORS.ctrl, permit: PARKING_COLORS.permit, unknown: PARKING_COLORS.unknown };
 var PARK_SEG_WORDS = { free: 'free', ctrl: 'paid', permit: 'permit only', unknown: 'unclear' };
@@ -2401,7 +2409,7 @@ var parkPlan = null;           // { dayIdx, minutes, stay (minutes, 'day', or nu
 var parkPrevPlan = null;       // the plan of the results the plan screen was opened from (its Back)
 var parkView = null;           // 'loading' | 'results' | 'detail' | 'plan' | 'error'
 var parkResults = [];          // see parkResult(); `i` on the map features is the index here
-var parkInfo = null;           // { arrival, inZone, outline, covered } for the results showing
+var parkInfo = null;           // { arrival, inZone, outline, covered, ccz } for the results showing
 var parkSort = 'nearest';
 var parkSelIdx = -1;
 var parkData = null;           // the park-results GeoJSON on the map, or null
@@ -2554,10 +2562,11 @@ function parkZoneEntry(rule) {
 }
 
 // Around a place: the boroughs with a zone (or, for boroughs with no zone map, an outline)
-// within reach, whether the place is inside a zone (`inRules`: the rule keys of the zones it's in),
-// and the outline it's inside, if any.
-function parkArea(lng, lat) {
-  var dLat = PARK_REACH_M / 110540, dLng = PARK_REACH_M / (111320 * Math.cos(lat * Math.PI / 180));
+// within reach (`reach` metres, PARK_REACH_M by default), whether the place is inside a zone
+// (`inRules`: the rule keys of the zones it's in), and the outline it's inside, if any.
+function parkArea(lng, lat, reach) {
+  reach = reach || PARK_REACH_M;
+  var dLat = reach / 110540, dLng = reach / (111320 * Math.cos(lat * Math.PI / 180));
   var near = {}, inZone = false, outline = null, inRules = {};
   parkZones().forEach(function(z) {
     var bb = z.bb, p = z.f.properties;
@@ -2580,21 +2589,29 @@ function parkArea(lng, lat) {
 // Each has an estimated walk and the stay planned under its rule. Permit-only and over-max stays
 // go. With no stay chosen, `now` is stayFromNow()'s answer (rules that are permit-only at the
 // arrival go) and `plan` covers the time it allows, up to 24 hours (parkWindow()), for the card.
-function parkCandidates(ids, o, a, inRules) {
+// `opts.outside` (the Congestion Charge row) keeps only street pieces whose nearest point to the
+// place is outside the charge zone, within `opts.estMax` minutes' estimated walk (default
+// PARK_EST_MAX). `names` has each of `lines`' street names.
+function parkCandidates(ids, o, a, inRules, opts) {
   var groups = {};
   inRules = inRules || {};
+  var outside = !!(opts && opts.outside), estMax = (opts && opts.estMax) || PARK_EST_MAX;
+  var maxD = estMax * 80 / 1.3;
   ids.forEach(function(id) {
     var d = parkingDetail[id];
     if (!d || d === 'loading') return;
     d.streets.forEach(function(f) {
       var p = f.properties;
       if (p.tfl || !p.name || !p.rule || !f.geometry || f.geometry.type !== 'LineString') return;
+      var near = parkNearestOnLine(f.geometry.coordinates, o);
+      if (outside && (near.d > maxD || ccInZone(near.c[0], near.c[1]) !== false)) return;
       var zoneRule = p.zone != null && p.rule === id + ':' + p.zone;
       var key = zoneRule ? 'zone|' + p.rule : 'street|' + p.name + '|' + p.rule;
       var g = groups[key] || (groups[key] = { kind: zoneRule ? 'zone' : 'street', name: zoneRule ? 'Zone ' + p.zone : p.name,
-        rule: p.rule, zone: p.zone, b: id, d: Infinity, point: null, street: null, lines: [], inside: zoneRule && !!inRules[p.rule] });
+        rule: p.rule, zone: p.zone, b: id, d: Infinity, point: null, street: null, lines: [], names: [],
+        inside: zoneRule && !!inRules[p.rule] });
       g.lines.push(f.geometry.coordinates);
-      var near = parkNearestOnLine(f.geometry.coordinates, o);
+      g.names.push(p.name);
       if (near.d < g.d) { g.d = near.d; g.point = near.c; g.street = p.name; }
     });
   });
@@ -2602,7 +2619,7 @@ function parkCandidates(ids, o, a, inRules) {
   return Object.keys(groups).map(function(k) { return groups[k]; }).filter(function(g) {
     if (g.inside) g.d = 0;                               // the place is in the zone: about a minute
     g.walk = Math.max(1, Math.ceil(g.d * 1.3 / 80));
-    if (g.walk > PARK_EST_MAX) return false;
+    if (g.walk > estMax) return false;
     if (a.any) {
       var n = nows[g.rule];
       if (!n) {
@@ -2628,9 +2645,12 @@ function parkWindow(n) {
 }
 
 // Walking times for the nearest candidates from one Matrix call. Any failure keeps the estimates.
-// A zone the place is inside keeps its minute.
-function parkRefineWalks(cands, o) {
-  var best = cands.filter(function(c) { return !c.inside; }).sort(function(a, b) { return a.d - b.d; }).slice(0, PARK_MATRIX_MAX);
+// A zone the place is inside keeps its minute. `extra` (the Congestion Charge row's candidates)
+// take slots of their own.
+function parkRefineWalks(cands, o, extra) {
+  extra = extra || [];
+  var best = cands.filter(function(c) { return !c.inside; }).sort(function(a, b) { return a.d - b.d; })
+    .slice(0, PARK_MATRIX_MAX - extra.length).concat(extra);
   if (!best.length) return Promise.resolve();
   var coords = [o].concat(best.map(function(c) { return c.point; }))
     .map(function(c) { return c[0].toFixed(6) + ',' + c[1].toFixed(6); });
@@ -2683,10 +2703,11 @@ function parkResult(c) {
 
 // Nearest: by walk. Cheapest: free first, then by the lowest cost (a range or 'from' price by its
 // bottom; with no stay chosen, the lowest hourly rate now), then by walk; unknown prices after
-// known ones. Streets whose hours couldn't be read go last in both.
+// known ones. Streets whose hours couldn't be read go last in both. The row for parking outside
+// the Congestion Charge zone (`outside`) sits above the list, so it isn't in it.
 function parkSorted() {
   var key = function(r) { return r.now ? r.rateMin : r.costMin; };
-  return parkResults.map(function(r, i) { return { r: r, i: i }; }).sort(function(x, y) {
+  return parkResults.map(function(r, i) { return { r: r, i: i }; }).filter(function(x) { return !x.r.outside; }).sort(function(x, y) {
     var a = x.r, b = y.r;
     var u = (a.state === 'unknown') - (b.state === 'unknown');
     if (u) return u;
@@ -2808,22 +2829,25 @@ function parkFitLine(r) {
 
 /* --- map --- */
 // Every listed row's street pieces, `i` its index in parkResults and `kind` 'zone' or 'street'.
-// A zone's streets show only while its card is open (parkShownFilter()); odd streets always.
+// A zone's streets show only while its card is open (parkShownFilter()); odd streets always, and
+// so does the street outside the Congestion Charge zone (its row's `lines`), drawn as a street.
 function parkResultsGeoJSON() {
   var features = [];
   parkResults.forEach(function(r, i) {
+    var kind = r.outside ? 'street' : r.kind;
     r.lines.forEach(function(line) {
-      features.push({ type: 'Feature', properties: { i: i, state: r.state, kind: r.kind }, geometry: { type: 'LineString', coordinates: line } });
+      features.push({ type: 'Feature', properties: { i: i, state: r.state, kind: kind }, geometry: { type: 'LineString', coordinates: line } });
     });
   });
   return { type: 'FeatureCollection', features: features };
 }
 
 // The listed zones' outlines (zones.geojson's polygons), coloured by their row's state; null with none.
+// Not the row outside the Congestion Charge zone: its zone may reach into the charge zone.
 function parkZonesGeoJSON() {
   var features = [];
   parkResults.forEach(function(r, i) {
-    var z = r.kind === 'zone' ? parkZoneEntry(r.rule) : null;
+    var z = r.kind === 'zone' && !r.outside ? parkZoneEntry(r.rule) : null;
     if (z) features.push({ type: 'Feature', properties: { i: i, state: r.state }, geometry: z.f.geometry });
   });
   return features.length ? { type: 'FeatureCollection', features: features } : null;
@@ -2846,11 +2870,12 @@ function parkZoneBounds(r) {
   r.lines.forEach(function(line) { bb = parkExtend(bb, line); });
   return bb;
 }
-// What the results view frames: the place, every listed zone and every odd street's nearest point.
+// What the results view frames: the place, every listed zone and every odd street's nearest point
+// (and the nearest point outside the Congestion Charge zone).
 function parkResultsBounds() {
   var bb = parkExtend(null, [[parkPlace.lng, parkPlace.lat]]);
   parkResults.forEach(function(r) {
-    if (r.kind === 'zone') { var z = parkZoneBounds(r); bb = parkExtend(bb, [[z[0], z[1]], [z[2], z[3]]]); }
+    if (r.kind === 'zone' && !r.outside) { var z = parkZoneBounds(r); bb = parkExtend(bb, [[z[0], z[1]], [z[2], z[3]]]); }
     else bb = parkExtend(bb, [r.point]);
   });
   return bb;
@@ -3082,8 +3107,16 @@ function parkShowDetail(i) {
   parkApplySel();
   parkRender();
   parkSheetTo('half');
-  if (r.kind === 'zone') parkFitBounds(parkZoneBounds(r));
+  if (r.outside) parkFitBounds(parkOutsideBounds(r));
+  else if (r.kind === 'zone') parkFitBounds(parkZoneBounds(r));
   else map.flyTo({ center: r.point, zoom: Math.max(map.getZoom(), 16.5), offset: paddingOffset(parkMapPadding()) });
+}
+
+// The row outside the Congestion Charge zone frames the walk: the place and its street.
+function parkOutsideBounds(r) {
+  var bb = parkExtend(null, [[parkPlace.lng, parkPlace.lat], r.point]);
+  r.lines.forEach(function(line) { bb = parkExtend(bb, line); });
+  return bb;
 }
 
 // A tap on a result on the map: its card, unless it's already open.
@@ -3098,34 +3131,47 @@ function parkSetSort(s) {
   parkRender();
 }
 
-// Find parking: load what's needed, list the zones and odd streets, draw them.
+// Find parking: load what's needed, list the zones and odd streets, draw them. When the place is
+// in the Congestion Charge zone (parkCczInfo()) and the trip is charged, it also looks a little
+// further out (PARK_CCZ_REACH_M) for the best parking just outside the charge zone.
 function parkFind() {
   if (!parkPlace || !parkPlan) return Promise.resolve();
   var seq = ++parkSeq;
   parkPrevPlan = null;
   if (parkPlan.now) { parkPlan.dayIdx = 0; parkPlan.minutes = parkNowMinutes(); }
-  var place = parkPlace, o = [place.lng, place.lat], area = null, arrival = null;
+  var place = parkPlace, o = [place.lng, place.lat], area = null, arrival = null, ccz = null;
   parkView = 'loading';
   parkSelIdx = -1;
   parkResults = [];
   clearParkResults();
   parkRender();
-  return loadParkingData().then(function() {
+  // Without the charge zone the list still works, just without the charge.
+  return Promise.all([loadParkingData(), loadCczData().catch(function() { return null; })]).then(function() {
     if (seq !== parkSeq) return null;
     parkSyncParkingTime();
     arrival = parkArrival();
     area = parkArea(place.lng, place.lat);
-    var ids = area.boroughs.filter(function(id) { return parkingRules.boroughs[id].detail; });
-    return Promise.all(ids.map(function(id) { return loadParkingBorough(id).catch(function() { return null; }); }))
-      .then(function() { return ids; });
-  }).then(function(ids) {
-    if (!ids || seq !== parkSeq) return null;
-    var cands = parkCandidates(ids, o, arrival, area.inRules);
-    return parkRefineWalks(cands, o).then(function() { return cands; });
-  }).then(function(cands) {
-    if (!cands || seq !== parkSeq) return;
-    parkResults = cands.filter(function(c) { return c.walk <= PARK_WALK_MAX; }).map(parkResult);
-    parkInfo = { arrival: arrival, inZone: area.inZone, outline: area.outline, covered: area.boroughs.length > 0 };
+    ccz = parkCczInfo(place, arrival);
+    var detail = function(id) { return parkingRules.boroughs[id].detail; };
+    var ids = area.boroughs.filter(detail);
+    var outIds = ccz && ccz.charge.charged ? parkArea(place.lng, place.lat, PARK_CCZ_REACH_M).boroughs.filter(detail) : [];
+    var all = ids.concat(outIds.filter(function(id) { return ids.indexOf(id) === -1; }));
+    return Promise.all(all.map(function(id) { return loadParkingBorough(id).catch(function() { return null; }); }))
+      .then(function() { return { ids: ids, outIds: outIds }; });
+  }).then(function(found) {
+    if (!found || seq !== parkSeq) return null;
+    var cands = parkCandidates(found.ids, o, arrival, area.inRules);
+    // Outside the charge zone: allowed for the plan, hours known, nearest first.
+    var outs = !found.outIds.length ? [] : parkCandidates(found.outIds, o, arrival, null, { outside: true, estMax: PARK_CCZ_EST_MAX })
+      .filter(function(c) { return parkResult(c).state !== 'unknown'; })
+      .sort(function(a, b) { return a.d - b.d; });
+    return parkRefineWalks(cands, o, outs.slice(0, PARK_CCZ_REFINE)).then(function() { return { cands: cands, outs: outs }; });
+  }).then(function(found) {
+    if (!found || seq !== parkSeq) return;
+    parkResults = found.cands.filter(function(c) { return c.walk <= PARK_WALK_MAX; }).map(parkResult);
+    var out = ccz && ccz.charge.charged ? parkOutsideResult(found.outs) : null;
+    if (out) parkResults.push(out);
+    parkInfo = { arrival: arrival, inZone: area.inZone, outline: area.outline, covered: area.boroughs.length > 0, ccz: ccz };
     parkView = 'results';
     parkData = parkResults.length ? parkResultsGeoJSON() : null;
     parkZoneData = parkResults.length ? parkZonesGeoJSON() : null;
@@ -3137,6 +3183,128 @@ function parkFind() {
     if (seq !== parkSeq) return;
     parkView = 'error';
     parkRender();
+  });
+}
+
+/* --- the Congestion Charge --- */
+// For a place inside the charge zone: what the plan's trip is charged (ccChargeForTrip()), from the
+// arrival to the arrival plus the stay. With no stay chosen only the drive in is known, so the
+// charge is for that. `alt` is a nearby arrival that makes it free (parkCczAlt()). Null when the
+// place is outside the zone, or the zone couldn't be loaded.
+// → { charge, arrive (Date), status (ccStatusAt(arrive)), alt }
+function parkCczInfo(place, a) {
+  if (ccInZone(place.lng, place.lat) !== true) return null;
+  var arrive = ccLondonTime(londonDate(parkDays()[a.dayIdx].date), a.minutes);
+  var leave = a.any ? arrive : new Date(arrive.getTime() + a.stayMin * 60000);
+  var charge = ccChargeForTrip(arrive, leave);
+  return { charge: charge, arrive: arrive, status: ccStatusAt(arrive), alt: charge.charged ? parkCczAlt(arrive, a) : null };
+}
+
+// The nearest arrival that makes the trip free (ccFreeAlternative()), as the plan takes it:
+// { dayIdx, minutes, label ('Arrive after 6pm'), arrive (Date) }, or null. Never in the past, never
+// past the plan's last day. With no stay chosen, or all day (until midnight), only a later
+// arrival counts: arriving before charging starts still means leaving in it.
+function parkCczAlt(arrive, a) {
+  var open = a.any || a.stay === 'day', now = new Date();
+  var alt = ccFreeAlternative(arrive, open ? 0 : a.stayMin,
+    { now: open ? new Date(Math.max(now.getTime(), arrive.getTime() + 1)) : now });
+  if (!alt) return null;
+  var iso = londonDate(alt.arrival), days = parkDays(), idx = -1;
+  for (var i = 0; i < days.length; i++) if (londonDate(days[i].date) === iso) idx = i;
+  if (idx < 0) return null;
+  if (a.stay === 'day' && ccChargeForTrip(alt.arrival, ccLondonTime(iso, 1440)).charged) return null;
+  return { dayIdx: idx, minutes: londonDayTime(alt.arrival).minutes, label: alt.label, arrive: alt.arrival };
+}
+
+// The tip's tap: arrive then instead, keeping the stay, and look again the way Find parking does.
+// If that time has gone by while the list was open, arrive now.
+function parkTakeCczTip() {
+  var z = parkInfo && parkInfo.ccz, alt = z && z.alt;
+  if (!parkPlace || !parkPlan || !alt) return Promise.resolve();
+  if (alt.arrive.getTime() <= Date.now()) {
+    parkPlan.dayIdx = 0; parkPlan.minutes = parkNowMinutes(); parkPlan.now = true;
+  } else {
+    parkPlan.dayIdx = alt.dayIdx; parkPlan.minutes = alt.minutes; parkPlan.now = false;
+  }
+  return parkFind();
+}
+
+// The best parking just outside the charge zone, from parkCandidates()' `outside` candidates
+// (nearest first): the shortest walk within PARK_CCZ_WALK_MAX, drawn as its nearest street's
+// pieces. Null when there's none.
+function parkOutsideResult(outs) {
+  var best = null;
+  outs.forEach(function(c) {
+    if (c.walk > PARK_CCZ_WALK_MAX) return;
+    if (!best || c.walk < best.walk || (c.walk === best.walk && c.d < best.d)) best = c;
+  });
+  if (!best) return null;
+  var r = parkResult(best);
+  r.outside = true;
+  r.inside = false;
+  r.lines = best.lines.filter(function(line, k) { return best.names[k] === best.street; });
+  return r;
+}
+
+// '£18', '£13.50'.
+function parkCczMoney(x) { return '£' + (x % 1 ? x.toFixed(2) : String(x)); }
+
+// When the charge is: 'today', 'tomorrow', 'on Sat', or 'for 2 days'.
+function parkCczWhen(c) {
+  if (c.days > 1) return 'for ' + c.days + ' days';
+  var today = londonDate(new Date()), d = c.dates[0];
+  return d === today ? 'today' : d === cczAddDays(today, 1) ? 'tomorrow' : 'on ' + CCZ_DAYS[cczWeekday(d)];
+}
+
+// '7am tomorrow', '12pm Sat', '7am' (today): a time after now, said from today.
+function parkCczAt(date) {
+  var word = ccDayWord(date, new Date());
+  return ccClock(date) + (word ? ' ' + word : '');
+}
+
+// The small line under the charge: why it's charged.
+function parkCczWhy(z, a) {
+  var c = z.charge;
+  if (a.any) {
+    return 'For driving in ' + (a.now ? 'now' : 'at ' + parkClock(a.minutes)) + ', in charging hours (until '
+      + ccClock(z.status.until) + '). Leaving in another day’s charging hours costs ' + parkCczMoney(c.amount) + ' more.';
+  }
+  var h = c.days === 1 ? ccChargingHours(c.dates[0]) : null;
+  return c.reason + (h ? ' (' + parkRange(h.start, h.end, true) + ')' : '') + '.';
+}
+
+// Under the results' header, for a place inside the charge zone: the charge, if the trip is
+// charged ('+ £18 Congestion Charge today'), with a tip that makes it free when there's one, and
+// the best parking just outside the zone; or a quiet line when it isn't charged.
+function parkRenderCcz() {
+  var z = parkInfo.ccz, a = parkInfo.arrival;
+  if (!z) return;
+  var c = z.charge;
+  if (!c.charged) {
+    var free = !a.any ? 'no charge for this trip'
+      : z.status.next ? 'no charge if you leave before ' + parkCczAt(z.status.next) : 'no charge';
+    parkBody.appendChild(pkEl('p', 'park-ccz-quiet', 'In the Congestion Charge zone · ' + free));
+    return;
+  }
+  var box = pkEl('div', 'park-ccz');
+  box.setAttribute('role', 'note');
+  box.appendChild(pkEl('div', 'park-ccz-main', '+ ' + parkCczMoney(c.amount) + ' Congestion Charge ' + parkCczWhen(c)));
+  box.appendChild(pkEl('div', 'park-ccz-why', parkCczWhy(z, a)));
+  if (z.alt) {
+    var alt = z.alt, next = a.any ? ccStatusAt(alt.arrive).next : null;
+    var sub = (next ? 'If you leave before ' + parkCczAt(next) + '. ' : '')
+      + 'Tap to see parking for ' + (alt.dayIdx === 0 ? '' : PARKING_DAYS[parkDays()[alt.dayIdx].day] + ' ') + parkClock(alt.minutes);
+    var tip = parkButton('park-ccz-tip', undefined, parkTakeCczTip, alt.label + ' and it’s free. ' + sub);
+    tip.appendChild(pkEl('span', 'park-ccz-tip-main', alt.label + ' and it’s free'));
+    tip.appendChild(pkEl('span', 'park-ccz-tip-sub', sub));
+    box.appendChild(tip);
+  }
+  parkBody.appendChild(box);
+  parkResults.forEach(function(r, i) {
+    if (!r.outside) return;
+    var list = pkEl('ul', 'park-list park-ccz-list');
+    list.appendChild(parkRowEl({ r: r, i: i }));
+    parkBody.appendChild(list);
   });
 }
 
@@ -3258,8 +3426,9 @@ function parkRenderResults() {
   head.appendChild(pkEl('div', 'park-res-when', parkPlanSummary(a)));
   head.appendChild(parkButton('park-edit', 'Change', parkShowPlan, 'Change arrival time or stay length'));
   parkBody.appendChild(head);
+  parkRenderCcz();
 
-  var name = parkPlace.name;
+  var name = parkPlace.name, rows = parkSorted();
   if (!parkInfo.covered && !parkInfo.inZone) {
     parkBody.appendChild(pkEl('div', 'pk-note park-compact', 'No parking data near ' + name + ' yet. This covers London’s controlled parking zones.'));
     return;
@@ -3267,7 +3436,7 @@ function parkRenderResults() {
   if (!parkInfo.inZone && !parkInfo.outline) {
     parkBody.appendChild(pkEl('p', 'pk-note', name + ' isn’t in a controlled parking zone: most streets nearby have no parking controls. Watch for yellow lines and signs.'));
   }
-  if (!parkResults.length) {
+  if (!rows.length) {
     var empty = pkEl('div', 'park-empty park-compact');
     if (!parkInfo.inZone && parkInfo.outline) {
       var bn = (parkingRules.boroughs[parkInfo.outline] || {}).name || 'This borough';
@@ -3298,7 +3467,7 @@ function parkRenderResults() {
   parkBody.appendChild(seg);
 
   var list = pkEl('ul', 'park-list');
-  parkSorted().forEach(function(x) { list.appendChild(parkRowEl(x)); });
+  rows.forEach(function(x) { list.appendChild(parkRowEl(x)); });
   parkBody.appendChild(list);
   parkBody.appendChild(pkEl('p', 'pk-small park-foot', 'Shows where you’re allowed to park, not whether a space is free. Check the signs.'));
 }
@@ -3308,13 +3477,15 @@ function parkRenderResults() {
 function parkRowEl(x) {
   var r = x.r;
   var li = pkEl('li', '');
-  var row = parkButton('park-row' + (r.kind === 'zone' ? ' park-row--zone' : ''), undefined, function() { parkShowDetail(x.i); });
+  var row = parkButton('park-row' + (r.kind === 'zone' ? ' park-row--zone' : '') + (r.outside ? ' park-row--ccz' : ''), undefined,
+    function() { parkShowDetail(x.i); });
   parkRowSwatch(row, r);
   var walk = pkEl('span', 'park-walk');
   walk.appendChild(pkEl('b', '', String(r.walk)));
   walk.appendChild(pkEl('span', '', 'min'));
   row.appendChild(walk);
   var main = pkEl('span', 'park-main');
+  if (r.outside) main.appendChild(pkEl('span', 'park-ccz-tag', parkOutsideLine(r)));
   main.appendChild(pkEl('span', 'park-name', parkRowTitle(r)));
   main.appendChild(pkEl('span', 'park-zone', parkRowSub(r)));
   if (r.now) main.appendChild(pkEl('span', 'park-stay', parkStayLine(r)));
@@ -3326,6 +3497,11 @@ function parkRowEl(x) {
   row.appendChild(parkCostEl(r));
   li.appendChild(row);
   return li;
+}
+
+// 'Outside the charge zone · 11 min walk · saves £18': the row outside the Congestion Charge zone.
+function parkOutsideLine(r) {
+  return 'Outside the charge zone · ' + r.walk + ' min walk · saves ' + parkCczMoney(parkInfo.ccz.charge.amount);
 }
 
 // A result row's left edge in its street's colour on the map, so the list and the map's result
@@ -3407,6 +3583,10 @@ function parkRenderDetail() {
   card.appendChild(pill);
   card.appendChild(pkEl('p', 'park-walkline', r.inside ? parkPlace.name + ' is in this zone'
     : r.walk + ' min walk to ' + parkPlace.name + (zone ? ' from ' + r.street : '') + (r.refined ? '' : ' (estimate)')));
+  if (r.outside) {
+    card.appendChild(pkEl('p', 'park-ccz-quiet park-ccz-quiet--on', 'Outside the Congestion Charge zone: saves '
+      + parkCczMoney(parkInfo.ccz.charge.amount) + ' ' + parkCczWhen(parkInfo.ccz.charge)));
+  }
 
   // With no stay chosen the bar covers the time you can stay, up to 24 hours (parkWindow()).
   var span = parkSpan(r), limited = r.now && r.now.untilMin === span;
@@ -3475,7 +3655,7 @@ function parkRenderDetail() {
   parkingRow(card, 'Walk', r.inside ? 'About 1 min: ' + parkPlace.name + ' is in this zone' : r.walk + ' min to ' + parkPlace.name);
   card.appendChild(pkEl('p', 'pk-small', 'Check the signs on the street: bays can be suspended.'));
   // A zone's streets with rules of their own, listed in the results too.
-  var odd = zone ? parkOddStreets(r) : [];
+  var odd = zone && !r.outside ? parkOddStreets(r) : [];
   if (odd.length) {
     card.appendChild(pkEl('div', 'pk-section', 'Streets here with their own rules'));
     var sub = pkEl('ul', 'park-list park-sublist');

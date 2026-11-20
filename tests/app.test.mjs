@@ -1239,3 +1239,195 @@ test('congestion charge chip: under the sheets and the search screen, clear of t
   const mobile = block(/\n    \.ccz-chip \{([^}]*)\}/);
   assert.match(mobile, /top: 12px; left: 116px; right: 56px;/);
 });
+
+// --- Park near here and the Congestion Charge ------------------------------------------------
+// A place by Liverpool Street, inside the charge zone, whose edge is 400–500 m east of it. Zone A
+// is around the place; Inner Lane (zone B, free) is inside the charge zone too. Outside it: Permit
+// Close (permit holders only), Unknown Way (hours unknown), Outer Street (zone O, paid) and, too
+// far to walk, Far Parade.
+const C = [-0.0790, 51.5150];
+const C_LNG = 1 / (111320 * Math.cos(C[1] * Math.PI / 180));
+const cAt = (east, north = 0) => [C[0] + east * C_LNG, C[1] + north * M_LAT];
+const cStreet = (name, rule, east) => ({ type: 'Feature', properties: { name, zone: rule.split(':')[1], rule, cls: 4 },
+  geometry: { type: 'LineString', coordinates: [cAt(east, -40), cAt(east, 40)] } });
+const CCZ_RULES = { ...PARK_RULES, rules: { ...PARK_RULES.rules,
+  'x:O': rule('O', { name: 'Outer', periods: ALL_DAY, price: { perHour: 3 } }) } };
+const CCZ_STREETS = [cStreet('Alpha Road', 'x:A', 100), cStreet('Inner Lane', 'x:B', 300), cStreet('Permit Close', 'x:P', 600),
+  cStreet('Unknown Way', 'x:U', 650), cStreet('Outer Street', 'x:O', 700), cStreet('Far Parade', 'x:O', 2600)];
+const C_WALK_SECS = { 300: 240, 650: 480, 700: 660 };
+function cczMatrixReply(url) {
+  const coords = url.split('/walking/')[1].split('?')[0].split(';').map((c) => c.split(',').map(Number));
+  return reply({ code: 'Ok', durations: [coords.map((c, i) => (i === 0 ? 0 : C_WALK_SECS[Math.round((c[0] - C[0]) / C_LNG / 50) * 50]))] });
+}
+const cczParkRoutes = (streets) => [...CCZ,
+  [/data\/parking\/rules\.json/, () => reply(CCZ_RULES)],
+  [/data\/parking\/zones\.geojson/, () => reply({ type: 'FeatureCollection', features: [
+    { type: 'Feature', properties: { b: 'x', zone: 'A', rule: 'x:A', lx: C[0], ly: C[1] }, geometry: SQUARE_AT(C, 0.001) }] })],
+  [/data\/parking\/x\/streets/, collection(streets || CCZ_STREETS)],
+  [/data\/parking\/x\/(kerb|machines)/, collection([])],
+  [/directions-matrix\/v1\/mapbox\/walking\//, cczMatrixReply]];
+const cczBody = (app) => app.el('park-body');
+const cczBanner = (app) => cczBody(app).querySelectorAll('.park-ccz')[0];
+const cczQuiet = (app) => cczBody(app).querySelectorAll('.park-ccz-quiet').map((e) => e.textContent);
+const cczTip = (app) => cczBody(app).querySelectorAll('.park-ccz-tip')[0];
+const cczOutsideRows = (app) => cczBody(app).querySelectorAll('.park-ccz-list').flatMap((l) => l.querySelectorAll('.park-row'));
+function openCczPark(app, plan, where) {
+  const c = where || C;
+  app.pendingPlace = { name: 'The Office', lat: c[1], lng: c[0] };
+  const found = app.openParkNear();
+  if (!plan) return found;
+  Object.assign(app.parkPlan, plan);
+  return app.parkFind();
+}
+
+test('park near here, congestion charge: in charging hours, the charge, a tip and parking just outside', async () => {
+  const app = loadApp({ routes: cczParkRoutes(), now: FRI_3PM });
+  await openCczPark(app);
+  assert.equal(app.parkView, 'results');
+  // Under the header: the charge for driving in now, said honestly with no stay chosen.
+  assert.match(cczBody(app).textContent, /^Now · any lengthChange\+ £18 Congestion Charge today/);
+  const banner = cczBanner(app);
+  assert.equal(banner.querySelectorAll('.park-ccz-main')[0].textContent, '+ £18 Congestion Charge today');
+  assert.equal(banner.querySelectorAll('.park-ccz-why')[0].textContent,
+    'For driving in now, in charging hours (until 6pm). Leaving in another day’s charging hours costs £18 more.');
+  // The tip: a later arrival only, since with no stay you'd still leave in charging hours.
+  const tip = cczTip(app);
+  assert.equal(tip.tagName, 'BUTTON');
+  assert.equal(tip.textContent, 'Arrive after 6pm and it’s freeIf you leave before 12pm tomorrow. Tap to see parking for 6:00pm');
+  // Parking just outside, above the list: Outer Street, not the nearer permit-only or unreadable streets.
+  const out = cczOutsideRows(app);
+  assert.equal(out.length, 1);
+  assert.match(out[0].textContent, /^11minOutside the charge zone · 11 min walk · saves £18Zone O · OuterNearest: Outer Street · Xshire/);
+  assert.match(out[0].className, /park-row--ccz/);
+  const kids = cczBody(app).children.map((c) => c.className);
+  assert.ok(kids.indexOf('park-list park-ccz-list') < kids.indexOf('park-list'), 'above the list');
+  const listed = cczBody(app).children.filter((c) => c.className === 'park-list')[0].querySelectorAll('.park-name').map((e) => e.textContent);
+  assert.deepEqual(listed, ['Zone A · Alpha', 'Zone B · B zone', 'Zone O · Outer', 'Zone U · U zone'], 'the list is as before');
+  const r = app.parkResults.find((x) => x.outside);
+  assert.equal(r.street, 'Outer Street');
+  assert.equal(r.inside, false);
+  assert.equal(app.ccInZone(r.point[0], r.point[1]), false);
+  // One Matrix call: the place, the list's three and the outside candidate.
+  const matrix = app.fetched.filter((u) => /directions-matrix/.test(u));
+  assert.equal(matrix.length, 1);
+  assert.equal(matrix[0].split('?')[0].split(';').length, 5);
+  assert.equal(r.refined, true);
+
+  // On the map: its street, always shown like an odd street; no outline for its zone.
+  const i = app.parkResults.indexOf(r);
+  const feats = () => app.map.getSource('park-results').def.data.features.filter((f) => f.properties.i === i);
+  assert.deepEqual(plain(feats().map((f) => f.properties)), [{ i, state: 'paid', kind: 'street' }]);
+  assert.equal(app.map.getSource('park-zones').def.data.features.filter((f) => f.properties.i === i).length, 0);
+  const fit = app.map.calls.filter((c) => c.name === 'fitBounds').pop().bounds;
+  assert.ok(fit.e >= r.point[0], 'the results frame it too');
+
+  // Tapping it: its card, and the map frames the walk.
+  out[0].dispatch('click');
+  assert.equal(app.parkView, 'detail');
+  assert.equal(app.parkSelIdx, i);
+  const card = cczBody(app).textContent;
+  assert.match(card, /^Zone O · OuterXshire.*11 min walk to The Office from Outer StreetOutside the Congestion Charge zone: saves £18 today/);
+  assert.doesNotMatch(card, /own rules/);
+  const move = app.map.calls.pop();
+  assert.equal(move.name, 'fitBounds');
+  assert.ok(move.bounds.w <= C[0] && move.bounds.e >= r.point[0], 'from the place to the street');
+  assert.deepEqual(plain(app.map.getLayer('park-results-sel').filter), ['all', ['==', ['get', 'i'], i], ['==', ['get', 'kind'], 'street']]);
+
+  // A theme change puts it all back.
+  app.toggleTheme();
+  app.map.finishStyle();
+  assert.equal(feats().length, 1);
+  app.rehydrateLayers();
+  assert.equal(feats().length, 1);
+  app.parkShowList();
+  assert.equal(cczOutsideRows(app).length, 1);
+  app.closeParkNear();
+  assert.deepEqual(app.map.layerIds().filter((id) => id.indexOf('park') === 0), []);
+});
+
+test('park near here, congestion charge: free hours, an uncharged stay, and a place outside the zone', async () => {
+  // Friday 7pm, no stay: free to drive in, and says until when.
+  let app = loadApp({ routes: cczParkRoutes(), now: Date.UTC(2026, 10, 20, 19, 0) });
+  await openCczPark(app);
+  assert.equal(cczBanner(app), undefined);
+  assert.equal(cczTip(app), undefined);
+  assert.equal(cczOutsideRows(app).length, 0);
+  assert.deepEqual(cczQuiet(app), ['In the Congestion Charge zone · no charge if you leave before 12pm tomorrow']);
+  assert.equal(app.parkResults.filter((r) => r.outside).length, 0);
+  // Saturday 1pm for 2 hours: charged, on weekend hours.
+  await openCczPark(app, { dayIdx: 1, minutes: 13 * 60, stay: 120, now: false });
+  assert.equal(cczBanner(app).querySelectorAll('.park-ccz-main')[0].textContent, '+ £18 Congestion Charge tomorrow');
+  assert.equal(cczBanner(app).querySelectorAll('.park-ccz-why')[0].textContent, 'Arriving and leaving in charging hours (12–6pm).');
+  assert.equal(cczOutsideRows(app).length, 1);
+  // Friday 7pm for 2 hours: nothing to pay.
+  await openCczPark(app, { dayIdx: 0, minutes: 19 * 60, stay: 120, now: false });
+  assert.deepEqual(cczQuiet(app), ['In the Congestion Charge zone · no charge for this trip']);
+  assert.equal(cczBanner(app), undefined);
+
+  // Charged, but nothing outside within the walk: no row.
+  app = loadApp({ routes: cczParkRoutes(CCZ_STREETS.filter((f) => f.properties.name !== 'Outer Street')), now: FRI_3PM });
+  await openCczPark(app);
+  assert.ok(cczBanner(app));
+  assert.equal(cczOutsideRows(app).length, 0);
+  assert.equal(app.parkResults.filter((r) => r.outside).length, 0);
+
+  // A place outside the zone, in charging hours: nothing about the charge.
+  app = loadApp({ routes: cczParkRoutes(), now: FRI_3PM });
+  await openCczPark(app, null, cAt(900));
+  assert.equal(cczBanner(app), undefined);
+  assert.deepEqual(cczQuiet(app), []);
+  assert.equal(app.parkInfo.ccz, null);
+
+  // Without the zone file the list works as before.
+  app = loadApp({ routes: cczParkRoutes().slice(2), now: FRI_3PM });
+  await openCczPark(app);
+  assert.equal(app.parkView, 'results');
+  assert.equal(app.parkInfo.ccz, null);
+  assert.equal(cczBanner(app), undefined);
+});
+
+test('park near here, congestion charge: the tip moves the arrival, keeps the stay and looks again', async () => {
+  const app = loadApp({ routes: cczParkRoutes(), now: FRI_3PM });
+  await openCczPark(app, { dayIdx: 0, minutes: 15 * 60, stay: 120, now: false });
+  assert.match(cczBody(app).textContent, /^Fri 3:00pm · 2hChange\+ £18 Congestion Charge today/);
+  assert.equal(cczBanner(app).querySelectorAll('.park-ccz-why')[0].textContent, 'Arriving and leaving in charging hours (7am–6pm).');
+  const tip = cczTip(app);
+  assert.equal(tip.textContent, 'Arrive after 6pm and it’s freeTap to see parking for 6:00pm');
+  assert.equal(tip.getAttribute('aria-label'), 'Arrive after 6pm and it’s free. Tap to see parking for 6:00pm');
+  const seq = app.parkSeq;
+  tip.dispatch('click');
+  assert.equal(app.parkView, 'loading', 'the same search as Find parking');
+  assert.ok(app.parkSeq > seq, 'a new lookup: an older one is dropped');
+  assert.deepEqual(plain(app.parkPlan), { dayIdx: 0, minutes: 18 * 60, stay: 120, now: false });
+  await settle();
+  assert.equal(app.parkView, 'results');
+  assert.match(cczBody(app).textContent, /^Fri 6:00pm · 2hChange/);
+  assert.deepEqual(cczQuiet(app), ['In the Congestion Charge zone · no charge for this trip']);
+  assert.equal(cczTip(app), undefined);
+  assert.equal(cczOutsideRows(app).length, 0);
+  assert.equal(app.parkingWhen.minutes, 18 * 60, 'the parking layer follows the new arrival');
+
+  // A late answer for the old plan doesn't win over the tip's.
+  const slow = loadApp({ routes: cczParkRoutes(), now: FRI_3PM });
+  await openCczPark(slow, { dayIdx: 0, minutes: 15 * 60, stay: 120, now: false });
+  cczTip(slow).dispatch('click');
+  slow.parkShowPlan();
+  await settle();
+  assert.equal(slow.parkView, 'plan');
+});
+
+test('park near here, congestion charge: the tip never offers a time that has gone', async () => {
+  // Friday 8am for an hour is charged. Leaving before 7am means arriving at 5:55am.
+  const plan = { dayIdx: 0, minutes: 8 * 60, stay: 60, now: false };
+  let app = loadApp({ routes: cczParkRoutes(), now: Date.UTC(2026, 10, 20, 5, 0) });   // 5am: still ahead
+  await openCczPark(app, plan);
+  assert.equal(cczTip(app).querySelectorAll('.park-ccz-tip-main')[0].textContent, 'Leave before 7am and it’s free');
+  cczTip(app).dispatch('click');
+  assert.equal(app.parkPlan.minutes, 5 * 60 + 55);
+  await settle();
+  assert.match(cczBody(app).textContent, /^Fri 5:55am · 1hChange/);
+  assert.deepEqual(cczQuiet(app), ['In the Congestion Charge zone · no charge for this trip']);
+  app = loadApp({ routes: cczParkRoutes(), now: Date.UTC(2026, 10, 20, 6, 30) });         // 6:30am: gone
+  await openCczPark(app, plan);
+  assert.equal(cczTip(app).querySelectorAll('.park-ccz-tip-main')[0].textContent, 'Arrive after 6pm and it’s free');
+});

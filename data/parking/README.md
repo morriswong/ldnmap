@@ -89,6 +89,17 @@ streets that are permit-only at the arrival are left out. Each row shows the hou
 **Cheapest** sorts by its lowest rate,
 free first. A zone's or street's card prices the time you can stay, up to 24 hours.
 
+### The Congestion Charge
+
+For a place inside the Congestion Charge zone (`data/ccz.geojson`, see `data/README.md`), the
+results show the trip's charge above the list (never added to the rows' prices), a tip for an
+arrival that makes it free, and, when the trip is charged, one row for the best parking just outside
+the charge zone. That row comes from the same street files: the boroughs with a zone within 2.5 km
+of the place, the named, non-`tfl` pieces whose nearest point to the place is outside the charge
+zone, grouped into zones and odd streets as above, allowed for the plan (no permit-only time, no
+over-max stay) and with readable hours. The shortest walk within 25 minutes wins; nothing within
+that, no row.
+
 ## Coverage
 
 Every London borough (and the City) is in `tools/parking_sources.json`. Where a council publishes zone
