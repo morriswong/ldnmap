@@ -107,8 +107,9 @@ class FakeMap {
     this.container.clientWidth = 1280;
     this.container.clientHeight = 800;
     this.canvas = new El('canvas');
+    this.controls = [];      // every addControl(): { control, position }
   }
-  addControl() {}
+  addControl(control, position) { this.controls.push({ control, position }); }
   // A layer's own listener (map.on(type, layerId, fn)) is kept apart: fireLayer() calls it.
   on(type, a, b) {
     if (!b) (this.handlers[type] = this.handlers[type] || []).push({ fn: a });
@@ -188,7 +189,7 @@ export function isochrones(tag) {
   })) };
 }
 
-// Load parking-rules.js and app.js into a fresh fake browser. `routes` is a list of
+// Load parking-rules.js, congestion.js and app.js into a fresh fake browser. `routes` is a list of
 // [RegExp, (url) => reply | Promise<reply>]; the first match answers a fetch, and anything
 // unmatched gets an empty 404. Returns the script's global scope, with `map` and helpers.
 export function loadApp(opts) {
@@ -209,10 +210,15 @@ export function loadApp(opts) {
     execCommand(cmd) { if (cmd === 'copy') document.copied.push(body.children[body.children.length - 1].value); return true; }
   };
   const fetched = [];
+  // Timers from setInterval never fire on their own; a test runs them with runIntervals().
+  const intervals = new Map();
+  let intervalId = 0;
   const ctx = {
     document,
     console: { log() {}, warn() {}, error() {} },
-    setTimeout, clearTimeout, setInterval: () => 0, clearInterval() {},
+    setTimeout, clearTimeout,
+    setInterval: (fn, ms) => { intervals.set(++intervalId, { fn, ms }); return intervalId; },
+    clearInterval: (id) => { intervals.delete(id); },
     requestAnimationFrame: (fn) => fn(),
     Intl, URL,
     crypto: { randomUUID: () => 'session-token' },
@@ -246,8 +252,19 @@ export function loadApp(opts) {
     }
   };
   ctx.window = ctx;
+  // `now` (ms) fixes the page's clock: new Date() and Date.now() give it until setNow() moves it.
+  if (o.now !== undefined) {
+    let now = o.now;
+    ctx.Date = class extends Date {
+      constructor(...a) { if (a.length) super(...a); else super(now); }
+      static now() { return now; }
+    };
+    ctx.setNow = (t) => { now = t; };
+  }
+  ctx.intervals = intervals;
+  ctx.runIntervals = () => [...intervals.values()].forEach((t) => t.fn());
   vm.createContext(ctx);
-  for (const file of ['parking-rules.js', 'app.js']) {
+  for (const file of ['parking-rules.js', 'congestion.js', 'app.js']) {
     vm.runInContext(readFileSync(new URL(file, root), 'utf8'), ctx, { filename: file });
   }
   ctx.el = (id) => document.getElementById(id);

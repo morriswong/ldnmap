@@ -169,6 +169,7 @@ function postcodeCentre(pc, seq) {
 function postcodeReady() {
   document.getElementById('postcode-cta-btn').disabled = false;
   document.getElementById('postcode-park-btn').disabled = false;
+  if (pendingPlace) cczCheckPlace(pendingPlace.lng, pendingPlace.lat); // [ccz]
 }
 
 function removePostcodeLayers() {
@@ -216,6 +217,7 @@ function toggleTheme() {
   isDark = !isDark;
   document.body.classList.toggle('light', !isDark);
   syncParkingColors();   // [parking] before setStyle, so rehydrateLayers() draws with the new theme's set
+  syncCczColors();       // [ccz] likewise
   var iconHtml = isDark
     ? '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>'
     : '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
@@ -303,6 +305,7 @@ function geojsonBounds(geojson) {
 
 // Put every layer of ours back on a freshly loaded style. Safe to run more than once.
 function rehydrateLayers() {
+  if (cczOn) addCczLayers(); // [ccz]
   var saved = isoLayers;
   isoLayers = [];
   saved.forEach(function(l) { addIsoLayer(l.data); });
@@ -546,6 +549,7 @@ function goToPlace(place) {
   pendingPlace = place;
   map.flyTo({ center: [place.lng, place.lat], zoom: 12, duration: 1000 });
   placeMarker(place.lat, place.lng);
+  cczCheckPlace(place.lng, place.lat); // [ccz]
   setStatus(place.name);
   if (place.postcode) {
     showPostcodeChip();
@@ -3548,6 +3552,147 @@ function setStatus(msg, isError) {
     pcEl.textContent = msg;
   }
 }
+
+/* ===== CONGESTION CHARGE ===== */
+// The London Congestion Charge zone: the C button under the P button turns on an orange outline
+// of the zone (data/ccz.geojson, TfL's boundary; see data/README.md) and a chip saying whether
+// the charge applies now, refreshed every minute. The rules live in congestion.js
+// (ccStatusAt, ccStatusText, ccInZone, ccChargeForTrip, ccFreeAlternative) so they can be
+// unit-tested. Picking a place inside the zone turns the layer on.
+var CCZ_URL = '/data/ccz.geojson';
+var CCZ_HOLIDAYS_URL = '/data/bank-holidays.json';
+var CCZ_ATTRIB = 'Congestion Charge zone: Powered by TfL Open Data';
+// Each theme has its own shades, refilled into CCZ_COLORS by syncCczColors() on theme toggle.
+var CCZ_PALETTES = {
+  light: { line: '#ea580c', fill: '#f97316', fillOpacity: 0.08 },
+  dark:  { line: '#fb923c', fill: '#fb923c', fillOpacity: 0.10 }
+};
+var CCZ_COLORS = {};
+function syncCczColors() {
+  var p = CCZ_PALETTES[isDark ? 'dark' : 'light'];
+  Object.keys(p).forEach(function(k) { CCZ_COLORS[k] = p[k]; });
+}
+syncCczColors();
+var cczOn = false;
+var cczData = null;         // the zone's GeoJSON once loaded
+var cczLoading = null;      // the in-flight load, so a tap and a pick share it
+var cczTimer = null;
+var cczPickSeq = 0;         // the newest place picked; an older one's answer is dropped
+var cczBtn = null;
+var cczChip = document.getElementById('ccz-chip');
+var cczChipStatus = document.getElementById('ccz-chip-status');
+
+// The C button, under the P button.
+map.addControl({
+  onAdd: function() {
+    var wrap = document.createElement('div');
+    wrap.className = 'mapboxgl-ctrl mapboxgl-ctrl-group';
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.id = 'ccz-ctrl';
+    b.className = 'ccz-ctrl';
+    b.title = 'Congestion Charge zone';
+    b.setAttribute('aria-label', 'Congestion Charge zone');
+    b.setAttribute('aria-pressed', 'false');
+    b.innerHTML = '<span class="ccz-sign" aria-hidden="true">C</span>';
+    b.addEventListener('click', function() { toggleCcz(!cczOn); });
+    wrap.appendChild(b);
+    cczBtn = b;
+    return wrap;
+  },
+  onRemove: function() {}
+}, 'top-right');
+
+function cczGet(url) {
+  return fetch(url).then(function(r) {
+    if (!r.ok) throw new Error(url + ' HTTP ' + r.status);
+    return r.json();
+  });
+}
+
+// The zone and the bank holidays (for weekend hours on them). Without the holidays the chip still
+// works, treating a bank holiday as an ordinary day.
+function loadCczData() {
+  if (cczData) return Promise.resolve(cczData);
+  if (cczLoading) return cczLoading;
+  cczLoading = Promise.all([
+    cczGet(CCZ_URL),
+    cczGet(CCZ_HOLIDAYS_URL).catch(function() { return null; })
+  ]).then(function(d) {
+    ccSetZone(d[0]);
+    if (d[1] && d[1].dates) ccSetBankHolidays(d[1].dates);
+    cczData = d[0];
+    return cczData;
+  }).catch(function(e) { cczLoading = null; throw e; });
+  return cczLoading;
+}
+
+function toggleCcz(on) {
+  if (on === cczOn) return;
+  cczOn = on;
+  (cczBtn || document.getElementById('ccz-ctrl')).setAttribute('aria-pressed', on ? 'true' : 'false');
+  clearInterval(cczTimer);
+  if (!on) {
+    removeCczLayers();
+    cczChip.classList.remove('open');
+    return;
+  }
+  updateCczChip();
+  cczChip.classList.add('open');
+  cczTimer = setInterval(updateCczChip, 60000);
+  loadCczData().then(function() {
+    if (!cczOn) return;
+    updateCczChip();                                   // the bank holidays may change it
+    addCczLayers();
+  }).catch(function() {
+    if (cczOn) cczChipStatus.textContent = 'Couldn’t load the zone';
+  });
+}
+
+function updateCczChip() {
+  var now = new Date();
+  cczChip.classList.toggle('is-charging', ccStatusAt(now).charging);
+  cczChipStatus.textContent = ccStatusText(now);
+}
+
+function removeCczLayers() {
+  if (map.getLayer('ccz-line')) map.removeLayer('ccz-line');
+  if (map.getLayer('ccz-fill')) map.removeLayer('ccz-fill');
+  if (map.getSource('ccz')) map.removeSource('ccz');
+}
+
+// The tint goes under the roads and the outline above them but under their names, like the
+// parking zones. Safe to run twice (rehydrateLayers()).
+function addCczLayers() {
+  if (!cczData) return;
+  whenStyleReady(function() {
+    if (!cczOn) return;
+    removeCczLayers();
+    var styleLayers = map.getStyle().layers;
+    var underRoads = (styleLayers.filter(function(l) { return l.type === 'symbol'; })[0] || {}).id;
+    var underLabels = map.getLayer('road-label') ? 'road-label'
+      : (styleLayers.filter(function(l) { return l.type === 'symbol' && /label/.test(l.id); })[0] || {}).id;
+    map.addSource('ccz', { type: 'geojson', data: cczData, attribution: CCZ_ATTRIB });
+    map.addLayer({ id: 'ccz-fill', type: 'fill', source: 'ccz',
+      paint: { 'fill-color': CCZ_COLORS.fill, 'fill-opacity': CCZ_COLORS.fillOpacity } }, underRoads);
+    map.addLayer({ id: 'ccz-line', type: 'line', source: 'ccz',
+      layout: { 'line-join': 'round' },
+      paint: { 'line-color': CCZ_COLORS.line, 'line-opacity': 0.9, 'line-dasharray': [3, 1.5],
+        'line-width': ['interpolate', ['linear'], ['zoom'], 10, 1.5, 14, 2.5, 17, 4] } }, underLabels);
+  });
+}
+
+// A place was picked: if it's in the zone, show the zone. Places with no coordinates yet (a bare
+// postcode before its boundary loads) are skipped; postcodeReady() asks again.
+function cczCheckPlace(lng, lat) {
+  if (!isFinite(lng) || !isFinite(lat) || (lng === 0 && lat === 0)) return;
+  var seq = ++cczPickSeq;
+  loadCczData().then(function() {
+    if (seq !== cczPickSeq) return;
+    if (ccInZone(lng, lat)) toggleCcz(true);
+  }).catch(function() {});
+}
+/* ===== END CONGESTION CHARGE ===== */
 
 /* ===== SHARE / PERMALINK ===== */
 // Encodes the active travel view in location.hash so it can be copied/shared,

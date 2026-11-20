@@ -496,6 +496,57 @@
   }
   /* ===== END FUEL PRICES ===== */
 
+  /* ===== CONGESTION CHARGE ===== */
+  /* The C map button (the round sign TfL uses), and the chip saying whether the charge applies
+     now. The chip sits top centre on desktop; on mobile it fits between the theme button and the
+     search button (top left, the latter in the travel view) and the zoom buttons (top right),
+     on two lines, under every sheet and the search screen. */
+  .ccz-sign {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px; border-radius: 50%; background: #dc2626; color: #fff;
+    font: 700 13px/1 'DM Sans', sans-serif;
+  }
+  .mapboxgl-ctrl-group .ccz-ctrl { display: flex; align-items: center; justify-content: center; }
+  .mapboxgl-ctrl-group .ccz-ctrl[aria-pressed="true"] { background: linear-gradient(rgba(234,88,12,0.22), rgba(234,88,12,0.22)), var(--zoom-bg) !important; }
+  .ccz-chip {
+    position: absolute; top: 16px; left: 50%; z-index: 1000;
+    display: flex; align-items: center; gap: 8px;
+    max-width: calc(100% - 32px); padding: 7px 14px;
+    border-radius: 18px; border: 1px solid var(--glass-border);
+    background: var(--glass-pill-bg);
+    backdrop-filter: blur(40px) saturate(180%); -webkit-backdrop-filter: blur(40px) saturate(180%);
+    box-shadow: inset 0 1px 0 0 var(--glass-highlight), 0 4px 16px rgba(0,0,0,0.12);
+    color: var(--text); font: 500 13px/1.3 'DM Sans', sans-serif;
+    opacity: 0; pointer-events: none; transform: translate(-50%, -8px);
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  .ccz-chip.open { opacity: 1; transform: translate(-50%, 0); }
+  .ccz-chip-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: #15803d; }
+  .ccz-chip.is-charging .ccz-chip-dot { background: #ea580c; }
+  body:not(.light) .ccz-chip-dot { background: #4ade80; }
+  body:not(.light) .ccz-chip.is-charging .ccz-chip-dot { background: #fb923c; }
+  .ccz-chip-text { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ccz-chip-name { font-weight: 700; }
+  .ccz-chip-name::after { content: ':'; }
+  @media (max-width: 768px) {
+    .ccz-chip {
+      top: 12px; left: 116px; right: 56px; width: fit-content; margin: 0 auto; max-width: none;
+      padding: 5px 12px; border-radius: 14px; font-size: 12px; line-height: 1.25;
+      transform: translateY(-8px);
+    }
+    .ccz-chip.open { transform: none; }
+    .ccz-chip-name, .ccz-chip-status { display: block; overflow: hidden; text-overflow: ellipsis; }
+    .ccz-chip-name::after { content: none; }
+    .ccz-chip-status { font-size: 11px; color: var(--text-dim); }
+  }
+  @media (max-width: 768px) and (prefers-reduced-transparency: reduce) {
+    .ccz-chip { backdrop-filter: none; -webkit-backdrop-filter: none; background: var(--glass-solid-fallback); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ccz-chip { transition: none !important; }
+  }
+  /* ===== END CONGESTION CHARGE ===== */
+
   /* ===== PARKING ===== */
   /* The panel reuses .fuel-panel for its position, glass and mobile sheet. */
   .pk-sign {

@@ -22,7 +22,7 @@ jobs:
       - name: Assemble the site
         run: |
           mkdir site
-          cp index.html style.css app.js parking-rules.js site/
+          cp index.html style.css app.js parking-rules.js congestion.js site/
           cp -r data site/data
 
       - name: Inject Mapbox token

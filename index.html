@@ -24,6 +24,11 @@
     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
   </svg>
 </button>
+<!-- [ccz] while the Congestion Charge layer is on: whether the charge applies now -->
+<div id="ccz-chip" class="ccz-chip" role="status" aria-live="polite">
+  <span class="ccz-chip-dot" aria-hidden="true"></span>
+  <span class="ccz-chip-text"><span class="ccz-chip-name">Congestion Charge</span> <span id="ccz-chip-status" class="ccz-chip-status"></span></span>
+</div>
 <!-- [fuel] opened from the postcode card, the travel card or "Fuel prices near me" on the search screen -->
 <div id="fuel-panel" class="fuel-panel" role="dialog" aria-label="Fuel prices">
   <div class="sheet-grabber" id="fuel-grabber"><span></span></div>
@@ -228,6 +233,7 @@
 
 <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
 <script src="parking-rules.js"></script>
+<script src="congestion.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

@@ -1079,3 +1079,163 @@ test('park near here: the parking layer, if it was on, is handed back as it was'
   assert.equal(app.parkPlace, null);
   assert.deepEqual(app.map.layerIds(), []);
 });
+
+// --- Congestion Charge ---------------------------------------------------------------------
+const CCZ_ZONE = JSON.parse(readFileSync(new URL('../data/ccz.geojson', import.meta.url), 'utf8'));
+const CCZ_HOLIDAYS = JSON.parse(readFileSync(new URL('../data/bank-holidays.json', import.meta.url), 'utf8'));
+const CCZ = [
+  [/data\/ccz\.geojson/, () => reply(CCZ_ZONE)],
+  [/data\/bank-holidays\.json/, () => reply(CCZ_HOLIDAYS)]
+];
+const FRI_3PM = Date.UTC(2026, 10, 20, 15, 0);                  // Friday 20 Nov 2026, GMT
+const cczLayers = (app) => app.map.layerIds().filter((id) => id.indexOf('ccz-') === 0);
+const chipText = (app) => app.el('ccz-chip-status').textContent;
+// Each custom map control's button, by id, in the order they were added (the stand-in
+// NavigationControl and AttributionControl have no onAdd).
+const controlButtons = (app) => app.map.controls.filter((c) => typeof c.control.onAdd === 'function')
+  .map((c) => ({ id: c.control.onAdd(app.map).children[0].id, position: c.position }));
+
+test('congestion charge: a C button right under the P button, labelled for screen readers', () => {
+  const app = loadApp({ routes: CCZ, now: FRI_3PM });
+  const ids = controlButtons(app).map((c) => c.id);
+  assert.equal(ids.indexOf('ccz-ctrl'), ids.indexOf('parking-ctrl') + 1);
+  assert.equal(controlButtons(app)[ids.indexOf('ccz-ctrl')].position, 'top-right');
+  const b = app.cczBtn;                                         // the button from the last onAdd
+  assert.equal(b.id, 'ccz-ctrl');
+  assert.equal(b.getAttribute('aria-label'), 'Congestion Charge zone');
+  assert.equal(b.getAttribute('aria-pressed'), 'false');
+  assert.match(b.innerHTML, /aria-hidden="true">C</);
+});
+
+test('congestion charge: the button draws the zone and shows the chip, and takes them away', async () => {
+  const app = loadApp({ routes: CCZ, now: FRI_3PM });
+  controlButtons(app);
+  app.cczBtn.dispatch('click');
+  assert.equal(app.cczOn, true);
+  assert.equal(app.cczBtn.getAttribute('aria-pressed'), 'true');
+  assert.ok(app.el('ccz-chip').classList.contains('open'), 'the chip shows at once');
+  assert.equal(chipText(app), 'Charging now · until 6pm');
+  assert.ok(app.el('ccz-chip').classList.contains('is-charging'));
+  await settle();
+  assert.deepEqual(cczLayers(app), ['ccz-fill', 'ccz-line']);
+  assert.match(app.map.getSource('ccz').def.attribution, /TfL Open Data/);
+  assert.equal(app.map.getPaintProperty('ccz-line', 'line-color'), app.CCZ_PALETTES.light.line);
+  app.cczBtn.dispatch('click');
+  assert.equal(app.cczOn, false);
+  assert.equal(app.cczBtn.getAttribute('aria-pressed'), 'false');
+  assert.equal(app.el('ccz-chip').classList.contains('open'), false);
+  assert.deepEqual(app.map.layerIds(), []);
+  assert.equal(app.map.getSource('ccz'), undefined);
+  assert.equal(app.intervals.size, 0, 'the minute timer stops');
+});
+
+test('congestion charge chip: free in the evening, and it moves on every minute', async () => {
+  const app = loadApp({ routes: CCZ, now: Date.UTC(2026, 10, 20, 20, 0) });   // Fri 8pm
+  app.toggleCcz(true);
+  await settle();
+  assert.equal(chipText(app), 'Free now · starts 12pm tomorrow');
+  assert.equal(app.el('ccz-chip').classList.contains('is-charging'), false);
+  assert.deepEqual([...app.intervals.values()].map((t) => t.ms), [60000]);
+  app.setNow(Date.UTC(2026, 10, 21, 12, 0));                                   // Sat noon
+  app.runIntervals();
+  assert.equal(chipText(app), 'Charging now · until 6pm');
+  assert.ok(app.el('ccz-chip').classList.contains('is-charging'));
+  app.setNow(Date.UTC(2026, 10, 22, 18, 30));                                  // Sun 6:30pm
+  app.runIntervals();
+  assert.equal(chipText(app), 'Free now · starts 7am tomorrow');
+});
+
+test('congestion charge chip: bank holidays come with the zone and give weekend hours', async () => {
+  const app = loadApp({ routes: CCZ, now: Date.UTC(2026, 7, 31, 9, 0) });     // 10am BST, Mon 31 Aug
+  app.toggleCcz(true);
+  assert.equal(chipText(app), 'Charging now · until 6pm', 'before the list arrives: an ordinary Monday');
+  await settle();
+  assert.equal(chipText(app), 'Free now · starts 12pm');
+});
+
+test('congestion charge: without the zone file the chip says so, and a second try loads it', async () => {
+  let ok = false;
+  const app = loadApp({ now: FRI_3PM, routes: [
+    [/data\/ccz\.geojson/, () => (ok ? reply(CCZ_ZONE) : reply({}, 500))], CCZ[1]] });
+  app.toggleCcz(true);
+  await settle();
+  assert.equal(chipText(app), 'Couldn’t load the zone');
+  assert.deepEqual(cczLayers(app), []);
+  app.toggleCcz(false);
+  ok = true;
+  app.toggleCcz(true);
+  await settle();
+  assert.equal(chipText(app), 'Charging now · until 6pm');
+  assert.deepEqual(cczLayers(app), ['ccz-fill', 'ccz-line']);
+});
+
+test('congestion charge: the zone comes back after a theme change, in the new theme’s colours', async () => {
+  const app = loadApp({ routes: CCZ, now: FRI_3PM });
+  app.toggleCcz(true);
+  await settle();
+  app.toggleTheme();
+  assert.deepEqual(cczLayers(app), [], 'the old style took them');
+  app.map.finishStyle();
+  assert.deepEqual(cczLayers(app), ['ccz-fill', 'ccz-line']);
+  assert.equal(app.map.getPaintProperty('ccz-line', 'line-color'), app.CCZ_PALETTES.dark.line);
+  assert.equal(app.map.getPaintProperty('ccz-fill', 'fill-color'), app.CCZ_PALETTES.dark.fill);
+  app.rehydrateLayers();                                        // safe to run twice
+  assert.deepEqual(cczLayers(app), ['ccz-fill', 'ccz-line']);
+  app.toggleTheme();
+  app.map.finishStyle();
+  assert.equal(app.map.getPaintProperty('ccz-line', 'line-color'), app.CCZ_PALETTES.light.line);
+  // Off, it stays off through a style change.
+  app.toggleCcz(false);
+  app.toggleTheme();
+  app.map.finishStyle();
+  assert.deepEqual(cczLayers(app), []);
+});
+
+test('congestion charge: picking a place in the zone turns it on; outside it doesn’t', async () => {
+  const inside = loadApp({ routes: [ISO, NO_STATIONS, ...CCZ], now: FRI_3PM });
+  inside.goToPlace({ lng: -0.1281, lat: 51.5080, name: 'Trafalgar Square', address: '', postcode: null });
+  await settle();
+  assert.equal(inside.cczOn, true);
+  assert.ok(inside.el('ccz-chip').classList.contains('open'));
+  assert.deepEqual(cczLayers(inside), ['ccz-fill', 'ccz-line']);
+
+  const outside = loadApp({ routes: [ISO, NO_STATIONS, ...CCZ], now: FRI_3PM });
+  outside.goToPlace({ lng: -0.1426, lat: 51.5392, name: 'Camden Town', address: '', postcode: null });
+  await settle();
+  assert.equal(outside.cczOn, false);
+  assert.deepEqual(cczLayers(outside), []);
+});
+
+test('congestion charge: only the newest pick counts while the zone loads', async () => {
+  const zone = deferred();
+  const app = loadApp({ now: FRI_3PM, routes: [ISO, NO_STATIONS, [/data\/ccz\.geojson/, () => zone.promise], CCZ[1]] });
+  app.goToPlace({ lng: -0.1281, lat: 51.5080, name: 'Trafalgar Square', address: '', postcode: null });
+  await settle();
+  app.goToPlace({ lng: -0.1426, lat: 51.5392, name: 'Camden Town', address: '', postcode: null });
+  zone.resolve(reply(CCZ_ZONE));
+  await settle();
+  assert.equal(app.cczOn, false);
+});
+
+test('congestion charge: a postcode in the zone turns it on once its boundary has loaded', async () => {
+  const COVENT_GARDEN = { type: 'Polygon', coordinates: [[[-0.1245, 51.5115], [-0.1235, 51.5115], [-0.1235, 51.5120], [-0.1245, 51.5120], [-0.1245, 51.5115]]] };
+  const app = loadApp({ now: FRI_3PM, routes: [...CCZ,
+    [/api\.os\.uk/, () => reply({ type: 'FeatureCollection', features: [{ type: 'Feature', properties: {}, geometry: COVENT_GARDEN }] })]] });
+  app.goToPostcode('WC2E 9DD');
+  assert.equal(app.fetched.filter((u) => /ccz\.geojson/.test(u)).length, 0, 'no coordinates yet');
+  await settle();
+  assert.equal(app.cczOn, true);
+});
+
+test('congestion charge chip: under the sheets and the search screen, clear of the corner buttons on mobile', () => {
+  const css = readFileSync(new URL('../style.css', import.meta.url), 'utf8');
+  const block = (re) => css.match(re)[1];
+  const z = (sel) => Number(block(new RegExp('\\n  ' + sel + ' \\{([^}]*)\\}')).match(/z-index: (\d+)/)[1]);
+  assert.ok(z('\\.ccz-chip') < z('\\.fuel-panel'), 'under the fuel / parking / park sheets');
+  assert.ok(z('\\.ccz-chip') < z('\\.travel-card, \\.postcode-chip'), 'under the place and travel cards');
+  assert.ok(z('\\.ccz-chip') < z('\\.search-overlay'), 'under the search screen');
+  // On mobile: right of the theme button (12–52px) and the travel view's search button
+  // (60–108px), left of the zoom buttons (36px wide, 10px in from the right).
+  const mobile = block(/\n    \.ccz-chip \{([^}]*)\}/);
+  assert.match(mobile, /top: 12px; left: 116px; right: 56px;/);
+});
