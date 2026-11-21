@@ -3731,14 +3731,15 @@ var parkDest = null;          // { lng, lat, name, picked } while a card is open
 var parkDestMarker = null;
 var parkNavBox = null;        // the open card's Drive to block
 
-// Driving directions to a point in each navigation app. Each link opens the app when it's
-// installed on the phone, or its website otherwise.
+// Driving directions to a point in each navigation app, stopping at the route preview so you can
+// pick a route (Waze: no navigate=yes, which would start driving straight away). Each link opens
+// the app when it's installed on the phone, or its website otherwise.
 function navAppLinks(lat, lng) {
   var ll = lat.toFixed(6) + ',' + lng.toFixed(6);
   return [
     { app: 'google', label: 'Google Maps', href: 'https://www.google.com/maps/dir/?api=1&destination=' + ll + '&travelmode=driving' },
     { app: 'apple', label: 'Apple Maps', href: 'https://maps.apple.com/?daddr=' + ll + '&dirflg=d' },
-    { app: 'waze', label: 'Waze', href: 'https://waze.com/ul?ll=' + ll + '&navigate=yes' }
+    { app: 'waze', label: 'Waze', href: 'https://waze.com/ul?ll=' + ll }
   ];
 }
 

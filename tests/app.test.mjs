@@ -555,7 +555,7 @@ test('park near here: plan, then the zones and odd streets where the whole stay 
   assert.deepEqual(apps.map((a) => a.textContent), ['Google Maps', 'Apple Maps', 'Waze']);
   assert.match(apps[0].href, /^https:\/\/www\.google\.com\/maps\/dir\/\?api=1&destination=51\.450000,-0\.248\d+&travelmode=driving$/, 'to its nearest street');
   assert.match(apps[1].href, /^https:\/\/maps\.apple\.com\/\?daddr=51\.450000,-0\.248\d+&dirflg=d$/);
-  assert.match(apps[2].href, /^https:\/\/waze\.com\/ul\?ll=51\.450000,-0\.248\d+&navigate=yes$/);
+  assert.match(apps[2].href, /^https:\/\/waze\.com\/ul\?ll=51\.450000,-0\.248\d+$/, 'not navigate=yes: you choose the route');
   assert.ok(apps.every((a) => a.target === '_blank'));
   assert.equal(app.el('park-body').querySelectorAll('.park-primary').length, 0);
   assert.ok(app.parkDestMarker.added, 'a dot where the buttons go');
