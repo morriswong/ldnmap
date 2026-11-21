@@ -2697,7 +2697,7 @@ function parkResult(c) {
     var cMin = known ? num(plan.costMin) : null;
     return { kind: c.kind, name: c.name, rule: c.rule, zone: c.zone, b: c.b, d: c.d, walk: c.walk, refined: !!c.refined,
       street: c.street, inside: !!c.inside,
-      point: c.point, lines: c.lines, plan: plan, now: n, window: parkWindow(n), state: nowState, tariff: t,
+      point: c.point, lines: c.lines, names: c.names, plan: plan, now: n, window: parkWindow(n), state: nowState, tariff: t,
       price: known ? num(plan.cost) : null, costMin: cMin, costMax: cMin !== null ? num(plan.costMax) : null,
       rateMin: nowState === 'free' ? 0 : nowState === 'paid' && t ? t.min : null,
       rateMax: nowState === 'free' ? 0 : nowState === 'paid' && t ? t.max : null };
@@ -2706,7 +2706,7 @@ function parkResult(c) {
   var paid = state === 'paid', free = state === 'free';
   return { kind: c.kind, name: c.name, rule: c.rule, zone: c.zone, b: c.b, d: c.d, walk: c.walk, refined: !!c.refined,
     street: c.street, inside: !!c.inside,
-    point: c.point, lines: c.lines, plan: plan, state: state, tariff: plan.tariff || null,
+    point: c.point, lines: c.lines, names: c.names, plan: plan, state: state, tariff: plan.tariff || null,
     price: free ? 0 : paid ? num(plan.cost) : null,
     costMin: free ? 0 : paid ? num(plan.costMin) : null,
     costMax: free ? 0 : paid && num(plan.costMin) !== null ? num(plan.costMax) : null };
@@ -3045,6 +3045,7 @@ function closeParkNear() {
   parkResults = [];
   parkInfo = null;
   parkSelIdx = -1;
+  parkSyncDest();
   clearParkResults();
   cczShowForPark(false);
   parkPanel.classList.remove('open');
@@ -3116,6 +3117,7 @@ function parkShowDetail(i) {
   if (!r || !parkPlace) return;
   parkSelIdx = i;
   parkView = 'detail';
+  parkDest = { lng: r.point[0], lat: r.point[1], name: r.street || r.name, picked: false };
   parkApplySel();
   parkRender();
   parkSheetTo('half');
@@ -3257,6 +3259,7 @@ function parkOutsideResult(outs) {
   r.outside = true;
   r.inside = false;
   r.lines = best.lines.filter(function(line, k) { return best.names[k] === best.street; });
+  r.names = r.lines.map(function() { return best.street; });
   return r;
 }
 
@@ -3350,6 +3353,7 @@ function parkRender() {
     : parkView === 'plan' ? 'Back to results' : 'Change arrival or stay');
   parkBody.innerHTML = '';
   parkBody.scrollTop = 0;
+  parkNavBox = null;
   if (parkView === 'plan') parkRenderPlan();
   else if (parkView === 'loading') parkBody.appendChild(pkEl('div', 'fuel-msg fuel-msg--pending', 'Finding streets near ' + parkPlace.name));
   else if (parkView === 'error') {
@@ -3358,6 +3362,7 @@ function parkRender() {
   }
   else if (parkView === 'results') parkRenderResults();
   else if (parkView === 'detail') parkRenderDetail();
+  parkSyncDest();
 }
 
 function parkPlanChanged() {
@@ -3601,6 +3606,9 @@ function parkRenderDetail() {
     card.appendChild(pkEl('p', 'park-ccz-quiet park-ccz-quiet--on', 'Outside the Congestion Charge zone: saves '
       + parkCczMoney(parkInfo.ccz.charge.amount) + ' ' + parkCczWhen(parkInfo.ccz.charge)));
   }
+  parkNavBox = pkEl('div', 'park-nav');
+  parkNavFill(parkNavBox, r);
+  card.appendChild(parkNavBox);
 
   // With no stay chosen the bar covers the time you can stay, up to 24 hours (parkWindow()).
   var span = parkSpan(r), limited = r.now && r.now.untilMin === span;
@@ -3678,10 +3686,6 @@ function parkRenderDetail() {
   }
 
   var actions = pkEl('div', 'park-actions park-compact');
-  var dir = pkLink('Directions', 'https://www.google.com/maps/dir/?api=1&destination='
-    + r.point[1].toFixed(6) + ',' + r.point[0].toFixed(6) + '&travelmode=driving');
-  dir.className = 'park-primary';
-  actions.appendChild(dir);
   actions.appendChild(parkButton('park-secondary', 'Back to list', parkShowList));
   card.appendChild(actions);
   parkBody.appendChild(card);
@@ -3719,17 +3723,84 @@ function parkPriceDetail(card, r, borough) {
   }
 }
 
+/* --- drive there --- */
+// A card's "Drive to" block: the spot to drive to (parkDest: at first the row's nearest point to
+// the place, then wherever you tap on the card's streets, parkPickDest()), marked on the map by a
+// dot, with buttons that open it in Google Maps, Apple Maps or Waze. The dot goes when the card does.
+var parkDest = null;          // { lng, lat, name, picked } while a card is open
+var parkDestMarker = null;
+var parkNavBox = null;        // the open card's Drive to block
+
+// Driving directions to a point in each navigation app. Each link opens the app when it's
+// installed on the phone, or its website otherwise.
+function navAppLinks(lat, lng) {
+  var ll = lat.toFixed(6) + ',' + lng.toFixed(6);
+  return [
+    { app: 'google', label: 'Google Maps', href: 'https://www.google.com/maps/dir/?api=1&destination=' + ll + '&travelmode=driving' },
+    { app: 'apple', label: 'Apple Maps', href: 'https://maps.apple.com/?daddr=' + ll + '&dirflg=d' },
+    { app: 'waze', label: 'Waze', href: 'https://waze.com/ul?ll=' + ll + '&navigate=yes' }
+  ];
+}
+
+function parkNavFill(box, r) {
+  box.innerHTML = '';
+  box.appendChild(pkEl('div', 'pk-section', 'Drive to'));
+  var dest = pkEl('p', 'park-nav-dest');
+  dest.appendChild(pkEl('b', '', parkDest.name));
+  dest.appendChild(document.createTextNode(parkDest.picked ? ' · the spot you picked' : ' · nearest to ' + parkPlace.name));
+  box.appendChild(dest);
+  var apps = pkEl('div', 'park-nav-apps');
+  navAppLinks(parkDest.lat, parkDest.lng).forEach(function(l) {
+    apps.appendChild(pkLink(l.label, l.href)).className = 'park-nav-app park-nav-app--' + l.app;
+  });
+  box.appendChild(apps);
+  box.appendChild(pkEl('p', 'pk-small', r.kind === 'zone' && !r.outside
+    ? 'Tap a street in the zone on the map to drive there instead.'
+    : 'Tap the street on the map to pick another spot on it.'));
+}
+
+// A tap on the open card's streets or zone: the spot moves to the nearest point on its streets.
+function parkPickDest(lngLat) {
+  var r = parkResults[parkSelIdx];
+  if (!r || parkView !== 'detail' || !parkDest || !lngLat) return;
+  var o = [lngLat.lng, lngLat.lat], best = null;
+  r.lines.forEach(function(line, k) {
+    var n = parkNearestOnLine(line, o);
+    if (!best || n.d < best.d) best = { d: n.d, c: n.c, name: (r.names && r.names[k]) || r.street };
+  });
+  if (!best) return;
+  parkDest = { lng: best.c[0], lat: best.c[1], name: best.name, picked: true };
+  parkSyncDest();
+  if (parkNavBox) parkNavFill(parkNavBox, r);
+}
+
+// The dot on the map follows parkDest, which only a card holds.
+function parkSyncDest() {
+  if (parkView !== 'detail' || !parkPlace) parkDest = null;
+  if (!parkDest) { if (parkDestMarker) parkDestMarker.remove(); return; }
+  if (!parkDestMarker) {
+    var el = document.createElement('div');
+    el.className = 'park-dest-dot';
+    parkDestMarker = new mapboxgl.Marker({ element: el });
+  }
+  parkDestMarker.setLngLat([parkDest.lng, parkDest.lat]).addTo(map);
+}
+
 // Tapping a result street or a listed zone on the map opens its card; a street drawn over a zone
 // wins. Layer listeners outlive setStyle().
+// On the open card's own streets (or anywhere in its zone) a tap moves the spot to drive to.
 map.on('click', 'park-results-casing', function(e) {
   var f = e.features && e.features[0];
-  if (f) parkTapResult(f.properties.i);
+  if (!f) return;
+  if (parkView === 'detail' && f.properties.i === parkSelIdx) parkPickDest(e.lngLat);
+  else parkTapResult(f.properties.i);
 });
 map.on('click', 'park-zones-fill', function(e) {
   var f = e.features && e.features[0];
   if (!f) return;
   if (map.getLayer('park-results-casing') && map.queryRenderedFeatures(e.point, { layers: ['park-results-casing'] }).length) return;
-  parkTapResult(f.properties.i);
+  if (parkView === 'detail' && f.properties.i === parkSelIdx) parkPickDest(e.lngLat);
+  else parkTapResult(f.properties.i);
 });
 map.on('mouseenter', 'park-results-casing', function() { map.getCanvas().style.cursor = 'pointer'; });
 map.on('mouseleave', 'park-results-casing', function() { map.getCanvas().style.cursor = ''; });

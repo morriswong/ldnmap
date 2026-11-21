@@ -550,10 +550,16 @@ test('park near here: plan, then the zones and odd streets where the whole stay 
   assert.match(card, /Pay by phonePayByPhone location 1234/);
   assert.match(card, /Nearest streetAlpha RoadWalkAbout 1 min: The Venue is in this zone/);
   assert.match(card, /Streets here with their own rules5minMarket RowZone A · Alpha4h max · fits 2h£6\.00paid all stay/);
-  let dir = app.el('park-body').querySelectorAll('.park-primary')[0];
-  assert.equal(dir.textContent, 'Directions');
-  assert.match(dir.href, /^https:\/\/www\.google\.com\/maps\/dir\/\?api=1&destination=51\.450000,-0\.248\d+&travelmode=driving$/, 'to its nearest street');
-  assert.equal(dir.target, '_blank');
+  assert.match(card, /Drive toAlpha Road · nearest to The VenueGoogle MapsApple MapsWazeTap a street in the zone/);
+  let apps = app.el('park-body').querySelectorAll('.park-nav-app');
+  assert.deepEqual(apps.map((a) => a.textContent), ['Google Maps', 'Apple Maps', 'Waze']);
+  assert.match(apps[0].href, /^https:\/\/www\.google\.com\/maps\/dir\/\?api=1&destination=51\.450000,-0\.248\d+&travelmode=driving$/, 'to its nearest street');
+  assert.match(apps[1].href, /^https:\/\/maps\.apple\.com\/\?daddr=51\.450000,-0\.248\d+&dirflg=d$/);
+  assert.match(apps[2].href, /^https:\/\/waze\.com\/ul\?ll=51\.450000,-0\.248\d+&navigate=yes$/);
+  assert.ok(apps.every((a) => a.target === '_blank'));
+  assert.equal(app.el('park-body').querySelectorAll('.park-primary').length, 0);
+  assert.ok(app.parkDestMarker.added, 'a dot where the buttons go');
+  assert.deepEqual(plain(app.parkDestMarker.lngLat), [app.parkResults[zoneA].point[0], 51.45]);
   assert.equal(app.map.calls.pop().name, 'fitBounds', 'the map frames the zone');
 
   // An odd street's card, from the zone's sub-list.
@@ -563,13 +569,16 @@ test('park near here: plan, then the zones and odd streets where the whole stay 
   assert.match(card, /10am–12pm2h × £3\.00£6\.00Total£6\.00/);
   assert.match(card, /Pay by phonePayByPhone location 5678/);
   assert.doesNotMatch(card, /Nearest street|own rules/);
-  dir = app.el('park-body').querySelectorAll('.park-primary')[0];
-  assert.match(dir.href, /destination=51\.450000,-0\.247\d+&/);
+  apps = app.el('park-body').querySelectorAll('.park-nav-app');
+  assert.match(apps[0].href, /destination=51\.450000,-0\.247\d+&/);
+  assert.match(card, /Drive toMarket Row · nearest to The Venue.*Tap the street on the map to pick another spot on it\./);
   const fly = app.map.calls.pop();
   assert.equal(fly.name, 'flyTo');
   assert.equal(fly.options.padding, undefined);
   app.parkBack();
   assert.equal(app.parkView, 'results');
+  assert.equal(app.parkDestMarker.added, false, 'the dot goes with the card');
+  assert.equal(app.parkDest, null);
   app.parkBack();
   assert.equal(app.parkView, 'results', 'nothing behind the list');
   // Change: the plan, its results off the map; Back looks the same plan up again.
@@ -939,6 +948,34 @@ test('park near here: one row per zone, odd streets on their own, the zones fram
   assert.equal(app.map.calls.pop().name, 'flyTo', 'an odd street flies to the street, as before');
   app.map.rendered = {};
 
+  // With zone A's card open, a tap on one of its streets, or anywhere in the zone, moves the spot
+  // to drive to (and the dot) onto the nearest of its streets, without leaving the card.
+  app.parkShowDetail(idx('Zone A'));
+  const za = app.parkResults[idx('Zone A')];
+  assert.equal(app.parkDest.name, 'Abbey Mews');
+  const other = za.names.findIndex((n) => n !== 'Abbey Mews');
+  const end = za.lines[other][za.lines[other].length - 1];
+  const before = app.map.calls.length;
+  app.map.fireLayer('click', 'park-results-casing', { point: { x: 1, y: 1 }, lngLat: { lng: end[0], lat: end[1] + 0.00001 },
+    features: [{ properties: { i: idx('Zone A') } }] });
+  assert.equal(app.parkSelIdx, idx('Zone A'));
+  assert.equal(app.map.calls.length, before, 'the camera stays put');
+  assert.equal(app.parkDest.name, za.names[other]);
+  assert.ok(app.parkDest.picked);
+  assert.ok(Math.abs(app.parkDest.lng - end[0]) < 1e-9 && Math.abs(app.parkDest.lat - end[1]) < 1e-9, 'snapped onto the street');
+  assert.deepEqual(plain(app.parkDestMarker.lngLat), [app.parkDest.lng, app.parkDest.lat]);
+  assert.match(app.el('park-body').textContent, new RegExp('Drive to' + za.names[other] + ' · the spot you picked'));
+  assert.match(app.el('park-body').querySelectorAll('.park-nav-app')[2].href,
+    new RegExp('ll=' + end[1].toFixed(6).replace('.', '\\.') + ',' + end[0].toFixed(6).replace('.', '\\.')));
+  app.map.rendered = {};
+  app.map.fireLayer('click', 'park-zones-fill', { point: { x: 1, y: 1 }, lngLat: { lng: D[0], lat: D[1] }, features: [{ properties: { i: idx('Zone A') } }] });
+  assert.equal(app.parkSelIdx, idx('Zone A'));
+  assert.equal(app.parkDest.name, 'Abbey Mews', 'a tap in the zone goes to its nearest street');
+  // Another zone's card starts again from its nearest street.
+  app.parkShowDetail(idx('Zone B'));
+  assert.equal(app.parkDest.name, 'Bravo Street');
+  assert.equal(app.parkDest.picked, false);
+
   // A theme switch puts the zones back, in the dark shades, still showing the selection.
   app.parkShowDetail(idx('Zone A'));
   app.toggleTheme();
@@ -951,6 +988,7 @@ test('park near here: one row per zone, odd streets on their own, the zones fram
   assert.deepEqual(parkZoneLayers(app), ['park-zones-fill', 'park-zones-line']);
   app.closeParkNear();
   assert.deepEqual(app.map.layerIds(), []);
+  assert.equal(app.parkDestMarker.added, false);
   assert.equal(app.parkZoneData, null);
   assert.equal(app.map.getSource('park-zones'), undefined);
 });

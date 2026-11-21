@@ -804,6 +804,28 @@
   .park-band-label { min-width: 0; color: var(--park-muted); }
   .park-actions { display: flex; gap: 8px; margin-top: 4px; }
   .park-actions > * { flex: 1; }
+  .park-nav { display: flex; flex-direction: column; gap: 6px; }
+  .park-nav-dest { margin: 0; font-size: 13px; color: var(--text); }
+  .park-nav-apps { display: flex; gap: 6px; }
+  .park-nav-app {
+    flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; text-align: center;
+    min-height: 44px; padding: 0 6px; border-radius: 12px; border: 1px solid var(--glass-border);
+    background: var(--glass-tile-bg); color: var(--text); text-decoration: none;
+    font: 700 13px 'DM Sans', sans-serif;
+  }
+  .park-nav-app:active { background: var(--park-on-bg); border-color: var(--park-on-border); }
+  /* Where the Drive to buttons go: a dark dot with a white ring (inverted in dark mode). */
+  .park-dest-dot {
+    width: 22px; height: 22px; border-radius: 50%; box-sizing: border-box;
+    background: #111827; border: 3px solid #fff; pointer-events: none;
+    box-shadow: 0 0 0 2px rgba(17,24,39,0.35), 0 2px 6px rgba(0,0,0,0.4);
+  }
+  .park-dest-dot::after {
+    content: ''; position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px;
+    border-radius: 50%; background: #fff;
+  }
+  body:not(.light) .park-dest-dot { background: #fff; border-color: #111827; box-shadow: 0 0 0 2px rgba(255,255,255,0.4), 0 2px 6px rgba(0,0,0,0.6); }
+  body:not(.light) .park-dest-dot::after { background: #111827; }
   @media (max-width: 768px) {
     /* The sheet takes over from the place card while it is open. */
     body.park-open .postcode-chip,
