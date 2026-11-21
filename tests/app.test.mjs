@@ -462,7 +462,9 @@ const parkZoneLayers = (app) => app.map.layerIds().filter((id) => id.indexOf('pa
 function openParkNow(app, where) {
   const c = where || D;
   app.pendingPlace = { name: 'The Venue', lat: c[1], lng: c[0], postcode: 'X1 1AA' };
-  return app.openParkNear();
+  const found = app.openParkNear();
+  app.parkSort = 'nearest';     // the list opens on Cheapest; these tests read it nearest first
+  return found;
 }
 // Open it and plan 10:00 today for 2 hours, as Change would; the test's parkFind() then overtakes
 // the "now" lookup the opening started.
@@ -489,6 +491,7 @@ test('park near here: the place card has the button, usable once the place has a
   assert.equal(app.parkPlan.stay, null);
   assert.equal(app.parkPlan.now, true);
   assert.match(app.el('park-body').textContent, /^Now · any lengthChange/);
+
   // Change opens the plan, with Any as the stay.
   app.el('park-body').querySelectorAll('.park-edit')[0].dispatch('click');
   assert.equal(app.parkView, 'plan');
@@ -993,6 +996,22 @@ test('park near here: one row per zone, odd streets on their own, the zones fram
   assert.equal(app.map.getSource('park-zones'), undefined);
 });
 
+test('park near here: the list opens cheapest first, every time', async () => {
+  const app = loadApp({ routes: zoneRoutes() });
+  app.parkNowMinutes = () => 17 * 60;                 // 5pm
+  const open = () => { app.pendingPlace = { name: 'The Venue', lat: D[1], lng: D[0], postcode: 'X1 1AA' }; return app.openParkNear(); };
+  const pressed = () => app.el('park-body').querySelectorAll('.park-seg-btn').filter((b) => b.getAttribute('aria-pressed') === 'true')
+    .map((b) => b.textContent);
+  await open();
+  assert.deepEqual(pressed(), ['Cheapest']);
+  assert.deepEqual(parkNames(app), ['Zone B · B zone', 'Zone A · Alpha', 'Short Street', 'Market Row']);
+  app.parkSetSort('nearest');
+  assert.deepEqual(pressed(), ['Nearest']);
+  app.closeParkNear();
+  await open();
+  assert.deepEqual(pressed(), ['Cheapest'], 'back to Cheapest for the next place');
+});
+
 test('park near here: nothing fits the stay offers to shorten it', async () => {
   const app = loadApp({ routes: parkRoutes([street('Permit Lane', 'x:P', 50)]) });
   openPark(app);
@@ -1313,6 +1332,7 @@ function openCczPark(app, plan, where) {
   const c = where || C;
   app.pendingPlace = { name: 'The Office', lat: c[1], lng: c[0] };
   const found = app.openParkNear();
+  app.parkSort = 'nearest';     // the list opens on Cheapest; these tests read it nearest first
   if (!plan) return found;
   Object.assign(app.parkPlan, plan);
   return app.parkFind();

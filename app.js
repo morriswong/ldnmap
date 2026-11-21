@@ -2421,7 +2421,7 @@ var parkPrevPlan = null;       // the plan of the results the plan screen was op
 var parkView = null;           // 'loading' | 'results' | 'detail' | 'plan' | 'error'
 var parkResults = [];          // see parkResult(); `i` on the map features is the index here
 var parkInfo = null;           // { arrival, inZone, outline, covered, ccz } for the results showing
-var parkSort = 'nearest';
+var parkSort = 'cheapest';
 var parkSelIdx = -1;
 var parkData = null;           // the park-results GeoJSON on the map, or null
 var parkZoneData = null;       // the park-zones GeoJSON (the listed zones' outlines), or null
@@ -3022,7 +3022,7 @@ function openParkNear() {
   if (fuelPanel.classList.contains('open')) closeFuel();
   parkPlace = { name: p.name, lat: p.lat, lng: p.lng };
   parkPlan = parkDefaultPlan();
-  parkSort = 'nearest';
+  parkSort = 'cheapest';
   parkResults = [];
   parkSelIdx = -1;
   parkInfo = null;
