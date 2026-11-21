@@ -807,13 +807,22 @@
   .park-nav { display: flex; flex-direction: column; gap: 6px; }
   .park-nav-dest { margin: 0; font-size: 13px; color: var(--text); }
   .park-nav-apps { display: flex; gap: 6px; }
+  /* The Drive to buttons: filled in the primary blue with a navigation arrow, so they stand out
+     from the card's grey tiles. */
   .park-nav-app {
-    flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; text-align: center;
-    min-height: 44px; padding: 0 6px; border-radius: 12px; border: 1px solid var(--glass-border);
-    background: var(--glass-tile-bg); color: var(--text); text-decoration: none;
-    font: 700 13px 'DM Sans', sans-serif;
+    flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 6px; text-align: center;
+    min-height: 48px; padding: 0 6px; border: none; border-radius: 12px;
+    background: #3d6fd6; color: #fff; text-decoration: none;
+    font: 700 14px 'DM Sans', sans-serif; line-height: 1.15;
+    box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.22), 0 2px 6px rgba(61,111,214,0.35);
   }
-  .park-nav-app:active { background: var(--park-on-bg); border-color: var(--park-on-border); }
+  .park-nav-app::before {
+    content: ''; flex-shrink: 0; width: 15px; height: 15px; background: currentColor;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 11 21 3l-8 18-2-8z'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 11 21 3l-8 18-2-8z'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
+  .park-nav-app:hover { background: #3463c4; }
+  .park-nav-app:active { background: #2c55aa; }
   /* Where the Drive to buttons go: a dark dot with a white ring (inverted in dark mode). */
   .park-dest-dot {
     width: 22px; height: 22px; border-radius: 50%; box-sizing: border-box;
