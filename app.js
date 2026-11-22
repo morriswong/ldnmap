@@ -3614,14 +3614,20 @@ function parkRenderDetail() {
   parkNavBox.addEventListener('click', parkShowDest);
   card.appendChild(parkNavBox);
 
-  // With no stay chosen the bar covers the time you can stay, up to 24 hours (parkWindow()).
+  // The time bar is the card's breakdown: from now (or the arrival) on, each piece saying Free or
+  // its hourly price inside when there's room, the times things change under it, and a marker at
+  // the start (no heading: the pill says how long you can stay). With no stay chosen it covers the
+  // time you can stay, up to 24 hours (parkWindow()).
   var span = parkSpan(r), limited = r.now && r.now.untilMin === span;
-  card.appendChild(pkEl('div', 'pk-section', !r.now ? 'Your stay · ' + a.label + ' ' + parkRange(a.minutes, a.minutes + a.stayMin)
-    : (a.now ? 'From now' : 'From ' + a.label + ' ' + parkClock(a.minutes)) + ' · '
-      + (limited ? 'until ' + parkAt(a, span) : 'next ' + parkDur(span))));
   var segs = parkSegments(r);
+  var marker = pkEl('div', 'park-now');
+  marker.setAttribute('aria-hidden', 'true');
+  marker.appendChild(pkEl('b', '', a.now ? 'Now' : a.label));
+  marker.appendChild(document.createTextNode(' ' + parkingClock(a.minutes % 1440)));
+  card.appendChild(marker);
   var bar = pkEl('div', 'park-bar');
-  bar.setAttribute('aria-hidden', 'true');
+  bar.setAttribute('role', 'img');
+  bar.setAttribute('aria-label', segs.map(function(s) { return parkSegSay(r, s); }).join('; '));
   var ticks = pkEl('div', 'park-ticks');
   ticks.setAttribute('aria-hidden', 'true');
   var shown = parkTicksShown(segs, span);
@@ -3630,56 +3636,38 @@ function parkRenderDetail() {
     piece.style.flex = String(s.end - s.start);
     piece.style.background = hexToRgba(PARK_SEG_COLORS[s.status] || PARKING_COLORS.unknown, 0.35);
     piece.style.borderColor = PARK_SEG_COLORS[s.status] || PARKING_COLORS.unknown;
+    var word = parkSegWord(r, s);
+    if (word.length * 7 + 12 <= (s.end - s.start) / span * 300) piece.textContent = word;
     bar.appendChild(piece);
     var t = pkEl('span', '', parkingClock((a.minutes + s.start) % 1440));
     t.style.flex = String(s.end - s.start);
-    if (!shown[k]) t.style.visibility = 'hidden';
+    if (k === 0 || !shown[k]) t.style.visibility = 'hidden';
     ticks.appendChild(t);
   });
   ticks.appendChild(pkEl('span', 'park-tick-end', parkingClock((a.minutes + span) % 1440)));
   card.appendChild(bar);
   card.appendChild(ticks);
 
-  var costs = pkEl('ul', 'park-costs');
-  var t = r.tariff;
-  segs.forEach(function(s) {
-    var dur = s.end - s.start, detail, amount;
-    if (s.status === 'ctrl') {
-      // '2h × £2.00' → £4.00; '2h × £4.78–£10.58' → £9.56–£21.16; '2h × from £2.32' → from £4.64
-      detail = t ? parkDur(dur) + ' × ' + parkAmount(t.min, t.max) : parkDur(dur) + ', price unknown';
-      amount = t ? parkAmount(parkingCost(t.min, dur), t.max === null ? null : parkingCost(t.max, dur)) : '?';
-    } else if (s.status === 'free') {
-      detail = parkDur(dur); amount = 'Free';
-    } else if (s.status === 'permit') {
-      detail = 'permit holders only'; amount = '–';
-    } else {
-      detail = 'hours unclear: check the signs'; amount = '?';
-    }
-    var li = pkEl('li', 'park-cost-row');
-    var left = pkEl('span', 'park-cost-label');
-    left.appendChild(pkEl('b', '', parkRange(a.minutes + s.start, a.minutes + s.end, true)));
-    left.appendChild(pkEl('span', '', detail));
-    li.appendChild(left);
-    li.appendChild(pkEl('span', 'park-cost-amount' + (amount === 'Free' ? ' park-price--free' : ''), amount));
-    costs.appendChild(li);
-  });
-  var total = pkEl('li', 'park-cost-row park-cost-total');
-  total.appendChild(pkEl('span', 'park-cost-label', !r.now ? 'Total'
-    : 'Total, ' + (limited ? 'until ' + parkAt(a, span) : parkDur(span))));
-  total.appendChild(pkEl('span', 'park-cost-amount', r.state === 'unknown' || r.costMin === null ? 'Unknown'
-    : r.costMin === 0 ? 'Free' : parkAmount(r.costMin, r.costMax)));
-  if (segs.length > 1) costs.appendChild(total);   // one piece: its row is already the total
-  card.appendChild(costs);
+  // A total when anything is (or may be) paid; all free, the pill and the bar say so.
+  if (r.state === 'unknown' || r.costMin !== 0) {
+    var total = pkEl('div', 'park-total');
+    total.appendChild(pkEl('span', '', !r.now ? 'Total' : 'Total, ' + (limited ? 'until ' + parkAt(a, span) : parkDur(span))));
+    total.appendChild(pkEl('b', '', r.state === 'unknown' || r.costMin === null ? 'Unknown' : parkAmount(r.costMin, r.costMax)));
+    card.appendChild(total);
+  }
   if (r.state !== 'unknown' && plan.paidMin > 0) parkPriceDetail(card, r, borough);
 
+  // The rules, as chips.
   var max = rule.maxStay || zoneRule.maxStay || (borough.maxStayDefault ? borough.maxStayDefault + ' (council default)' : '')
     || (plan.maxStayMin != null ? parkDurLong(plan.maxStayMin) : '');
-  parkingRow(card, 'Max stay', max ? max + (!r.now && plan.maxStayMin != null && plan.paidMin ? ' · your ' + parkDur(a.stayMin) + ' stay fits' : '') : 'No limit listed');
-  parkingRow(card, 'Controlled', rule.hours || zoneRule.hours);
-  if (rule.event) parkingRow(card, 'Event days', rule.event.hours.replace(/^Event days: /, ''));
+  var chips = pkEl('div', 'park-facts');
+  parkFact(chips, 'Max stay', max ? max + (!r.now && plan.maxStayMin != null && plan.paidMin ? ', your ' + parkDur(a.stayMin) + ' fits' : '') : 'no limit listed');
+  parkFact(chips, 'Controlled', rule.hours || zoneRule.hours);
+  if (rule.event) parkFact(chips, 'Event days', rule.event.hours.replace(/^Event days: /, ''));
   var pay = rule.payCode || zoneRule.payCode;
-  if (pay && pay.code) parkingRow(card, 'Pay by phone', pay.provider + ' location ' + pay.code);
-  card.appendChild(pkEl('p', 'pk-small', 'Check the signs on the street: bays can be suspended.'));
+  if (pay && pay.code) parkFact(chips, pay.provider, pay.code);
+  card.appendChild(chips);
+  card.appendChild(pkEl('p', 'pk-small', 'Check the signs: bays can be suspended.'));
   // A zone's streets with rules of their own, listed in the results too.
   var odd = zone && !r.outside ? parkOddStreets(r) : [];
   if (odd.length) {
@@ -3693,6 +3681,35 @@ function parkRenderDetail() {
   actions.appendChild(parkButton('park-secondary', 'Back to list', parkShowList));
   card.appendChild(actions);
   parkBody.appendChild(card);
+}
+
+// A time bar piece's word: 'Free', '£2.40/hr', 'Paid' (no price, or one too long to fit),
+// 'Permit' or '?'.
+function parkSegWord(r, s) {
+  if (s.status === 'free') return 'Free';
+  if (s.status === 'permit') return 'Permit only';
+  if (s.status !== 'ctrl') return '?';
+  var t = r.tariff;
+  return t && t.max === t.min ? parkMoney(t.min) + '/hr' : 'Paid';
+}
+
+// The same piece read out: '10am–12pm, 2h at £2.00 an hour: £4.00'.
+function parkSegSay(r, s) {
+  var a = parkInfo.arrival, dur = s.end - s.start, t = r.tariff;
+  var when = parkRange(a.minutes + s.start, a.minutes + s.end, true) + ', ' + parkDur(dur);
+  if (s.status === 'free') return when + ' free';
+  if (s.status === 'permit') return when + ' permit holders only';
+  if (s.status !== 'ctrl') return when + ' hours unclear: check the signs';
+  if (!t) return when + ' paid, price unknown';
+  return when + ' at ' + parkAmount(t.min, t.max) + ' an hour: '
+    + parkAmount(parkingCost(t.min, dur), t.max === null ? null : parkingCost(t.max, dur));
+}
+
+function parkFact(parent, label, value) {
+  if (!value) return;
+  var c = pkEl('span', 'park-fact', label + ' ');
+  c.appendChild(pkEl('b', '', value));
+  parent.appendChild(c);
 }
 
 // Which of the bar's times have room: labels about 6 characters wide each need ~17% of the bar.
