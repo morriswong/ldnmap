@@ -558,6 +558,7 @@ test('park near here: plan, then the zones and odd streets where the whole stay 
   let apps = app.parkDestBubble.querySelectorAll('.park-dest-app');
   assert.match(app.parkDestBubble.textContent, /^Drive here/);
   assert.deepEqual(apps.map((a) => a.title), ['Google Maps', 'Apple Maps', 'Waze']);
+  assert.deepEqual(apps.map((a) => a.textContent), ['Google', 'Apple', 'Waze'], 'each button says which app');
   assert.equal(apps[2].attributes['aria-label'], 'Drive to Alpha Road in Waze');
   assert.match(apps[0].href, /^https:\/\/www\.google\.com\/maps\/dir\/\?api=1&destination=51\.450000,-0\.248\d+&travelmode=driving$/, 'to its nearest street');
   assert.match(apps[1].href, /^https:\/\/maps\.apple\.com\/\?daddr=51\.450000,-0\.248\d+&dirflg=d$/);

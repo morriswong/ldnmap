@@ -2967,7 +2967,7 @@ function clearParkResults() {
 
 // Clear of the panel (desktop) or the sheet at half height (mobile).
 // A card's map keeps room at the top for the Drive here bubble over the spot.
-function parkDestRoom() { return parkView === 'detail' ? 110 : 60; }
+function parkDestRoom() { return parkView === 'detail' ? 125 : 60; }
 
 function parkMapPadding() {
   if (isMobileView()) {
@@ -3732,7 +3732,7 @@ function parkPriceDetail(card, r, borough) {
 /* --- drive there --- */
 // A card's spot to drive to (parkDest: at first the row's nearest point to the place, then
 // wherever you tap on the card's streets, parkPickDest()), marked on the map by a dot with a
-// "Drive here" bubble above it holding a button each for Google Maps, Apple Maps and Waze. The
+// "Drive here" bubble above it holding a labelled button each for Google Maps, Apple Maps and Waze. The
 // card says where the bubble is (parkNavFill()). Both go when the card does.
 var parkDest = null;          // { lng, lat, name, picked } while a card is open
 var parkDestMarker = null;
@@ -3794,6 +3794,8 @@ function parkDestFill() {
   navAppLinks(parkDest.lat, parkDest.lng).forEach(function(l) {
     var a = b.appendChild(pkLink('', l.href));
     a.className = 'park-dest-app park-dest-app--' + l.app;
+    a.appendChild(pkEl('span', 'park-dest-ico'));
+    a.appendChild(pkEl('span', 'park-dest-name', l.app === 'waze' ? 'Waze' : l.label.replace(' Maps', '')));
     a.title = l.label;
     a.setAttribute('aria-label', 'Drive to ' + parkDest.name + ' in ' + l.label);
   });
