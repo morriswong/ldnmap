@@ -783,7 +783,6 @@
     border-radius: 999px; border: 1px solid var(--glass-border); background: var(--input-bg);
     font-size: 13px; font-weight: 700; color: var(--text);
   }
-  .park-walkline { font-size: 13px; color: var(--text); }
   .park-bar { display: flex; gap: 3px; height: 28px; }
   .park-bar-seg { min-width: 6px; border-radius: 4px; border: 1.5px solid transparent; }
   .park-bar-seg:first-child { border-radius: 9px 4px 4px 9px; }
@@ -793,8 +792,8 @@
   .park-ticks span { min-width: 0; white-space: nowrap; }
   .park-ticks .park-tick-end { flex: 0 0 auto; margin-left: auto; }
   .park-costs { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
-  .park-cost-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 0; border-top: 1px solid var(--divider); font-size: 13px; color: var(--text); }
-  .park-cost-label { display: flex; flex-direction: column; gap: 1px; }
+  .park-cost-row { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 6px 0; border-top: 1px solid var(--divider); font-size: 13px; color: var(--text); }
+  .park-cost-label { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 8px; min-width: 0; }
   .park-cost-label span { font-size: 12px; color: var(--park-muted); }
   .park-cost-amount { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
   .park-cost-total { font-weight: 700; }
@@ -806,7 +805,7 @@
   .park-actions > * { flex: 1; }
   /* The card's Drive here strip: where the bubble on the map goes; a tap shows it. */
   .park-nav {
-    display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 11px; text-align: left;
+    display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 11px; text-align: left;
     border: 1px solid var(--glass-border); border-radius: 12px; background: var(--glass-tile-bg); color: var(--text); cursor: pointer;
     font: 13px/1.35 'DM Sans', sans-serif;
   }

@@ -3603,8 +3603,6 @@ function parkRenderDetail() {
   pill.appendChild(dot);
   pill.appendChild(document.createTextNode(parkPillText(r)));
   card.appendChild(pill);
-  card.appendChild(pkEl('p', 'park-walkline', r.inside ? parkPlace.name + ' is in this zone'
-    : r.walk + ' min walk to ' + parkPlace.name + (zone ? ' from ' + r.street : '') + (r.refined ? '' : ' (estimate)')));
   if (r.outside) {
     card.appendChild(pkEl('p', 'park-ccz-quiet park-ccz-quiet--on', 'Outside the Congestion Charge zone: saves '
       + parkCczMoney(parkInfo.ccz.charge.amount) + ' ' + parkCczWhen(parkInfo.ccz.charge)));
@@ -3626,7 +3624,8 @@ function parkRenderDetail() {
   bar.setAttribute('aria-hidden', 'true');
   var ticks = pkEl('div', 'park-ticks');
   ticks.setAttribute('aria-hidden', 'true');
-  segs.forEach(function(s) {
+  var shown = parkTicksShown(segs, span);
+  segs.forEach(function(s, k) {
     var piece = pkEl('span', 'park-bar-seg park-bar-seg--' + s.status);
     piece.style.flex = String(s.end - s.start);
     piece.style.background = hexToRgba(PARK_SEG_COLORS[s.status] || PARKING_COLORS.unknown, 0.35);
@@ -3634,6 +3633,7 @@ function parkRenderDetail() {
     bar.appendChild(piece);
     var t = pkEl('span', '', parkingClock((a.minutes + s.start) % 1440));
     t.style.flex = String(s.end - s.start);
+    if (!shown[k]) t.style.visibility = 'hidden';
     ticks.appendChild(t);
   });
   ticks.appendChild(pkEl('span', 'park-tick-end', parkingClock((a.minutes + span) % 1440)));
@@ -3649,7 +3649,7 @@ function parkRenderDetail() {
       detail = t ? parkDur(dur) + ' × ' + parkAmount(t.min, t.max) : parkDur(dur) + ', price unknown';
       amount = t ? parkAmount(parkingCost(t.min, dur), t.max === null ? null : parkingCost(t.max, dur)) : '?';
     } else if (s.status === 'free') {
-      detail = parkDur(dur) + ', no charge'; amount = 'Free';
+      detail = parkDur(dur); amount = 'Free';
     } else if (s.status === 'permit') {
       detail = 'permit holders only'; amount = '–';
     } else {
@@ -3668,7 +3668,7 @@ function parkRenderDetail() {
     : 'Total, ' + (limited ? 'until ' + parkAt(a, span) : parkDur(span))));
   total.appendChild(pkEl('span', 'park-cost-amount', r.state === 'unknown' || r.costMin === null ? 'Unknown'
     : r.costMin === 0 ? 'Free' : parkAmount(r.costMin, r.costMax)));
-  costs.appendChild(total);
+  if (segs.length > 1) costs.appendChild(total);   // one piece: its row is already the total
   card.appendChild(costs);
   if (r.state !== 'unknown' && plan.paidMin > 0) parkPriceDetail(card, r, borough);
 
@@ -3679,8 +3679,6 @@ function parkRenderDetail() {
   if (rule.event) parkingRow(card, 'Event days', rule.event.hours.replace(/^Event days: /, ''));
   var pay = rule.payCode || zoneRule.payCode;
   if (pay && pay.code) parkingRow(card, 'Pay by phone', pay.provider + ' location ' + pay.code);
-  if (zone) parkingRow(card, 'Nearest street', r.street);
-  parkingRow(card, 'Walk', r.inside ? 'About 1 min: ' + parkPlace.name + ' is in this zone' : r.walk + ' min to ' + parkPlace.name);
   card.appendChild(pkEl('p', 'pk-small', 'Check the signs on the street: bays can be suspended.'));
   // A zone's streets with rules of their own, listed in the results too.
   var odd = zone && !r.outside ? parkOddStreets(r) : [];
@@ -3695,6 +3693,19 @@ function parkRenderDetail() {
   actions.appendChild(parkButton('park-secondary', 'Back to list', parkShowList));
   card.appendChild(actions);
   parkBody.appendChild(card);
+}
+
+// Which of the bar's times have room: labels about 6 characters wide each need ~17% of the bar.
+// From the end back, so a crowded start (the time you arrive, in the heading) gives way to the
+// time things change.
+function parkTicksShown(segs, span) {
+  var shown = [], last = 1;
+  for (var k = segs.length - 1; k >= 0; k--) {
+    var at = segs[k].start / span;
+    shown[k] = last - at >= 0.17;
+    if (shown[k]) last = at;
+  }
+  return shown;
 }
 
 // Under a paid stay's costs: what the stay costs in each emissions band or fuel type, what a
@@ -3751,19 +3762,20 @@ function navAppLinks(lat, lng) {
   ];
 }
 
-// The card's strip: where you're driving to and how to change it. A tap brings the spot (and its
-// bubble) back into view.
+// The card's strip, under the pill: the spot you're driving to, the walk from it (the card's only
+// walk line) and how to move it. A tap brings the spot (and its bubble) back into view.
 function parkNavFill(box, r) {
   box.innerHTML = '';
   box.appendChild(pkEl('i', 'park-nav-dot'));
   var text = pkEl('span', 'park-nav-text');
   var dest = pkEl('span', 'park-nav-dest');
-  dest.appendChild(document.createTextNode('Drive to '));
   dest.appendChild(pkEl('b', '', parkDest.name));
-  dest.appendChild(document.createTextNode(parkDest.picked ? ' · the spot you picked' : ' · nearest to ' + parkPlace.name));
+  dest.appendChild(document.createTextNode(' · ' + (parkDest.picked ? 'the spot you picked'
+    : r.inside ? parkPlace.name + ' is in this zone'
+    : r.walk + ' min walk to ' + parkPlace.name + (r.refined ? '' : ' (estimate)'))));
   text.appendChild(dest);
-  text.appendChild(pkEl('span', 'park-nav-hint', 'Use the bubble on the map to open Google Maps, Apple Maps or Waze. '
-    + (r.kind === 'zone' && !r.outside ? 'Tap another street in the zone to move it.' : 'Tap the street to move it along.')));
+  text.appendChild(pkEl('span', 'park-nav-hint', 'Drive there with the bubble on the map · '
+    + (r.kind === 'zone' && !r.outside ? 'tap another street to move it' : 'tap the street to move it')));
   box.appendChild(text);
 }
 
