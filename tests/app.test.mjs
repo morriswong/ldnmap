@@ -553,15 +553,18 @@ test('park near here: plan, then the zones and odd streets where the whole stay 
   assert.match(card, /Pay by phonePayByPhone location 1234/);
   assert.match(card, /Nearest streetAlpha RoadWalkAbout 1 min: The Venue is in this zone/);
   assert.match(card, /Streets here with their own rules5minMarket RowZone A · Alpha4h max · fits 2h£6\.00paid all stay/);
-  assert.match(card, /Drive toAlpha Road · nearest to The VenueGoogle MapsApple MapsWazeTap a street in the zone/);
-  let apps = app.el('park-body').querySelectorAll('.park-nav-app');
-  assert.deepEqual(apps.map((a) => a.textContent), ['Google Maps', 'Apple Maps', 'Waze']);
+  assert.match(card, /Drive to Alpha Road · nearest to The VenueUse the bubble on the map to open Google Maps, Apple Maps or Waze\. Tap another street in the zone to move it\./);
+  assert.equal(app.el('park-body').querySelectorAll('.park-nav-app').length, 0, 'the buttons are on the map, not the card');
+  let apps = app.parkDestBubble.querySelectorAll('.park-dest-app');
+  assert.match(app.parkDestBubble.textContent, /^Drive here/);
+  assert.deepEqual(apps.map((a) => a.title), ['Google Maps', 'Apple Maps', 'Waze']);
+  assert.equal(apps[2].attributes['aria-label'], 'Drive to Alpha Road in Waze');
   assert.match(apps[0].href, /^https:\/\/www\.google\.com\/maps\/dir\/\?api=1&destination=51\.450000,-0\.248\d+&travelmode=driving$/, 'to its nearest street');
   assert.match(apps[1].href, /^https:\/\/maps\.apple\.com\/\?daddr=51\.450000,-0\.248\d+&dirflg=d$/);
   assert.match(apps[2].href, /^https:\/\/waze\.com\/ul\?ll=51\.450000,-0\.248\d+$/, 'not navigate=yes: you choose the route');
   assert.ok(apps.every((a) => a.target === '_blank'));
   assert.equal(app.el('park-body').querySelectorAll('.park-primary').length, 0);
-  assert.ok(app.parkDestMarker.added, 'a dot where the buttons go');
+  assert.ok(app.parkDestMarker.added, 'a dot with the bubble');
   assert.deepEqual(plain(app.parkDestMarker.lngLat), [app.parkResults[zoneA].point[0], 51.45]);
   assert.equal(app.map.calls.pop().name, 'fitBounds', 'the map frames the zone');
 
@@ -572,12 +575,22 @@ test('park near here: plan, then the zones and odd streets where the whole stay 
   assert.match(card, /10am–12pm2h × £3\.00£6\.00Total£6\.00/);
   assert.match(card, /Pay by phonePayByPhone location 5678/);
   assert.doesNotMatch(card, /Nearest street|own rules/);
-  apps = app.el('park-body').querySelectorAll('.park-nav-app');
+  apps = app.parkDestBubble.querySelectorAll('.park-dest-app');
   assert.match(apps[0].href, /destination=51\.450000,-0\.247\d+&/);
-  assert.match(card, /Drive toMarket Row · nearest to The Venue.*Tap the street on the map to pick another spot on it\./);
+  assert.match(card, /Drive to Market Row · nearest to The Venue.*Tap the street to move it along\./);
   const fly = app.map.calls.pop();
   assert.equal(fly.name, 'flyTo');
   assert.equal(fly.options.padding, undefined);
+  // Tapping the card's strip brings the spot back into view.
+  app.el('park-body').querySelectorAll('.park-nav')[0].dispatch('click');
+  const ease = app.map.calls.pop();
+  assert.equal(ease.name, 'easeTo');
+  assert.deepEqual(plain(ease.options.center), [app.parkDest.lng, app.parkDest.lat]);
+  // A press on the bubble stays off the map.
+  let stopped = 0;
+  app.parkDestBubble.dispatch('click', { stopPropagation() { stopped++; } });
+  app.parkDestBubble.dispatch('touchstart', { stopPropagation() { stopped++; } });
+  assert.equal(stopped, 2);
   app.parkBack();
   assert.equal(app.parkView, 'results');
   assert.equal(app.parkDestMarker.added, false, 'the dot goes with the card');
@@ -967,8 +980,8 @@ test('park near here: one row per zone, odd streets on their own, the zones fram
   assert.ok(app.parkDest.picked);
   assert.ok(Math.abs(app.parkDest.lng - end[0]) < 1e-9 && Math.abs(app.parkDest.lat - end[1]) < 1e-9, 'snapped onto the street');
   assert.deepEqual(plain(app.parkDestMarker.lngLat), [app.parkDest.lng, app.parkDest.lat]);
-  assert.match(app.el('park-body').textContent, new RegExp('Drive to' + za.names[other] + ' · the spot you picked'));
-  assert.match(app.el('park-body').querySelectorAll('.park-nav-app')[2].href,
+  assert.match(app.el('park-body').textContent, new RegExp('Drive to ' + za.names[other] + ' · the spot you picked'));
+  assert.match(app.parkDestBubble.querySelectorAll('.park-dest-app')[2].href,
     new RegExp('ll=' + end[1].toFixed(6).replace('.', '\\.') + ',' + end[0].toFixed(6).replace('.', '\\.')));
   app.map.rendered = {};
   app.map.fireLayer('click', 'park-zones-fill', { point: { x: 1, y: 1 }, lngLat: { lng: D[0], lat: D[1] }, features: [{ properties: { i: idx('Zone A') } }] });

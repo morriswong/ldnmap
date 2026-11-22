@@ -2966,12 +2966,15 @@ function clearParkResults() {
 }
 
 // Clear of the panel (desktop) or the sheet at half height (mobile).
+// A card's map keeps room at the top for the Drive here bubble over the spot.
+function parkDestRoom() { return parkView === 'detail' ? 110 : 60; }
+
 function parkMapPadding() {
   if (isMobileView()) {
     var vis = window.__parkSheet ? window.__parkSheet.visibleAt('half') : 360;
-    return fitPadding({ top: 60, right: 24, bottom: vis + 20, left: 24 });
+    return fitPadding({ top: parkDestRoom(), right: 24, bottom: vis + 20, left: 24 });
   }
-  return fitPadding({ top: 60, right: 390, bottom: 60, left: 60 });
+  return fitPadding({ top: parkDestRoom(), right: 390, bottom: 60, left: 60 });
 }
 
 function parkFitBounds(bb) {
@@ -3606,8 +3609,11 @@ function parkRenderDetail() {
     card.appendChild(pkEl('p', 'park-ccz-quiet park-ccz-quiet--on', 'Outside the Congestion Charge zone: saves '
       + parkCczMoney(parkInfo.ccz.charge.amount) + ' ' + parkCczWhen(parkInfo.ccz.charge)));
   }
-  parkNavBox = pkEl('div', 'park-nav');
+  parkNavBox = pkEl('button', 'park-nav');
+  parkNavBox.type = 'button';
+  parkNavBox.setAttribute('aria-label', 'Show the spot to drive to on the map');
   parkNavFill(parkNavBox, r);
+  parkNavBox.addEventListener('click', parkShowDest);
   card.appendChild(parkNavBox);
 
   // With no stay chosen the bar covers the time you can stay, up to 24 hours (parkWindow()).
@@ -3724,12 +3730,14 @@ function parkPriceDetail(card, r, borough) {
 }
 
 /* --- drive there --- */
-// A card's "Drive to" block: the spot to drive to (parkDest: at first the row's nearest point to
-// the place, then wherever you tap on the card's streets, parkPickDest()), marked on the map by a
-// dot, with buttons that open it in Google Maps, Apple Maps or Waze. The dot goes when the card does.
+// A card's spot to drive to (parkDest: at first the row's nearest point to the place, then
+// wherever you tap on the card's streets, parkPickDest()), marked on the map by a dot with a
+// "Drive here" bubble above it holding a button each for Google Maps, Apple Maps and Waze. The
+// card says where the bubble is (parkNavFill()). Both go when the card does.
 var parkDest = null;          // { lng, lat, name, picked } while a card is open
 var parkDestMarker = null;
-var parkNavBox = null;        // the open card's Drive to block
+var parkDestBubble = null;    // the bubble's element, inside the marker's
+var parkNavBox = null;        // the open card's Drive here strip
 
 // Driving directions to a point in each navigation app, stopping at the route preview so you can
 // pick a route (Waze: no navigate=yes, which would start driving straight away). Each link opens
@@ -3743,21 +3751,25 @@ function navAppLinks(lat, lng) {
   ];
 }
 
+// The card's strip: where you're driving to and how to change it. A tap brings the spot (and its
+// bubble) back into view.
 function parkNavFill(box, r) {
   box.innerHTML = '';
-  box.appendChild(pkEl('div', 'pk-section', 'Drive to'));
-  var dest = pkEl('p', 'park-nav-dest');
+  box.appendChild(pkEl('i', 'park-nav-dot'));
+  var text = pkEl('span', 'park-nav-text');
+  var dest = pkEl('span', 'park-nav-dest');
+  dest.appendChild(document.createTextNode('Drive to '));
   dest.appendChild(pkEl('b', '', parkDest.name));
   dest.appendChild(document.createTextNode(parkDest.picked ? ' · the spot you picked' : ' · nearest to ' + parkPlace.name));
-  box.appendChild(dest);
-  var apps = pkEl('div', 'park-nav-apps');
-  navAppLinks(parkDest.lat, parkDest.lng).forEach(function(l) {
-    apps.appendChild(pkLink(l.label, l.href)).className = 'park-nav-app park-nav-app--' + l.app;
-  });
-  box.appendChild(apps);
-  box.appendChild(pkEl('p', 'pk-small', r.kind === 'zone' && !r.outside
-    ? 'Tap a street in the zone on the map to drive there instead.'
-    : 'Tap the street on the map to pick another spot on it.'));
+  text.appendChild(dest);
+  text.appendChild(pkEl('span', 'park-nav-hint', 'Use the bubble on the map to open Google Maps, Apple Maps or Waze. '
+    + (r.kind === 'zone' && !r.outside ? 'Tap another street in the zone to move it.' : 'Tap the street to move it along.')));
+  box.appendChild(text);
+}
+
+function parkShowDest() {
+  if (!parkDest) return;
+  map.easeTo({ center: [parkDest.lng, parkDest.lat], offset: paddingOffset(parkMapPadding()) });
 }
 
 // A tap on the open card's streets or zone: the spot moves to the nearest point on its streets.
@@ -3775,15 +3787,33 @@ function parkPickDest(lngLat) {
   if (parkNavBox) parkNavFill(parkNavBox, r);
 }
 
-// The dot on the map follows parkDest, which only a card holds.
+function parkDestFill() {
+  var b = parkDestBubble;
+  b.innerHTML = '';
+  b.appendChild(pkEl('span', 'park-dest-label', 'Drive here'));
+  navAppLinks(parkDest.lat, parkDest.lng).forEach(function(l) {
+    var a = b.appendChild(pkLink('', l.href));
+    a.className = 'park-dest-app park-dest-app--' + l.app;
+    a.title = l.label;
+    a.setAttribute('aria-label', 'Drive to ' + parkDest.name + ' in ' + l.label);
+  });
+}
+
+// The dot and its bubble follow parkDest, which only a card holds. Taps and drags on the bubble
+// stay off the map, so pressing a button doesn't also move the spot or pan the map.
 function parkSyncDest() {
   if (parkView !== 'detail' || !parkPlace) parkDest = null;
   if (!parkDest) { if (parkDestMarker) parkDestMarker.remove(); return; }
   if (!parkDestMarker) {
-    var el = document.createElement('div');
-    el.className = 'park-dest-dot';
+    var el = pkEl('div', 'park-dest');
+    el.appendChild(pkEl('div', 'park-dest-dot'));
+    parkDestBubble = el.appendChild(pkEl('div', 'park-dest-bubble'));
+    ['mousedown', 'touchstart', 'pointerdown', 'click', 'dblclick', 'wheel'].forEach(function(type) {
+      parkDestBubble.addEventListener(type, function(e) { if (e && e.stopPropagation) e.stopPropagation(); });
+    });
     parkDestMarker = new mapboxgl.Marker({ element: el });
   }
+  parkDestFill();
   parkDestMarker.setLngLat([parkDest.lng, parkDest.lat]).addTo(map);
 }
 
