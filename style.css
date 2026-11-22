@@ -778,21 +778,25 @@
   .park-ccz-quiet--on { color: var(--ccz-ink); font-weight: 600; }
 
   .park-detail { gap: 9px; }
-  .park-pill {
-    align-self: flex-start; display: inline-flex; align-items: center; gap: 7px; padding: 5px 11px;
-    border-radius: 999px; border: 1px solid var(--glass-border); background: var(--input-bg);
-    font-size: 13px; font-weight: 700; color: var(--text);
+  /* The time bar, first on the card: a Now (or arrival) badge on its start, each piece's word
+     and until when inside. With up to 4 pieces each gets room for its words (--roomy). */
+  .park-timeline { position: relative; padding-top: 7px; }
+  .park-now {
+    position: absolute; left: 4px; top: -2px; z-index: 1; padding: 2px 7px; border-radius: 999px;
+    background: var(--text); color: var(--bg, #fff); font-size: 10px; font-weight: 700; letter-spacing: 0.03em; white-space: nowrap;
   }
-  /* The card's time bar: a Now (or arrival) marker on its start, each piece's word inside. */
-  .park-now { display: flex; align-items: baseline; gap: 4px; margin-bottom: -6px; padding-left: 2px; font-size: 12px; color: var(--park-muted); }
-  .park-now b { color: var(--text); font-weight: 700; }
-  .park-now::before { content: ''; align-self: center; width: 0; height: 0; border: 5px solid transparent; border-bottom: 0; border-top-color: var(--text); margin-right: 2px; }
-  .park-bar { position: relative; display: flex; gap: 3px; height: 32px; }
-  .park-bar::before { content: ''; position: absolute; left: 6px; top: -4px; bottom: -4px; width: 2px; border-radius: 1px; background: var(--text); z-index: 1; }
+  body.light .park-now { color: #fff; }
+  body:not(.light) .park-now { color: #111; }
+  .park-bar { display: flex; gap: 3px; height: 32px; }
+  .park-bar--roomy { height: 40px; }
   .park-bar-seg {
     min-width: 6px; border-radius: 4px; border: 1.5px solid transparent; overflow: hidden; white-space: nowrap;
-    display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--text);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.15;
+    font-size: 11px; color: var(--text);
   }
+  .park-bar--roomy .park-bar-seg { min-width: 64px; }
+  .park-bar-seg b { font-weight: 700; }
+  .park-bar-seg span { font-size: 10.5px; font-weight: 500; }
   .park-total { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; color: var(--text); }
   .park-total b { font-variant-numeric: tabular-nums; }
   .park-facts { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -801,9 +805,6 @@
   .park-bar-seg:first-child { border-radius: 9px 4px 4px 9px; }
   .park-bar-seg:last-child { border-radius: 4px 9px 9px 4px; }
   .park-bar-seg:only-child { border-radius: 9px; }
-  .park-ticks { display: flex; font-size: 11px; color: var(--park-muted); font-variant-numeric: tabular-nums; margin-top: -4px; }
-  .park-ticks span { min-width: 0; white-space: nowrap; }
-  .park-ticks .park-tick-end { flex: 0 0 auto; margin-left: auto; }
   .park-cost-amount { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
   .park-bands { list-style: none; margin: -2px 0 0; padding: 0; display: flex; flex-direction: column; }
   .park-band-row { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 3px 0; font-size: 12px; color: var(--text); }
@@ -811,18 +812,21 @@
   .park-band-label { min-width: 0; color: var(--park-muted); }
   .park-actions { display: flex; gap: 8px; margin-top: 4px; }
   .park-actions > * { flex: 1; }
-  /* The card's Drive here strip: where the bubble on the map goes; a tap shows it. */
+  /* The card's where block, under the time bar: the zone's name and walk beside the map's dot;
+     a tap shows the spot on the map. */
   .park-nav {
-    display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 11px; text-align: left;
-    border: 1px solid var(--glass-border); border-radius: 12px; background: var(--glass-tile-bg); color: var(--text); cursor: pointer;
+    display: flex; align-items: flex-start; gap: 10px; width: 100%; padding: 10px 0 0; text-align: left;
+    border: none; border-top: 1px solid var(--divider); border-radius: 0; background: none; color: var(--text); cursor: pointer;
     font: 13px/1.35 'DM Sans', sans-serif;
   }
   .park-nav-dot {
-    flex-shrink: 0; width: 16px; height: 16px; border-radius: 50%; box-sizing: border-box;
+    flex-shrink: 0; width: 16px; height: 16px; margin-top: 3px; border-radius: 50%; box-sizing: border-box;
     background: #111827; border: 4px solid #fff; box-shadow: 0 0 0 1.5px #111827;
   }
   body:not(.light) .park-nav-dot { background: #fff; border-color: #111827; box-shadow: 0 0 0 1.5px #fff; }
   .park-nav-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .park-nav-title { font-size: 16px; font-weight: 700; line-height: 1.25; }
+  .park-nav-walk b { font-weight: 700; }
   .park-nav-hint { font-size: 11px; color: var(--park-muted); }
   /* The spot on the map: a dark dot with a white ring and the Drive here bubble above it
      (inverted in dark mode). Only the bubble takes taps. */

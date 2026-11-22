@@ -3572,19 +3572,6 @@ function parkCostEl(r) {
   return box;
 }
 
-// The pill on a street's card: 'Pay to park until 7pm', 'Free for your stay'; with no stay
-// chosen, how long you can stay (parkStayLine()).
-function parkPillText(r) {
-  if (r.now) return parkStayLine(r);
-  if (r.state === 'unknown') return 'Hours unclear: check the signs';
-  if (r.state === 'free') return 'Free for your stay';
-  var segs = parkSegments(r), m0 = parkInfo.arrival.minutes, first = segs[0];
-  if (segs.length === 1) return 'Pay to park all stay';
-  if (first.status === 'ctrl') return 'Pay to park until ' + parkingClock((m0 + first.end) % 1440);
-  return PARK_SEG_WORDS[first.status].charAt(0).toUpperCase() + PARK_SEG_WORDS[first.status].slice(1)
-    + ' until ' + parkingClock((m0 + first.end) % 1440) + ', then pay';
-}
-
 function parkRenderDetail() {
   var r = parkResults[parkSelIdx], a = parkInfo.arrival, plan = r.plan;
   var rule = parkingRule(r.rule) || {}, zoneRule = parkingRule(r.b + ':' + r.zone) || {};
@@ -3592,63 +3579,34 @@ function parkRenderDetail() {
   var card = pkEl('div', 'pk-card park-detail');
 
   var zone = r.kind === 'zone';
-  var titles = pkEl('div', 'pk-card-titles');
-  titles.appendChild(pkEl('div', 'pk-card-title', parkRowTitle(r)));
-  titles.appendChild(pkEl('div', 'pk-card-sub', zone ? borough.name || '' : parkZoneLine(r) + (borough.name ? ' · ' + borough.name : '')));
-  card.appendChild(titles);
-
-  var pill = pkEl('div', 'park-pill');
-  var dot = pkEl('i', 'pk-dot');
-  dot.style.background = PARK_STATE_COLORS[r.state];
-  pill.appendChild(dot);
-  pill.appendChild(document.createTextNode(parkPillText(r)));
-  card.appendChild(pill);
-  if (r.outside) {
-    card.appendChild(pkEl('p', 'park-ccz-quiet park-ccz-quiet--on', 'Outside the Congestion Charge zone: saves '
-      + parkCczMoney(parkInfo.ccz.charge.amount) + ' ' + parkCczWhen(parkInfo.ccz.charge)));
-  }
-  parkNavBox = pkEl('button', 'park-nav');
-  parkNavBox.type = 'button';
-  parkNavBox.setAttribute('aria-label', 'Show the spot to drive to on the map');
-  parkNavFill(parkNavBox, r);
-  parkNavBox.addEventListener('click', parkShowDest);
-  card.appendChild(parkNavBox);
-
-  // The time bar is the card's breakdown: from now (or the arrival) on, each piece saying Free or
-  // its hourly price inside when there's room, the times things change under it, and a marker at
-  // the start (no heading: the pill says how long you can stay). With no stay chosen it covers the
-  // time you can stay, up to 24 hours (parkWindow()).
+  // The time bar comes first and is the card's breakdown: from now (or the arrival, its badge) on,
+  // each piece saying Free or its price and until when (parkSegWord()); with no stay chosen it
+  // covers the time you can stay, up to 24 hours (parkWindow()). Up to 4 pieces get room for their
+  // words, so short ones aren't to scale; more than that, a piece shows its word only if it fits.
   var span = parkSpan(r), limited = r.now && r.now.untilMin === span;
-  var segs = parkSegments(r);
-  var marker = pkEl('div', 'park-now');
-  marker.setAttribute('aria-hidden', 'true');
-  marker.appendChild(pkEl('b', '', a.now ? 'Now' : a.label));
-  marker.appendChild(document.createTextNode(' ' + parkingClock(a.minutes % 1440)));
-  card.appendChild(marker);
-  var bar = pkEl('div', 'park-bar');
+  var segs = parkSegments(r), roomy = segs.length <= 4;
+  var timeline = pkEl('div', 'park-timeline');
+  var badge = timeline.appendChild(pkEl('span', 'park-now', a.now ? 'Now' : a.label + ' ' + parkingClock(a.minutes % 1440)));
+  badge.setAttribute('aria-hidden', 'true');
+  var bar = timeline.appendChild(pkEl('div', 'park-bar' + (roomy ? ' park-bar--roomy' : '')));
   bar.setAttribute('role', 'img');
   bar.setAttribute('aria-label', segs.map(function(s) { return parkSegSay(r, s); }).join('; '));
-  var ticks = pkEl('div', 'park-ticks');
-  ticks.setAttribute('aria-hidden', 'true');
-  var shown = parkTicksShown(segs, span);
   segs.forEach(function(s, k) {
     var piece = pkEl('span', 'park-bar-seg park-bar-seg--' + s.status);
-    piece.style.flex = String(s.end - s.start);
+    piece.style.flex = (s.end - s.start) + ' 1 0';
     piece.style.background = hexToRgba(PARK_SEG_COLORS[s.status] || PARKING_COLORS.unknown, 0.35);
     piece.style.borderColor = PARK_SEG_COLORS[s.status] || PARKING_COLORS.unknown;
     var word = parkSegWord(r, s);
-    if (word.length * 7 + 12 <= (s.end - s.start) / span * 300) piece.textContent = word;
+    if (roomy) {
+      piece.appendChild(pkEl('b', '', word));
+      // The last piece of an open-ended 24 hours goes on past the bar: no 'till'.
+      if (k < segs.length - 1 || !r.now || limited) piece.appendChild(pkEl('span', '', 'till ' + parkingClock((a.minutes + s.end) % 1440)));
+    } else if (word.length * 7 + 12 <= (s.end - s.start) / span * 300) piece.appendChild(pkEl('b', '', word));
     bar.appendChild(piece);
-    var t = pkEl('span', '', parkingClock((a.minutes + s.start) % 1440));
-    t.style.flex = String(s.end - s.start);
-    if (k === 0 || !shown[k]) t.style.visibility = 'hidden';
-    ticks.appendChild(t);
   });
-  ticks.appendChild(pkEl('span', 'park-tick-end', parkingClock((a.minutes + span) % 1440)));
-  card.appendChild(bar);
-  card.appendChild(ticks);
+  card.appendChild(timeline);
 
-  // A total when anything is (or may be) paid; all free, the pill and the bar say so.
+  // A total when anything is (or may be) paid; all free, the bar says so.
   if (r.state === 'unknown' || r.costMin !== 0) {
     var total = pkEl('div', 'park-total');
     total.appendChild(pkEl('span', '', !r.now ? 'Total' : 'Total, ' + (limited ? 'until ' + parkAt(a, span) : parkDur(span))));
@@ -3656,6 +3614,18 @@ function parkRenderDetail() {
     card.appendChild(total);
   }
   if (r.state !== 'unknown' && plan.paidMin > 0) parkPriceDetail(card, r, borough);
+
+  // Then which zone (or street) and how far: one block with the map's dot, a button that brings
+  // the spot to drive to back into view (parkNavFill()).
+  parkNavBox = pkEl('button', 'park-nav');
+  parkNavBox.type = 'button';
+  parkNavFill(parkNavBox, r);
+  parkNavBox.addEventListener('click', parkShowDest);
+  card.appendChild(parkNavBox);
+  if (r.outside) {
+    card.appendChild(pkEl('p', 'park-ccz-quiet park-ccz-quiet--on', 'Outside the Congestion Charge zone: saves '
+      + parkCczMoney(parkInfo.ccz.charge.amount) + ' ' + parkCczWhen(parkInfo.ccz.charge)));
+  }
 
   // The rules, as chips.
   var max = rule.maxStay || zoneRule.maxStay || (borough.maxStayDefault ? borough.maxStayDefault + ' (council default)' : '')
@@ -3712,19 +3682,6 @@ function parkFact(parent, label, value) {
   parent.appendChild(c);
 }
 
-// Which of the bar's times have room: labels about 6 characters wide each need ~17% of the bar.
-// From the end back, so a crowded start (the time you arrive, in the heading) gives way to the
-// time things change.
-function parkTicksShown(segs, span) {
-  var shown = [], last = 1;
-  for (var k = segs.length - 1; k >= 0; k--) {
-    var at = segs[k].start / span;
-    shown[k] = last - at >= 0.17;
-    if (shown[k]) last = at;
-  }
-  return shown;
-}
-
 // Under a paid stay's costs: what the stay costs in each emissions band or fuel type, what a
 // 'from' price means, or (no prices in the data) the council's own note; then a link to its prices.
 function parkPriceDetail(card, r, borough) {
@@ -3779,20 +3736,32 @@ function navAppLinks(lat, lng) {
   ];
 }
 
-// The card's strip, under the pill: the spot you're driving to, the walk from it (the card's only
-// walk line) and how to move it. A tap brings the spot (and its bubble) back into view.
+// The card's where block, under the time bar: the zone's (or street's) name, the walk to the place
+// from the spot to drive to (the card's only walk line; a spot you picked says so), the borough,
+// and the dot and bubble on the map. A tap brings the spot (and its bubble) back into view.
 function parkNavFill(box, r) {
+  var borough = parkingRules.boroughs[r.b] || {};
   box.innerHTML = '';
+  box.setAttribute('aria-label', parkRowTitle(r) + ': show the spot to drive to on the map');
   box.appendChild(pkEl('i', 'park-nav-dot'));
   var text = pkEl('span', 'park-nav-text');
-  var dest = pkEl('span', 'park-nav-dest');
-  dest.appendChild(pkEl('b', '', parkDest.name));
-  dest.appendChild(document.createTextNode(' · ' + (parkDest.picked ? 'the spot you picked'
-    : r.inside ? parkPlace.name + ' is in this zone'
-    : r.walk + ' min walk to ' + parkPlace.name + (r.refined ? '' : ' (estimate)'))));
-  text.appendChild(dest);
-  text.appendChild(pkEl('span', 'park-nav-hint', 'Drive there with the bubble on the map · '
-    + (r.kind === 'zone' && !r.outside ? 'tap another street to move it' : 'tap the street to move it')));
+  text.appendChild(pkEl('span', 'park-nav-title', parkRowTitle(r)));
+  var walk = pkEl('span', 'park-nav-walk');
+  if (parkDest.picked) {
+    walk.appendChild(document.createTextNode('Drive to '));
+    walk.appendChild(pkEl('b', '', parkDest.name));
+    walk.appendChild(document.createTextNode(', the spot you picked'));
+  } else if (r.inside) {
+    walk.appendChild(pkEl('b', '', parkPlace.name + ' is in this zone'));
+    walk.appendChild(document.createTextNode(', nearest street ' + parkDest.name));
+  } else {
+    walk.appendChild(pkEl('b', '', r.walk + ' min walk'));
+    walk.appendChild(document.createTextNode(' to ' + parkPlace.name + (r.kind === 'zone' ? ' from ' + parkDest.name : '')
+      + (r.refined ? '' : ' (estimate)')));
+  }
+  text.appendChild(walk);
+  var where = r.kind === 'zone' ? borough.name || '' : parkZoneLine(r) + (borough.name ? ' · ' + borough.name : '');
+  text.appendChild(pkEl('span', 'park-nav-hint', (where ? where + ' · ' : '') + 'drive there with the bubble on the map'));
   box.appendChild(text);
 }
 
