@@ -3604,6 +3604,16 @@ function parkRenderDetail() {
     } else if (word.length * 7 + 12 <= (s.end - s.start) / span * 300) piece.appendChild(pkEl('b', '', word));
     bar.appendChild(piece);
   });
+  // A stay cut short (a max stay, permit holders only, unclear hours) says why at the bar's end.
+  var end = limited && parkEndCap(r.now, parkingClock((a.minutes + span) % 1440));
+  if (end) {
+    var cap = bar.appendChild(pkEl('span', 'park-bar-end'));
+    cap.appendChild(pkEl('b', '', end.word));
+    cap.appendChild(pkEl('span', '', end.when));
+    cap.style.color = cap.style.borderColor = end.color;
+    cap.style.background = 'repeating-linear-gradient(135deg, ' + hexToRgba(end.color, 0.16) + ' 0 3px, transparent 3px 7px)';
+    bar.setAttribute('aria-label', bar.attributes['aria-label'] + '; then ' + end.say);
+  }
   card.appendChild(timeline);
 
   // A total when anything is (or may be) paid; all free, the bar says so.
@@ -3673,6 +3683,18 @@ function parkSegSay(r, s) {
   if (!t) return when + ' paid, price unknown';
   return when + ' at ' + parkAmount(t.min, t.max) + ' an hour: '
     + parkAmount(parkingCost(t.min, dur), t.max === null ? null : parkingCost(t.max, dur));
+}
+
+// What ends a stay early, for the end of its time bar: '4h max' / 'leave by 9pm', 'Permit only' /
+// 'from 6:30pm', 'Check signs' / 'from 7pm'.
+function parkEndCap(n, at) {
+  if (n.limit === 'maxstay') return { word: parkDur(n.maxStayMin) + ' max', when: 'leave by ' + at,
+    say: 'leave by ' + at + ': ' + parkDur(n.maxStayMin) + ' max stay', color: PARK_SEG_COLORS.unknown || PARKING_COLORS.unknown };
+  if (n.limit === 'permit') return { word: 'Permit only', when: 'from ' + at, say: 'permit holders only from ' + at,
+    color: PARK_SEG_COLORS.permit || PARKING_COLORS.permit };
+  if (n.limit === 'unknown') return { word: 'Check signs', when: 'from ' + at, say: 'hours unclear from ' + at + ': check the signs',
+    color: PARK_SEG_COLORS.unknown || PARKING_COLORS.unknown };
+  return null;
 }
 
 function parkFact(parent, label, value) {

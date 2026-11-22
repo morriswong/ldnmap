@@ -648,8 +648,8 @@ test('park near here: no stay chosen lists where you can park now, the rate and 
   };
   const say = () => app.el('park-body').querySelectorAll('.park-bar')[0].attributes['aria-label'];
   let text = card('Zone A');
-  assert.match(text, /^Now£2\.00\/hrtill 9pmTotal, until 9pm£8\.00Zone A · AlphaThe Venue is in this zone, nearest street (Alpha Road|Abbey Mews)Xshire/);
-  assert.equal(say(), '5–9pm, 4h at £2.00 an hour: £8.00');
+  assert.match(text, /^Now£2\.00\/hrtill 9pm4h maxleave by 9pmTotal, until 9pm£8\.00Zone A · AlphaThe Venue is in this zone, nearest street (Alpha Road|Abbey Mews)Xshire/);
+  assert.equal(say(), '5–9pm, 4h at £2.00 an hour: £8.00; then leave by 9pm: 4h max stay', 'a max stay ends the bar');
   assert.match(text, /Max stay 4 hoursControlled/, 'no stay to fit');
   text = card('Zone B');
   assert.match(text, /^NowFreeZone B · B zone8 min walk to The Venue from Bravo StreetXshire/, 'open-ended: no till');
@@ -662,6 +662,14 @@ test('park near here: no stay chosen lists where you can park now, the rate and 
   assert.deepEqual(app.el('park-body').querySelectorAll('.park-bar-seg').map((e) => e.textContent),
     ['Freetill 7pm', 'Paidtill midnight', 'Free']);
   assert.match(text, /By emissions band · 5h paid/);
+  // Permit holders only from 6pm: the bar ends there and says so, in the permit colour.
+  text = card('Zone Q');
+  assert.match(text, /^NowFreetill 6pmPermit onlyfrom 6pm/);
+  assert.match(say(), /; then permit holders only from 6pm$/);
+  const cap = app.el('park-body').querySelectorAll('.park-bar-end')[0];
+  assert.equal(cap.style.borderColor, app.PARK_SEG_COLORS.permit);
+  assert.equal(card('Zone B').includes('Permit'), false, 'nothing ends an open-ended stay');
+  assert.equal(app.el('park-body').querySelectorAll('.park-bar-end').length, 0);
   app.parkBack();
   assert.equal(app.parkView, 'results');
 });
@@ -935,7 +943,7 @@ test('park near here: one row per zone, odd streets on their own, the zones fram
   assert.deepEqual(plain(app.map.getLayer('park-results-sel').filter), ['all', ['==', ['get', 'i'], idx('Zone A')], ['==', ['get', 'kind'], 'street']]);
   assert.deepEqual(plain(app.map.getPaintProperty('park-zones-fill', 'fill-opacity')), ['case', ['==', ['get', 'i'], idx('Zone A')], 0.16, 0.03]);
   let text = app.el('park-body').textContent;
-  assert.match(text, /^Now£2\.00\/hrtill 9pmTotal, until 9pm£8\.00Zone A · AlphaThe Venue is in this zone, nearest street (Alpha Road|Abbey Mews)Xshire/);
+  assert.match(text, /^Now£2\.00\/hrtill 9pm4h maxleave by 9pmTotal, until 9pm£8\.00Zone A · AlphaThe Venue is in this zone, nearest street (Alpha Road|Abbey Mews)Xshire/);
   assert.match(text, /Controlled Every day, all day/);
   // Its odd streets, nearest first, each opening its own card.
   assert.deepEqual(app.el('park-body').querySelectorAll('.park-sublist')[0].querySelectorAll('.park-name').map((e) => e.textContent),

@@ -779,10 +779,11 @@
 
   .park-detail { gap: 9px; }
   /* The time bar, first on the card: a Now (or arrival) badge on its start, each piece's word
-     and until when inside. With up to 4 pieces each gets room for its words (--roomy). */
-  .park-timeline { position: relative; padding-top: 7px; }
+     and until when inside. With up to 4 pieces each gets room for its words (--roomy). The badge
+     sits above the bar so it never covers a short first piece. */
+  .park-timeline { position: relative; padding-top: 20px; }
   .park-now {
-    position: absolute; left: 4px; top: -2px; z-index: 1; padding: 2px 7px; border-radius: 999px;
+    position: absolute; left: 2px; top: 0; z-index: 1; padding: 2px 7px; border-radius: 999px;
     background: var(--text); color: var(--bg, #fff); font-size: 10px; font-weight: 700; letter-spacing: 0.03em; white-space: nowrap;
   }
   body.light .park-now { color: #fff; }
@@ -795,6 +796,13 @@
     font-size: 11px; color: var(--text);
   }
   .park-bar--roomy .park-bar-seg { min-width: 64px; }
+  /* What ends a stay early, after the last piece: dashed and hatched in its colour. */
+  .park-bar-end {
+    flex: 0 0 auto; min-width: 58px; padding: 0 6px; border: 1.5px dashed; border-radius: 4px 9px 9px 4px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.15; font-size: 11px; white-space: nowrap;
+  }
+  .park-bar-end b { font-weight: 700; }
+  .park-bar-end span { font-size: 10.5px; }
   .park-bar-seg b { font-weight: 700; }
   .park-bar-seg span { font-size: 10.5px; font-weight: 500; }
   .park-total { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; color: var(--text); }
