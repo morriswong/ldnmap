@@ -34,3 +34,21 @@ now and then with these steps.
    notice and the council first.
 5. If the Gazette refuses the fetch, or a search shows no results page at all, say so in the run's
    reply. Don't treat that as "nothing changed".
+6. Keep the record. Append the run's entry to `tools/gazette_watch_log.md` (date, each search's
+   result count, notices filed with issue links, notices skipped and why, fetches that failed). If
+   the run found a step here that no longer works, fix it here too, and say so in the entry. Touch
+   no other file. Then, from `/home/morris/ldnmap`:
+
+   ```
+   git checkout dev && git pull --ff-only origin dev
+   git add tools/gazette_watch_log.md tools/gazette_watch.md
+   git commit -m "Gazette watch: YYYY-MM-DD run"
+   git push origin dev
+   wt=$(mktemp -d)/main && git worktree add --detach "$wt" origin/main
+   git -C "$wt" cherry-pick <the dev commit> && git -C "$wt" push origin HEAD:main
+   git worktree remove "$wt"
+   ```
+
+   Cherry-pick onto `main`, never merge `dev` into it: `dev` usually holds site changes that wait
+   for a check on a real device before they reach production. Stop and report instead of forcing if
+   the pull, cherry-pick or a push fails, or if the working tree has other changes in these files.
