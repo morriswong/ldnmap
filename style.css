@@ -778,54 +778,106 @@
   .park-ccz-quiet--on { color: var(--ccz-ink); font-weight: 600; }
 
   .park-detail { gap: 9px; }
-  .park-pill {
-    align-self: flex-start; display: inline-flex; align-items: center; gap: 7px; padding: 5px 11px;
-    border-radius: 999px; border: 1px solid var(--glass-border); background: var(--input-bg);
-    font-size: 13px; font-weight: 700; color: var(--text);
+  /* The time bar, first on the card: a Now (or arrival) badge on its start, each piece's word
+     and until when inside. With up to 4 pieces each gets room for its words (--roomy). The badge
+     sits above the bar so it never covers a short first piece. */
+  .park-timeline { position: relative; padding-top: 20px; }
+  .park-now {
+    position: absolute; left: 2px; top: 0; z-index: 1; padding: 2px 7px; border-radius: 999px;
+    background: var(--text); color: var(--bg, #fff); font-size: 10px; font-weight: 700; letter-spacing: 0.03em; white-space: nowrap;
   }
-  .park-walkline { font-size: 13px; color: var(--text); }
-  .park-bar { display: flex; gap: 3px; height: 28px; }
-  .park-bar-seg { min-width: 6px; border-radius: 4px; border: 1.5px solid transparent; }
+  body.light .park-now { color: #fff; }
+  body:not(.light) .park-now { color: #111; }
+  .park-bar { display: flex; gap: 3px; height: 32px; }
+  .park-bar--roomy { height: 40px; }
+  .park-bar-seg {
+    min-width: 6px; border-radius: 4px; border: 1.5px solid transparent; overflow: hidden; white-space: nowrap;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.15;
+    font-size: 11px; color: var(--text);
+  }
+  .park-bar--roomy .park-bar-seg { min-width: 64px; }
+  /* What ends a stay early, after the last piece: dashed and hatched in its colour. */
+  .park-bar-end {
+    flex: 0 0 auto; min-width: 58px; padding: 0 6px; border: 1.5px dashed; border-radius: 4px 9px 9px 4px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.15; font-size: 11px; white-space: nowrap;
+  }
+  .park-bar-end b { font-weight: 700; }
+  .park-bar-end span { font-size: 10.5px; }
+  .park-bar-seg b { font-weight: 700; }
+  .park-bar-seg span { font-size: 10.5px; font-weight: 500; }
+  .park-total { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; color: var(--text); }
+  .park-total b { font-variant-numeric: tabular-nums; }
+  .park-facts { display: flex; flex-wrap: wrap; gap: 6px; }
+  .park-fact { padding: 5px 9px; border-radius: 999px; border: 1px solid var(--glass-border); background: var(--glass-tile-bg); font-size: 12px; color: var(--park-muted); }
+  .park-fact b { color: var(--text); font-weight: 700; }
   .park-bar-seg:first-child { border-radius: 9px 4px 4px 9px; }
   .park-bar-seg:last-child { border-radius: 4px 9px 9px 4px; }
   .park-bar-seg:only-child { border-radius: 9px; }
-  .park-ticks { display: flex; font-size: 11px; color: var(--park-muted); font-variant-numeric: tabular-nums; margin-top: -4px; }
-  .park-ticks span { min-width: 0; white-space: nowrap; }
-  .park-ticks .park-tick-end { flex: 0 0 auto; margin-left: auto; }
-  .park-costs { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
-  .park-cost-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 0; border-top: 1px solid var(--divider); font-size: 13px; color: var(--text); }
-  .park-cost-label { display: flex; flex-direction: column; gap: 1px; }
-  .park-cost-label span { font-size: 12px; color: var(--park-muted); }
   .park-cost-amount { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .park-cost-total { font-weight: 700; }
   .park-bands { list-style: none; margin: -2px 0 0; padding: 0; display: flex; flex-direction: column; }
   .park-band-row { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 3px 0; font-size: 12px; color: var(--text); }
   .park-band-row + .park-band-row { border-top: 1px solid var(--divider); }
   .park-band-label { min-width: 0; color: var(--park-muted); }
   .park-actions { display: flex; gap: 8px; margin-top: 4px; }
   .park-actions > * { flex: 1; }
-  .park-nav { display: flex; flex-direction: column; gap: 6px; }
-  .park-nav-dest { margin: 0; font-size: 13px; color: var(--text); }
-  .park-nav-apps { display: flex; gap: 6px; }
-  .park-nav-app {
-    flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; text-align: center;
-    min-height: 44px; padding: 0 6px; border-radius: 12px; border: 1px solid var(--glass-border);
-    background: var(--glass-tile-bg); color: var(--text); text-decoration: none;
-    font: 700 13px 'DM Sans', sans-serif;
+  /* The card's where block, under the time bar: the zone's name and walk beside the map's dot;
+     a tap shows the spot on the map. */
+  .park-nav {
+    display: flex; align-items: flex-start; gap: 10px; width: 100%; padding: 10px 0 0; text-align: left;
+    border: none; border-top: 1px solid var(--divider); border-radius: 0; background: none; color: var(--text); cursor: pointer;
+    font: 13px/1.35 'DM Sans', sans-serif;
   }
-  .park-nav-app:active { background: var(--park-on-bg); border-color: var(--park-on-border); }
-  /* Where the Drive to buttons go: a dark dot with a white ring (inverted in dark mode). */
+  .park-nav-dot {
+    flex-shrink: 0; width: 16px; height: 16px; margin-top: 3px; border-radius: 50%; box-sizing: border-box;
+    background: #111827; border: 4px solid #fff; box-shadow: 0 0 0 1.5px #111827;
+  }
+  body:not(.light) .park-nav-dot { background: #fff; border-color: #111827; box-shadow: 0 0 0 1.5px #fff; }
+  .park-nav-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .park-nav-title { font-size: 16px; font-weight: 700; line-height: 1.25; }
+  .park-nav-walk b { font-weight: 700; }
+  .park-nav-hint { font-size: 11px; color: var(--park-muted); }
+  /* The spot on the map: a dark dot with a white ring and the Drive here bubble above it
+     (inverted in dark mode). Only the bubble takes taps. */
+  .park-dest { width: 22px; height: 22px; pointer-events: none; }
   .park-dest-dot {
-    width: 22px; height: 22px; border-radius: 50%; box-sizing: border-box;
-    background: #111827; border: 3px solid #fff; pointer-events: none;
+    position: relative; width: 22px; height: 22px; border-radius: 50%; box-sizing: border-box;
+    background: #111827; border: 3px solid #fff;
     box-shadow: 0 0 0 2px rgba(17,24,39,0.35), 0 2px 6px rgba(0,0,0,0.4);
   }
   .park-dest-dot::after {
     content: ''; position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px;
     border-radius: 50%; background: #fff;
   }
+  .park-dest-bubble {
+    position: absolute; left: 50%; bottom: calc(100% + 10px); transform: translateX(-50%);
+    display: flex; align-items: center; gap: 4px; padding: 6px 6px 6px 12px; white-space: nowrap;
+    border-radius: 16px; background: #111827; color: #fff; pointer-events: auto;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.35); font: 700 13px 'DM Sans', sans-serif;
+  }
+  .park-dest-bubble::after {
+    content: ''; position: absolute; left: 50%; bottom: -6px; margin-left: -7px;
+    border: 7px solid transparent; border-bottom: 0; border-top-color: #111827;
+  }
+  .park-dest-label { margin-right: 2px; }
+  .park-dest-app {
+    display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 44px;
+    color: inherit; text-decoration: none;
+  }
+  .park-dest-app:active { transform: scale(0.92); }
+  .park-dest-ico { display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; color: #fff; }
+  .park-dest-ico::before { content: ''; background: currentColor; }
+  .park-dest-name { font-size: 11px; font-weight: 600; line-height: 1; }
+  .park-dest-app--google .park-dest-ico { background: #34a853; }
+  .park-dest-app--apple .park-dest-ico { background: #fff; color: #111827; }
+  .park-dest-app--waze .park-dest-ico { background: #33ccff; color: #0b3a4a; }
+  .park-dest-app--google .park-dest-ico::before { width: 18px; height: 18px; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z'/%3E%3C/svg%3E") center / contain no-repeat; }
+  .park-dest-app--apple .park-dest-ico::before { width: 16px; height: 16px; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 11 21 3l-8 18-2-8z'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 11 21 3l-8 18-2-8z'/%3E%3C/svg%3E") center / contain no-repeat; }
+  .park-dest-app--waze .park-dest-ico::before { width: 19px; height: 19px; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 11l1.6-4.2A2 2 0 0 1 8.5 5.5h7a2 2 0 0 1 1.9 1.3L19 11a1.5 1.5 0 0 1 1.5 1.5V17h-2v2h-2.5v-2h-8v2H5.5v-2h-2v-4.5A1.5 1.5 0 0 1 5 11zm2.2 0h9.6l-1-2.9a.8.8 0 0 0-.8-.6H9a.8.8 0 0 0-.8.6zM7 15a1.2 1.2 0 1 0 0-2.4A1.2 1.2 0 0 0 7 15zm10 0a1.2 1.2 0 1 0 0-2.4 1.2 1.2 0 0 0 0 2.4z'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 11l1.6-4.2A2 2 0 0 1 8.5 5.5h7a2 2 0 0 1 1.9 1.3L19 11a1.5 1.5 0 0 1 1.5 1.5V17h-2v2h-2.5v-2h-8v2H5.5v-2h-2v-4.5A1.5 1.5 0 0 1 5 11zm2.2 0h9.6l-1-2.9a.8.8 0 0 0-.8-.6H9a.8.8 0 0 0-.8.6zM7 15a1.2 1.2 0 1 0 0-2.4A1.2 1.2 0 0 0 7 15zm10 0a1.2 1.2 0 1 0 0-2.4 1.2 1.2 0 0 0 0 2.4z'/%3E%3C/svg%3E") center / contain no-repeat; }
   body:not(.light) .park-dest-dot { background: #fff; border-color: #111827; box-shadow: 0 0 0 2px rgba(255,255,255,0.4), 0 2px 6px rgba(0,0,0,0.6); }
   body:not(.light) .park-dest-dot::after { background: #111827; }
+  body:not(.light) .park-dest-bubble { background: #fff; color: #111827; box-shadow: 0 4px 14px rgba(0,0,0,0.6); }
+  body:not(.light) .park-dest-bubble::after { border-top-color: #fff; }
+  body:not(.light) .park-dest-app--apple .park-dest-ico { background: #111827; color: #fff; }
   @media (max-width: 768px) {
     /* The sheet takes over from the place card while it is open. */
     body.park-open .postcode-chip,

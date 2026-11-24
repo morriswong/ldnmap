@@ -546,38 +546,50 @@ test('park near here: plan, then the zones and odd streets where the whole stay 
   const zoneA = app.parkResults.findIndex((r) => r.kind === 'zone' && r.zone === 'A');
   app.parkShowDetail(zoneA);
   let card = app.el('park-body').textContent;
-  assert.match(card, /^Zone A · AlphaXshirePay to park all stayThe Venue is in this zone/);
-  assert.match(card, /10am–12pm2h × £2\.00£4\.00Total£4\.00/);
-  assert.match(card, /Max stay4 hours · your 2h stay fits/);
-  assert.match(card, /ControlledEvery day, all day/);
-  assert.match(card, /Pay by phonePayByPhone location 1234/);
-  assert.match(card, /Nearest streetAlpha RoadWalkAbout 1 min: The Venue is in this zone/);
+  assert.match(card, /^[A-Z][a-z]{2} 10am£2\.00\/hrtill 12pmTotal£4\.00Zone A · AlphaThe Venue is in this zone, nearest street Alpha RoadXshire · drive there with the bubble on the mapMax stay/, 'the time bar first, then the zone and the walk');
+  assert.equal(app.el('park-body').querySelectorAll('.park-bar')[0].attributes['aria-label'], '10am–12pm, 2h at £2.00 an hour: £4.00');
+  assert.match(card, /Max stay 4 hours, your 2h fits/);
+  assert.match(card, /Controlled Every day, all day/);
+  assert.match(card, /PayByPhone 1234/);
+  assert.doesNotMatch(card, /Nearest street|Walk/, 'the strip has the street and the walk');
   assert.match(card, /Streets here with their own rules5minMarket RowZone A · Alpha4h max · fits 2h£6\.00paid all stay/);
-  assert.match(card, /Drive toAlpha Road · nearest to The VenueGoogle MapsApple MapsWazeTap a street in the zone/);
-  let apps = app.el('park-body').querySelectorAll('.park-nav-app');
-  assert.deepEqual(apps.map((a) => a.textContent), ['Google Maps', 'Apple Maps', 'Waze']);
+  assert.equal(app.el('park-body').querySelectorAll('.park-nav-app').length, 0, 'the buttons are on the map, not the card');
+  let apps = app.parkDestBubble.querySelectorAll('.park-dest-app');
+  assert.match(app.parkDestBubble.textContent, /^Drive here/);
+  assert.deepEqual(apps.map((a) => a.title), ['Google Maps', 'Apple Maps', 'Waze']);
+  assert.deepEqual(apps.map((a) => a.textContent), ['Google', 'Apple', 'Waze'], 'each button says which app');
+  assert.equal(apps[2].attributes['aria-label'], 'Drive to Alpha Road in Waze');
   assert.match(apps[0].href, /^https:\/\/www\.google\.com\/maps\/dir\/\?api=1&destination=51\.450000,-0\.248\d+&travelmode=driving$/, 'to its nearest street');
   assert.match(apps[1].href, /^https:\/\/maps\.apple\.com\/\?daddr=51\.450000,-0\.248\d+&dirflg=d$/);
   assert.match(apps[2].href, /^https:\/\/waze\.com\/ul\?ll=51\.450000,-0\.248\d+$/, 'not navigate=yes: you choose the route');
   assert.ok(apps.every((a) => a.target === '_blank'));
   assert.equal(app.el('park-body').querySelectorAll('.park-primary').length, 0);
-  assert.ok(app.parkDestMarker.added, 'a dot where the buttons go');
+  assert.ok(app.parkDestMarker.added, 'a dot with the bubble');
   assert.deepEqual(plain(app.parkDestMarker.lngLat), [app.parkResults[zoneA].point[0], 51.45]);
   assert.equal(app.map.calls.pop().name, 'fitBounds', 'the map frames the zone');
 
   // An odd street's card, from the zone's sub-list.
   app.el('park-body').querySelectorAll('.park-sublist')[0].querySelectorAll('.park-row')[0].dispatch('click');
   card = app.el('park-body').textContent;
-  assert.match(card, /^Market RowZone A · Alpha · XshirePay to park all stay5 min walk to The Venue/);
-  assert.match(card, /10am–12pm2h × £3\.00£6\.00Total£6\.00/);
-  assert.match(card, /Pay by phonePayByPhone location 5678/);
-  assert.doesNotMatch(card, /Nearest street|own rules/);
-  apps = app.el('park-body').querySelectorAll('.park-nav-app');
+  assert.match(card, /^[A-Z][a-z]{2} 10am£3\.00\/hrtill 12pmTotal£6\.00Market Row5 min walk to The VenueZone A · Alpha · Xshire · drive there with the bubble on the map/);
+  assert.match(card, /PayByPhone 5678/);
+  assert.doesNotMatch(card, /own rules/);
+  apps = app.parkDestBubble.querySelectorAll('.park-dest-app');
   assert.match(apps[0].href, /destination=51\.450000,-0\.247\d+&/);
-  assert.match(card, /Drive toMarket Row · nearest to The Venue.*Tap the street on the map to pick another spot on it\./);
+  assert.match(card, /Market Row5 min walk to The VenueZone A · Alpha · Xshire · drive there with the bubble on the map/);
   const fly = app.map.calls.pop();
   assert.equal(fly.name, 'flyTo');
   assert.equal(fly.options.padding, undefined);
+  // Tapping the card's strip brings the spot back into view.
+  app.el('park-body').querySelectorAll('.park-nav')[0].dispatch('click');
+  const ease = app.map.calls.pop();
+  assert.equal(ease.name, 'easeTo');
+  assert.deepEqual(plain(ease.options.center), [app.parkDest.lng, app.parkDest.lat]);
+  // A press on the bubble stays off the map.
+  let stopped = 0;
+  app.parkDestBubble.dispatch('click', { stopPropagation() { stopped++; } });
+  app.parkDestBubble.dispatch('touchstart', { stopPropagation() { stopped++; } });
+  assert.equal(stopped, 2);
   app.parkBack();
   assert.equal(app.parkView, 'results');
   assert.equal(app.parkDestMarker.added, false, 'the dot goes with the card');
@@ -634,19 +646,30 @@ test('park near here: no stay chosen lists where you can park now, the rate and 
     app.parkShowDetail(app.parkResults.findIndex((r) => r.name === name));
     return app.el('park-body').textContent;
   };
+  const say = () => app.el('park-body').querySelectorAll('.park-bar')[0].attributes['aria-label'];
   let text = card('Zone A');
-  assert.match(text, /^Zone A · AlphaXshireUp to 4h, until 9pmThe Venue is in this zone/);
-  assert.match(text, /From now · until 9pm/);
-  assert.match(text, /5–9pm4h × £2\.00£8\.00Total, until 9pm£8\.00/);
-  assert.match(text, /Max stay4 hoursControlled/, 'no stay to fit');
+  assert.match(text, /^Now£2\.00\/hrtill 9pm4h maxleave by 9pmTotal, until 9pm£8\.00Zone A · AlphaThe Venue is in this zone, nearest street (Alpha Road|Abbey Mews)Xshire/);
+  assert.equal(say(), '5–9pm, 4h at £2.00 an hour: £8.00; then leave by 9pm: 4h max stay', 'a max stay ends the bar');
+  assert.match(text, /Max stay 4 hoursControlled/, 'no stay to fit');
   text = card('Zone B');
-  assert.match(text, /^Zone B · B zoneXshireFree, no time limit8 min walk to The Venue from Bravo Street/);
-  assert.match(text, /From now · next 24h/);
-  assert.match(text, /Total, 24hFree/);
-  assert.match(text, /Nearest streetBravo StreetWalk8 min to The Venue/);
+  assert.match(text, /^NowFreeZone B · B zone8 min walk to The Venue from Bravo StreetXshire/, 'open-ended: no till');
+  assert.doesNotMatch(text, /Total/, 'all free: no total');
+  assert.equal(say(), '5–5pm, 24h free');
   text = card('Zone V');
-  assert.match(text, /5–7pm2h, no chargeFree7pm–midnight5h × £4\.78–£10\.58£23\.90–£52\.90midnight–5pm17h, no chargeFreeTotal, 24h£23\.90–£52\.90/);
+  assert.equal(say(), '5–7pm, 2h free; 7pm–midnight, 5h at £4.78–£10.58 an hour: £23.90–£52.90; midnight–5pm, 17h free');
+  assert.match(text, /Total, 24h£23\.90–£52\.90/);
+  // Each piece says what and until when; the last goes on past the bar's 24 hours.
+  assert.deepEqual(app.el('park-body').querySelectorAll('.park-bar-seg').map((e) => e.textContent),
+    ['Freetill 7pm', 'Paidtill midnight', 'Free']);
   assert.match(text, /By emissions band · 5h paid/);
+  // Permit holders only from 6pm: the bar ends there and says so, in the permit colour.
+  text = card('Zone Q');
+  assert.match(text, /^NowFreetill 6pmPermit onlyfrom 6pm/);
+  assert.match(say(), /; then permit holders only from 6pm$/);
+  const cap = app.el('park-body').querySelectorAll('.park-bar-end')[0];
+  assert.equal(cap.style.borderColor, app.PARK_SEG_COLORS.permit);
+  assert.equal(card('Zone B').includes('Permit'), false, 'nothing ends an open-ended stay');
+  assert.equal(app.el('park-body').querySelectorAll('.park-bar-end').length, 0);
   app.parkBack();
   assert.equal(app.parkView, 'results');
 });
@@ -806,14 +829,14 @@ test('park near here: prices from rule bands, borough bands, a "from" price and 
   // Bands: the paid time at the range, then what each band pays for this stay, and the council's prices.
   let body = card('Zone W');
   let text = body.textContent;
-  assert.match(text, /10am–12pm2h × £4\.78–£10\.58£9\.56–£21\.16Total£9\.56–£21\.16/);
+  assert.match(text, /Total£9\.56–£21\.16By emissions/);
   assert.match(text, /By emissions band · 2h paidBand 1 \(0–50 g\/km\)£9\.56Band 2 \(51–100 g\/km\)£12\.00Band 3 \(101–150 g\/km\)£15\.00Band 4 \(151–200 g\/km\)£18\.00Band 5 \(over 200 g\/km\)£21\.16/);
   assert.match(text, /PricesXshire parking charges/);
-  assert.match(text, /Max stay4 hours \(council default\) · your 2h stay fits/);
+  assert.match(text, /Max stay 4 hours \(council default\), your 2h fits/);
   assert.equal(priceLink(body).href, 'https://x.example/zone-w.pdf', 'the rule’s own link first');
   // A 'from' price: the cheapest band's cost, said so.
   text = card('Zone F').textContent;
-  assert.match(text, /10am–12pm2h × from £2\.50from £5\.00Totalfrom £5\.00/);
+  assert.match(text, /Totalfrom £5\.00from £5\.00: the lowest/);
   assert.match(text, /from £5\.00: the lowest rate published for this zone\. The price depends on your car’s emissions, so yours may be higher\./);
   assert.match(text, /PricesYshire parking charges/);
   assert.doesNotMatch(text, /By emissions band/);
@@ -823,7 +846,7 @@ test('park near here: prices from rule bands, borough bands, a "from" price and 
   // No prices in the data: the council's note, cut short, and its link.
   body = card('Zone N');
   text = body.textContent;
-  assert.match(text, /10am–12pm2h, price unknown\?TotalUnknown/);
+  assert.match(text, /^[A-Z][a-z]{2} 10amPaidtill 12pmTotalUnknownPrices are set/);
   assert.match(text, /Prices are set street by street \(e\.g\. Agdon Street is £7\.30\/hour, 2h max\)\. Mon–Fri 10am–1pm adds a peak surcharge in most zones, and diesel cars pay more everywhere\.PricesZshire parking charges/);
   assert.doesNotMatch(text, /list of streets for each tariff/, 'shortened to whole sentences');
   assert.equal(priceLink(body).href, 'https://z.example/parking');
@@ -920,15 +943,15 @@ test('park near here: one row per zone, odd streets on their own, the zones fram
   assert.deepEqual(plain(app.map.getLayer('park-results-sel').filter), ['all', ['==', ['get', 'i'], idx('Zone A')], ['==', ['get', 'kind'], 'street']]);
   assert.deepEqual(plain(app.map.getPaintProperty('park-zones-fill', 'fill-opacity')), ['case', ['==', ['get', 'i'], idx('Zone A')], 0.16, 0.03]);
   let text = app.el('park-body').textContent;
-  assert.match(text, /^Zone A · AlphaXshireUp to 4h, until 9pmThe Venue is in this zone/);
-  assert.match(text, /ControlledEvery day, all day/);
+  assert.match(text, /^Now£2\.00\/hrtill 9pm4h maxleave by 9pmTotal, until 9pm£8\.00Zone A · AlphaThe Venue is in this zone, nearest street (Alpha Road|Abbey Mews)Xshire/);
+  assert.match(text, /Controlled Every day, all day/);
   // Its odd streets, nearest first, each opening its own card.
   assert.deepEqual(app.el('park-body').querySelectorAll('.park-sublist')[0].querySelectorAll('.park-name').map((e) => e.textContent),
     ['Market Row', 'Short Street']);
   // Zone B has none.
   app.parkShowDetail(idx('Zone B'));
   text = app.el('park-body').textContent;
-  assert.match(text, /^Zone B · B zoneXshireFree, no time limit10 min walk to The Venue from Bravo Street \(estimate\)/);
+  assert.match(text, /^NowFreeZone B · B zone10 min walk to The Venue from Bravo Street \(estimate\)Xshire/);
   assert.doesNotMatch(text, /own rules/);
   app.parkShowList();
   assert.deepEqual(shown(), ['any', ['==', ['get', 'kind'], 'street'], ['==', ['get', 'i'], -1]]);
@@ -947,7 +970,7 @@ test('park near here: one row per zone, odd streets on their own, the zones fram
   assert.equal(app.parkSelIdx, idx('Zone B'));
   app.map.fireLayer('click', 'park-results-casing', { point: { x: 1, y: 1 }, features: [{ properties: { i: idx('Market Row') } }] });
   assert.equal(app.parkSelIdx, idx('Market Row'));
-  assert.match(app.el('park-body').textContent, /^Market RowZone A · Alpha · Xshire/);
+  assert.match(app.el('park-body').textContent, /Market Row5 min walk to The VenueZone A · Alpha · Xshire/);
   assert.equal(app.map.calls.pop().name, 'flyTo', 'an odd street flies to the street, as before');
   app.map.rendered = {};
 
@@ -967,8 +990,8 @@ test('park near here: one row per zone, odd streets on their own, the zones fram
   assert.ok(app.parkDest.picked);
   assert.ok(Math.abs(app.parkDest.lng - end[0]) < 1e-9 && Math.abs(app.parkDest.lat - end[1]) < 1e-9, 'snapped onto the street');
   assert.deepEqual(plain(app.parkDestMarker.lngLat), [app.parkDest.lng, app.parkDest.lat]);
-  assert.match(app.el('park-body').textContent, new RegExp('Drive to' + za.names[other] + ' · the spot you picked'));
-  assert.match(app.el('park-body').querySelectorAll('.park-nav-app')[2].href,
+  assert.match(app.el('park-body').textContent, new RegExp('Drive to ' + za.names[other] + ', the spot you picked'));
+  assert.match(app.parkDestBubble.querySelectorAll('.park-dest-app')[2].href,
     new RegExp('ll=' + end[1].toFixed(6).replace('.', '\\.') + ',' + end[0].toFixed(6).replace('.', '\\.')));
   app.map.rendered = {};
   app.map.fireLayer('click', 'park-zones-fill', { point: { x: 1, y: 1 }, lngLat: { lng: D[0], lat: D[1] }, features: [{ properties: { i: idx('Zone A') } }] });
@@ -1384,7 +1407,7 @@ test('park near here, congestion charge: in charging hours, the charge, a tip an
   assert.equal(app.parkView, 'detail');
   assert.equal(app.parkSelIdx, i);
   const card = cczBody(app).textContent;
-  assert.match(card, /^Zone O · OuterXshire.*11 min walk to The Office from Outer StreetOutside the Congestion Charge zone: saves £18 today/);
+  assert.match(card, /Zone O · Outer11 min walk to The Office from Outer StreetXshire · drive there with the bubble on the mapOutside the Congestion Charge zone: saves £18 today/);
   assert.doesNotMatch(card, /own rules/);
   const move = app.map.calls.pop();
   assert.equal(move.name, 'fitBounds');
