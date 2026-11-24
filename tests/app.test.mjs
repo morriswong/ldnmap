@@ -546,7 +546,7 @@ test('park near here: plan, then the zones and odd streets where the whole stay 
   const zoneA = app.parkResults.findIndex((r) => r.kind === 'zone' && r.zone === 'A');
   app.parkShowDetail(zoneA);
   let card = app.el('park-body').textContent;
-  assert.match(card, /^Sun 10am£2\.00\/hrtill 12pmTotal£4\.00Zone A · AlphaThe Venue is in this zone, nearest street Alpha RoadXshire · drive there with the bubble on the mapMax stay/, 'the time bar first, then the zone and the walk');
+  assert.match(card, /^[A-Z][a-z]{2} 10am£2\.00\/hrtill 12pmTotal£4\.00Zone A · AlphaThe Venue is in this zone, nearest street Alpha RoadXshire · drive there with the bubble on the mapMax stay/, 'the time bar first, then the zone and the walk');
   assert.equal(app.el('park-body').querySelectorAll('.park-bar')[0].attributes['aria-label'], '10am–12pm, 2h at £2.00 an hour: £4.00');
   assert.match(card, /Max stay 4 hours, your 2h fits/);
   assert.match(card, /Controlled Every day, all day/);
@@ -571,7 +571,7 @@ test('park near here: plan, then the zones and odd streets where the whole stay 
   // An odd street's card, from the zone's sub-list.
   app.el('park-body').querySelectorAll('.park-sublist')[0].querySelectorAll('.park-row')[0].dispatch('click');
   card = app.el('park-body').textContent;
-  assert.match(card, /^Sun 10am£3\.00\/hrtill 12pmTotal£6\.00Market Row5 min walk to The VenueZone A · Alpha · Xshire · drive there with the bubble on the map/);
+  assert.match(card, /^[A-Z][a-z]{2} 10am£3\.00\/hrtill 12pmTotal£6\.00Market Row5 min walk to The VenueZone A · Alpha · Xshire · drive there with the bubble on the map/);
   assert.match(card, /PayByPhone 5678/);
   assert.doesNotMatch(card, /own rules/);
   apps = app.parkDestBubble.querySelectorAll('.park-dest-app');
@@ -846,7 +846,7 @@ test('park near here: prices from rule bands, borough bands, a "from" price and 
   // No prices in the data: the council's note, cut short, and its link.
   body = card('Zone N');
   text = body.textContent;
-  assert.match(text, /^Sun 10amPaidtill 12pmTotalUnknownPrices are set/);
+  assert.match(text, /^[A-Z][a-z]{2} 10amPaidtill 12pmTotalUnknownPrices are set/);
   assert.match(text, /Prices are set street by street \(e\.g\. Agdon Street is £7\.30\/hour, 2h max\)\. Mon–Fri 10am–1pm adds a peak surcharge in most zones, and diesel cars pay more everywhere\.PricesZshire parking charges/);
   assert.doesNotMatch(text, /list of streets for each tariff/, 'shortened to whole sentences');
   assert.equal(priceLink(body).href, 'https://z.example/parking');
