@@ -4924,6 +4924,35 @@
    "hoursUrl": "https://www.richmond.gov.uk/services/parking/cpz/cpz_times",
    "checked": "2026-11-08",
    "licence": "Zone boundaries traced from Richmond upon Thames Council’s CPZ map; hours from the council. Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
+   "specialStreets": {
+    "D-riverside": {
+     "zone": "D",
+     "name": "The Embankment and Riverside resident bays",
+     "streets": [
+      "The Embankment",
+      "Riverside"
+     ],
+     "hours": "Mon–Sun 8:30am–10pm, including bank holidays. Resident permit holders only.",
+     "periods": [
+      {
+       "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "22:00"
+      }
+     ],
+     "permitOnly": true,
+     "bankHolidays": "charged",
+     "note": "Resident permit bays since 26 October 2026 (order 25/193), in lengths of these streets. Check the signs."
+    }
+   },
    "zones": {
     "A1": {
      "periods": [
