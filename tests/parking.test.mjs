@@ -672,3 +672,24 @@ test('stayFromNow: a bank holiday applies to the starting day only', () => {
   assert.equal(p.untilMin, 810);
   assert.equal(p.limit, 'maxstay');
 });
+
+// ---- The cost calculator's stays: stayFitsMax ----
+
+test('stayFitsMax: only a paid stretch counts against the max stay', () => {
+  const { stayFitsMax } = ctx;
+  const THURSDAY = 4;
+  // Lewisham E: 4 hours max, controlled until 19:00 on a Thursday.
+  assert.equal(stayFitsMax('lewisham:E', THURSDAY, at(10), 240, false, false), true);
+  assert.equal(stayFitsMax('lewisham:E', THURSDAY, at(10), 241, false, false), false);
+  assert.equal(stayFitsMax('lewisham:E', THURSDAY, at(17), 600, false, false), true, '2h paid, then free');
+  assert.equal(stayFitsMax('lewisham:E', SAT, at(10), 600, false, false), true, 'free all day');
+});
+
+test('stayFitsMax: an event day uses the rule’s event max stay', () => {
+  const { stayFitsMax } = ctx;
+  // H&F X: 8 hours normally, 1 hour on event days (Mon–Sun 9am–9:30pm).
+  assert.equal(stayFitsMax('hf:X', SAT, at(12), 120, false, false), true);
+  assert.equal(stayFitsMax('hf:X', SAT, at(12), 60, true, false), true);
+  assert.equal(stayFitsMax('hf:X', SAT, at(12), 90, true, false), false);
+  assert.equal(stayFitsMax('hf:X', SAT, at(21), 240, true, false), true, '30m paid, then free');
+});

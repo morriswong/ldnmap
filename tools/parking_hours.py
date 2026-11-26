@@ -16,6 +16,7 @@ RANGE_RE = re.compile(r'(?<![\d.])' + TIME_RE + r'\s*(?:-|–|—|to|until|till)
 NOISE_RE = re.compile(r'\b(from|between|operates?|operational|hours|controlled|times?|of operation|except bank holidays|'
                       r'excluding bank holidays|including bank holidays|inc(?:luding)? bank hols?|permit required|permit holders only|residents only|only|the|in|on)\b', re.I)
 ALL_DAY_RE = re.compile(r'^\s*(?:permit required\s+)?(at any time|at all times|any time|24 ?(?:hours|hrs)(?: a day)?|all day)\b[\s,;]*(.*?)[\s.]*$', re.I)
+DAYS_ALL_DAY_RE = re.compile(r'^\s*(.+?)[\s,:;]+(?:at all times|at any time)[\s.]*$', re.I)   # "Mon-Sun At All Times"
 
 
 def _minutes(h, m, ampm):
@@ -82,6 +83,10 @@ def parse_hours(text):
         # "At any time", "24 hrs Mon-Sun", "Permit required at all times, Monday to Saturday"
         rest = re.sub(r'^\s*(every ?day|daily|all week)\s*$', '', m.group(2), flags=re.I)
         days = [0, 1, 2, 3, 4, 5, 6] if not rest.strip() else _days(rest)
+        return [{'days': sorted(days), 'from': '00:00', 'to': '24:00'}] if days else None
+    m = DAYS_ALL_DAY_RE.match(t)
+    if m:
+        days = _days(m.group(1))        # only when everything before it is days
         return [{'days': sorted(days), 'from': '00:00', 'to': '24:00'}] if days else None
     t = NOISE_RE.sub(' ', t)
     t = re.sub(r'\s+', ' ', t).strip(' .')
@@ -204,6 +209,9 @@ if __name__ == '__main__':
         '24 hrs Mon-Sun': [{'days': ALL, 'from': '00:00', 'to': '24:00'}],
         'Permit required at all times, Monday to Saturday': [{'days': [1, 2, 3, 4, 5, 6], 'from': '00:00', 'to': '24:00'}],
         'Permit required at all times': [{'days': ALL, 'from': '00:00', 'to': '24:00'}],
+        'Mon-Sun At All Times': [{'days': ALL, 'from': '00:00', 'to': '24:00'}],
+        'Mon-Fri at any time': [{'days': WK, 'from': '00:00', 'to': '24:00'}],
+        'Match days at all times': None,
         'Monday to Friday, 8:30am and 6:30pm': [{'days': WK, 'from': '08:30', 'to': '18:30'}],
         'See signs': None,
         'Mon-Fri 2 hours': None,

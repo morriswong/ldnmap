@@ -1622,3 +1622,45 @@ test('pinching outside the map never zooms the page', () => {
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   assert.match(html, /name="viewport" content="[^"]*maximum-scale=1\.0, user-scalable=no"/);
 });
+
+test('parking: the cost calculator offers only stays the max stay allows', async () => {
+  const rules = () => reply({ checked: '2026-11-01',
+    boroughs: { x: { name: 'Xshire', bbox: [-0.3, 51.4, -0.2, 51.5], zoneCount: 1, knownHours: 1, detail: true,
+      charges: { bands: [{ band: 1, perHour: 2 }] } } },
+    rules: { 'x:A': { borough: 'x', zone: 'A', hours: 'Every day 9am-5pm', maxStay: '2 hours',
+      periods: [{ days: [0, 1, 2, 3, 4, 5, 6], from: '09:00', to: '17:00' }] } } });
+  const app = loadApp({ routes: [[/data\/parking\/rules\.json/, rules], PARKING[1],
+    [/data\/parking\/x\//, () => reply({ type: 'FeatureCollection', features: [] })]] });
+  app.map.center = { lng: -0.25, lat: 51.45 };
+  app.toggleParking(true);
+  await settle();
+  const calc = () => app.el('parking-body').querySelectorAll('.pk-calc')[0];
+  const select = () => calc().children[1];
+  const offered = () => select().children.map((o) => Number(o.value));
+  const chosen = () => select().children.filter((o) => o.selected).map((o) => Number(o.value));
+  const cost = () => calc().children[2].textContent;
+  const arrive = (minutes) => {
+    app.parkingNow = false;
+    app.parkingBH = false;
+    app.parkingWhen = { day: 4, minutes };
+    app.renderParkingBody();
+  };
+  const open = (extra) => app.setParkingSel(Object.assign(
+    { kind: 'zone', b: 'x', zone: 'A', rule: 'x:A', lngLat: { lng: -0.25, lat: 51.45 } }, extra));
+
+  arrive(600);   // 10:00
+  assert.deepEqual(offered(), [30, 60, 90, 120, 180, 240], 'no card open: no max stay to apply');
+  select().value = '240';
+  select().dispatch('change');
+  assert.equal(cost(), '£8.00');
+  open();
+  assert.deepEqual(offered(), [30, 60, 90, 120]);
+  assert.deepEqual(chosen(), [120]);
+  assert.equal(cost(), '£4.00');
+  arrive(900);   // 15:00: 2 hours paid, then free
+  assert.deepEqual(offered(), [30, 60, 90, 120, 180, 240]);
+  assert.deepEqual(chosen(), [240], 'the choice comes back where it is allowed');
+  arrive(600);
+  open({ kind: 'street', name: 'Red Route', tfl: true });
+  assert.deepEqual(offered(), [30, 60, 90, 120, 180, 240], 'zone rules don’t apply on a red route');
+});

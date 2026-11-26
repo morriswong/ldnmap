@@ -111,6 +111,22 @@ Where a council publishes only a web list of zones and hours, the borough is out
 shown; where it publishes neither, the outline carries a note and a link. Hours are never guessed:
 times the council's wording doesn't settle are `unsure` (shown as unknown).
 
+### Zones left with unknown hours
+
+Checked 2026-11-26. These stay grey until a source settles them:
+
+- **Barking & Dagenham C, G (2), I, J:** the council's map data says "8.30am-9pm" with no days, and
+  neighbouring town-centre zones differ (Mon–Fri or Mon–Sat). **SSW** (Southwood Primary) has no hours
+  in the data. The council's website refuses scripted requests; check in a browser or on the signs.
+- **Enfield "Excluded area" polygons:** the map data only cites a traffic order ("See TP …"), which
+  wasn't found. They may be outside the zone's controls rather than controlled differently. The
+  council's website refuses scripted requests.
+- **Havering HH2, RO4:** no hours found (HH2 is only 362–366 Dagnam Park Drive and 2 North Hill Drive).
+- **Wandsworth A1/A5:** the council says "Operational times vary between the two zones, please check
+  signs". No geometry.
+
+Event-day-only zones (Enfield, Haringey, Hounslow R, Richmond R) have `periods: []` on purpose.
+
 ## Keeping it current
 
 `.github/workflows/parking-watch.yml` runs `tools/check_parking_sources.py` every Monday. It opens a
