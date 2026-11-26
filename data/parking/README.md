@@ -158,3 +158,11 @@ python3 -m venv /tmp/pv && /tmp/pv/bin/pip install shapely pyproj pyshp
 
 Downloads are cached in `/tmp/ldnmap-parking-cache` (set `PARKING_CACHE` to change that); delete
 the cache to fetch fresh data.
+
+Bexley's and Ealing's street lists come from `tools/parking_lists/`. To refresh them from the
+councils' pages before rebuilding, run:
+
+```bash
+python3 tools/fetch_bexley_streets.py
+python3 tools/fetch_ealing_streets.py
+```

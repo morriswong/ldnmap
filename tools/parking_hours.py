@@ -13,7 +13,6 @@ DAY_RE = r'(mon|tues?|wed(?:nes)?|thu(?:rs)?|fri|sat(?:ur)?|sun)(?:day)?s?\.?'
 ALL_WEEK = re.compile(r'\b(every ?day|all week|7 days(?: a week)?|daily|all days|monday ?(?:to|-|–)? ?sunday|mon ?(?:to|-|–) ?sun)\b', re.I)
 TIME_RE = r'(\d{1,2})(?:[.:]?(\d{2}))?\s*(am|pm|a\.m\.|p\.m\.|noon|midnight|midday|hrs|hours)?'
 RANGE_RE = re.compile(r'(?<![\d.])' + TIME_RE + r'\s*(?:-|–|—|to|until|till)\s*' + TIME_RE + r'(?![\d.])', re.I)
-SPLIT_RE = re.compile(r'\s*(?:;|,|\band\b|&|\bplus\b|\n)\s*', re.I)
 NOISE_RE = re.compile(r'\b(from|between|operates?|operational|hours|controlled|times?|of operation|except bank holidays|'
                       r'excluding bank holidays|including bank holidays|inc(?:luding)? bank hols?|permit required|permit holders only|residents only|only|the|in|on)\b', re.I)
 ALL_DAY_RE = re.compile(r'^\s*(?:permit required\s+)?(at any time|at all times|any time|24 ?(?:hours|hrs)(?: a day)?|all day)\b[\s,;]*(.*?)[\s.]*$', re.I)
