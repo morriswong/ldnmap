@@ -2347,21 +2347,29 @@ function renderParkingCharges(borough) {
     box.appendChild(surcharge);
   }
 
+  // With a street or zone card open, only the stays its max stay allows from the panel's day and
+  // time (the shortest always stays); a longer choice made elsewhere shows as the longest allowed.
+  var calcRule = parkingSel && !parkingSel.tfl && parkingSel.kind !== 'borough' ? parkingSel.rule : null;
+  var stays = PARKING_STAYS.filter(function(m, i) {
+    return !i || !calcRule || stayFitsMax(calcRule, parkingWhen.day, parkingWhen.minutes, m, parkingEvent, parkingBH);
+  });
+  var minutes = stays.filter(function(m) { return m <= parkingCalc.minutes; }).pop();
   var calc = pkEl('div', 'pk-calc');
   calc.appendChild(pkEl('span', '', 'Band ' + band.band + ' for'));
   var stay = pkEl('select', 'parking-day');
   stay.setAttribute('aria-label', 'How long');
-  PARKING_STAYS.forEach(function(m) {
+  stays.forEach(function(m) {
     var o = pkEl('option', '', m < 60 ? m + ' min' : (m / 60) + (m === 60 ? ' hour' : ' hours'));
     o.value = String(m);
-    if (m === parkingCalc.minutes) o.selected = true;
+    if (m === minutes) o.selected = true;
     stay.appendChild(o);
   });
   stay.addEventListener('change', function() { parkingCalc.minutes = Number(stay.value); renderParkingBody(); });
   calc.appendChild(stay);
-  calc.appendChild(pkEl('span', 'pk-cost', '£' + parkingCost(band.perHour, parkingCalc.minutes, parkingCalc.surcharge, c.dieselPerHour || 0).toFixed(2)));
+  calc.appendChild(pkEl('span', 'pk-cost', '£' + parkingCost(band.perHour, minutes, parkingCalc.surcharge, c.dieselPerHour || 0).toFixed(2)));
   box.appendChild(calc);
-  var max = parkingSel && !parkingSel.tfl && (parkingRule(parkingSel.rule) || {}).maxStay;
+  var selRule = (parkingSel && !parkingSel.tfl && parkingRule(parkingSel.rule)) || {};
+  var max = (parkingEvent && selRule.event && selRule.event.maxStay) || selRule.maxStay;
   if (max) box.appendChild(pkEl('p', 'pk-small', 'Max stay here: ' + max + '.'));
   if (c.note) box.appendChild(pkEl('p', 'pk-small', c.note + ' Tap a band to use it.'));
   if (borough.bankHolidayUrl) {

@@ -2341,8 +2341,23 @@
      "price": {
       "perHour": 1.5
      },
-     "hours": "7am–midnight (days not stated)",
-     "periods": null
+     "hours": "7am - midnight Mon - Sun",
+     "periods": [
+      {
+       "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "07:00",
+       "to": "24:00"
+      }
+     ],
+     "note": "Hours from the council’s map of the zone’s bays and yellow lines. Some pay and display bays have other hours: check the signs."
     },
     "KR": {
      "price": {
@@ -2369,7 +2384,35 @@
       "perHour": 1.5
      },
      "hours": "Mon–Sat 8am–6.30pm (permit holders); pay and display 10am–6.30pm",
-     "periods": null
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "10:00",
+       "to": "18:30"
+      }
+     ],
+     "unsure": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:00",
+       "to": "10:00"
+      }
+     ],
+     "note": "Permit holders’ bays are controlled from 8am, pay and display bays from 10am, so 8am to 10am is shown as unknown. Check the signs."
     },
     "N": {
      "price": {
@@ -3140,6 +3183,54 @@
    },
    "maxStayDefault": "2 hours",
    "payProvider": "RingGo",
+   "specialStreets": {
+    "WB-spratthall": {
+     "zone": "WB",
+     "name": "Spratt Hall Road",
+     "streets": [
+      "Spratt Hall Road"
+     ],
+     "hours": "Mon–Sat 8:30am–6:30pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ],
+     "note": "The council’s zone data says this street is also controlled on Saturdays."
+    },
+    "WFA-snakeslane": {
+     "zone": "WFA (2)",
+     "name": "Snakes Lane East",
+     "streets": [
+      "Snakes Lane East"
+     ],
+     "hours": "Mon–Sat 8:30am–6:30pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      }
+     ],
+     "note": "The council’s zone data says this street is also controlled on Saturdays."
+    }
+   },
    "zones": {
     "WB": {
      "hours": "Mon–Fri 8:30am–6:30pm",
@@ -3278,12 +3369,44 @@
      }
     },
     "A5": {
-     "hours": "Thu 8:30am through to Mon 7pm (continuous), Tue–Wed 8:30am–7pm",
+     "hours": "Monday from midnight to 7pm, Tuesday and Wednesday from 8:30am to 7pm, Thursday from 8:30am to midnight and all-day Friday, Saturday, and Sunday.",
      "name": "Zone A",
      "price": {
       "perHour": 6.8
      },
-     "periods": null
+     "periods": [
+      {
+       "days": [
+        1
+       ],
+       "from": "00:00",
+       "to": "19:00"
+      },
+      {
+       "days": [
+        2,
+        3
+       ],
+       "from": "08:30",
+       "to": "19:00"
+      },
+      {
+       "days": [
+        4
+       ],
+       "from": "08:30",
+       "to": "24:00"
+      },
+      {
+       "days": [
+        0,
+        5,
+        6
+       ],
+       "from": "00:00",
+       "to": "24:00"
+      }
+     ]
     },
     "A6": {
      "hours": "Mon–Fri 8:30am–7pm, Sun 8:30am–2pm",
@@ -4090,6 +4213,14 @@
        "to": "17:30"
       }
      ]
+    },
+    "UP (3)": {
+     "hours": "Mon-Fri 1.30pm-2.30pm",
+     "name": "Upney (Area J)"
+    },
+    "UP (4)": {
+     "hours": "Mon-Fri 1.30pm-2.30pm",
+     "name": "Upney (Area J) (2)"
     }
    }
   },
@@ -4109,7 +4240,27 @@
     },
     "C": {
      "hours": "Mon–Fri 24 hours; Sat all day until 6am Sun",
-     "periods": null
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "00:00",
+       "to": "24:00"
+      },
+      {
+       "days": [
+        0
+       ],
+       "from": "00:00",
+       "to": "06:00"
+      }
+     ]
     },
     "D": {
      "hours": "Mon-Fri 9.30am to 4.30pm"
@@ -4924,6 +5075,35 @@
    "hoursUrl": "https://www.richmond.gov.uk/services/parking/cpz/cpz_times",
    "checked": "2026-11-08",
    "licence": "Zone boundaries traced from Richmond upon Thames Council’s CPZ map; hours from the council. Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
+   "specialStreets": {
+    "D-riverside": {
+     "zone": "D",
+     "name": "The Embankment and Riverside resident bays",
+     "streets": [
+      "The Embankment",
+      "Riverside"
+     ],
+     "hours": "Mon–Sun 8:30am–10pm, including bank holidays. Resident permit holders only.",
+     "periods": [
+      {
+       "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "22:00"
+      }
+     ],
+     "permitOnly": true,
+     "bankHolidays": "charged",
+     "note": "Resident permit bays since 26 October 2026 (order 25/193), in lengths of these streets. Check the signs."
+    }
+   },
    "zones": {
     "A1": {
      "periods": [
@@ -8642,6 +8822,264 @@
    "hoursUrl": "https://www.bromley.gov.uk/homepage/195/parking-permit-information-and-charges",
    "checked": "2026-11-10",
    "licence": "Town-centre zone boundaries traced from Bromley Council’s “Bromley Town Centre CPZ” map; hours from that map’s signs and the council’s permit page. Borough outline: Office for National Statistics / London Datastore (OGL v3). Streets, kerbs and machines: © OpenStreetMap contributors (ODbL).",
+   "specialStreets": {
+    "A-late2": {
+     "zone": "A",
+     "name": "Pay bays to 8pm, max 2 hours",
+     "streets": [
+      "Churchill Way",
+      "Elmfield Park",
+      "Elmfield Road",
+      "Ethelbert Road",
+      "Ravensbourne Road",
+      "Ringers Road"
+     ],
+     "hours": "Mon–Sat 8am–8pm, Sun 10am–5pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:00",
+       "to": "20:00"
+      },
+      {
+       "days": [
+        0
+       ],
+       "from": "10:00",
+       "to": "17:00"
+      }
+     ],
+     "price": {
+      "perHour": 2.3
+     },
+     "maxStay": "2 hours",
+     "note": "Pay and display bay hours from the council’s street-by-street list (checked 26 November 2026). Check the signs."
+    },
+    "A-late4": {
+     "zone": "A",
+     "name": "Pay bays to 8pm, max 4 hours",
+     "streets": [
+      "Aylesbury Road",
+      "Newbury Road"
+     ],
+     "hours": "Mon–Sat 8am–8pm, Sun 10am–5pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:00",
+       "to": "20:00"
+      },
+      {
+       "days": [
+        0
+       ],
+       "from": "10:00",
+       "to": "17:00"
+      }
+     ],
+     "price": {
+      "perHour": 2.3
+     },
+     "maxStay": "4 hours",
+     "note": "Pay and display bay hours from the council’s street-by-street list (checked 26 November 2026). Check the signs."
+    },
+    "A-mixed": {
+     "zone": "A",
+     "name": "Pay bays with mixed hours",
+     "streets": [
+      "High Street",
+      "Palace View"
+     ],
+     "hours": "Mon–Sat 8.30am–6.30pm (some bays 8am–8pm), Sun 10am–5pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      },
+      {
+       "days": [
+        0
+       ],
+       "from": "10:00",
+       "to": "17:00"
+      }
+     ],
+     "note": "Some bays on this street charge until 8pm and others until 6.30pm, so 6.30pm to 8pm is shown as unknown. Check the signs.",
+     "unsure": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:00",
+       "to": "08:30"
+      },
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "18:30",
+       "to": "20:00"
+      }
+     ]
+    },
+    "C-late2": {
+     "zone": "C",
+     "name": "Pay bays to 8pm, max 2 hours",
+     "streets": [
+      "Churchill Way",
+      "Ethelbert Road"
+     ],
+     "hours": "Mon–Sat 8am–8pm, Sun 10am–5pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:00",
+       "to": "20:00"
+      },
+      {
+       "days": [
+        0
+       ],
+       "from": "10:00",
+       "to": "17:00"
+      }
+     ],
+     "price": {
+      "perHour": 2.3
+     },
+     "maxStay": "2 hours",
+     "note": "Pay and display bay hours from the council’s street-by-street list (checked 26 November 2026). Check the signs."
+    },
+    "C-mixed": {
+     "zone": "C",
+     "name": "Pay bays with mixed hours",
+     "streets": [
+      "Palace View"
+     ],
+     "hours": "Mon–Sat 8.30am–6.30pm (some bays 8am–8pm), Sun 10am–5pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      },
+      {
+       "days": [
+        0
+       ],
+       "from": "10:00",
+       "to": "17:00"
+      }
+     ],
+     "note": "Some bays on this street charge until 8pm and others until 6.30pm, so 6.30pm to 8pm is shown as unknown. Check the signs.",
+     "unsure": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:00",
+       "to": "08:30"
+      },
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "18:30",
+       "to": "20:00"
+      }
+     ]
+    },
+    "C-church": {
+     "zone": "C",
+     "name": "Church Road pay bays",
+     "streets": [
+      "Church Road"
+     ],
+     "hours": "Mon–Sat 8.30am–6.30pm, Sun 10am–5pm",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "from": "08:30",
+       "to": "18:30"
+      },
+      {
+       "days": [
+        0
+       ],
+       "from": "10:00",
+       "to": "17:00"
+      }
+     ],
+     "price": {
+      "perHour": 2.3
+     },
+     "maxStay": "2 hours",
+     "note": "Pay and display bay hours from the council’s street-by-street list (checked 26 November 2026). Check the signs."
+    }
+   },
    "zones": {
     "BAR": {
      "hours": "10am to 12noon Monday to Friday",
@@ -8748,14 +9186,6 @@
       }
      ],
      "note": "The council’s permit table says 12noon to 2pm, Monday to Saturday; the zone-entry signs on its town-centre map say Monday to Saturday 8.30am to 6.30pm. The rest of that time is shown as unknown: check the signs."
-    },
-    "A and B***": {
-     "hours": "See below See below",
-     "name": "Bromley Town Centre"
-    },
-    "A and C***": {
-     "hours": "See below See below",
-     "name": "Bromley Town Centre"
     },
     "G": {
      "hours": "8.30am to 6.30pm Monday to Saturday",
@@ -9284,8 +9714,37 @@
     "S": {
      "hours": "Mon–Fri 10am–7:30pm; Sat 10am–4pm (north side) or 10am–1pm (south side)",
      "name": "South Ealing",
-     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/zone_s_south_ealing",
-     "periods": null
+     "url": "https://www.ealing.gov.uk/info/201333/controlled_parking_zone_cpz/3370/zone_s_south_ealing",
+     "periods": [
+      {
+       "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ],
+       "from": "10:00",
+       "to": "19:30"
+      },
+      {
+       "days": [
+        6
+       ],
+       "from": "10:00",
+       "to": "13:00"
+      }
+     ],
+     "unsure": [
+      {
+       "days": [
+        6
+       ],
+       "from": "13:00",
+       "to": "16:00"
+      }
+     ],
+     "note": "Saturday ends at 4pm on the north side and 1pm on the south side; 1pm to 4pm on Saturdays is shown as unknown. Check the signs."
     },
     "SA": {
      "hours": "Monday to Friday from 9am to 10am and 2pm to 3pm.",

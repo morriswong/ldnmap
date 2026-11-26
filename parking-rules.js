@@ -291,6 +291,16 @@ function planStay(ruleKey, day, minutes, stayMin, eventDay, bankHoliday) {
   };
 }
 
+// Whether a stay (arguments as planStay()) keeps every paid stretch within the max stay: free time
+// doesn't count. On an event day the rule's event.maxStay applies when it has one. No max stay, or
+// one that can't be read, fits any length.
+function stayFitsMax(ruleKey, day, minutes, stayMin, eventDay, bankHoliday) {
+  var rule = parkingRule(ruleKey);
+  var plan = planStay(ruleKey, day, minutes, stayMin, eventDay, bankHoliday);
+  var max = eventDay && rule && rule.event && rule.event.maxStay ? maxStayMinutes(rule.event.maxStay) : plan.maxStayMin;
+  return max === null || plan.longestPaidMin <= max;
+}
+
 // How long you can park from London `day`/`minutes` under a rule, with no stay length chosen,
 // looking up to `horizonMin` ahead (default a week). The stay runs while the street is free or
 // paid and ends at whichever comes first: permit-holders-only time, time whose hours are unclear,
