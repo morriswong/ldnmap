@@ -3922,7 +3922,7 @@ map.addControl({
     b.setAttribute('aria-label', 'Congestion Charge zone');
     b.setAttribute('aria-pressed', 'false');
     b.innerHTML = '<span class="ccz-sign" aria-hidden="true">C</span>';
-    b.addEventListener('click', function() { toggleCcz(!cczOn); });
+    b.addEventListener('click', function() { toggleCcz(!cczOn); if (cczOn) cczShowZone(); });
     wrap.appendChild(b);
     cczBtn = b;
     return wrap;
@@ -4007,6 +4007,32 @@ function addCczLayers() {
       paint: { 'line-color': CCZ_COLORS.line, 'line-opacity': 0.9, 'line-dasharray': [3, 1.5],
         'line-width': ['interpolate', ['linear'], ['zoom'], 10, 1.5, 14, 2.5, 17, 4] } }, underLabels);
   });
+}
+
+// Turned on with the C button: bring the whole zone into view, clear of the chip, the controls and
+// any card or sheet. (A place pick turns the layer on without this, so the view stays on the place.)
+function cczFitPadding() {
+  var W = window.innerWidth, H = window.innerHeight, mobile = isMobileView();
+  var pad = mobile ? { top: 64, right: 20, bottom: 90, left: 20 } : { top: 80, right: 70, bottom: 40, left: 40 };
+  LOCATE_COVERS.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (!el || typeof el.getBoundingClientRect !== 'function') return;
+    var r = el.getBoundingClientRect();
+    if (!(r.width > 0 && r.height > 0) || r.top >= H - 1 || r.left >= W - 1 || r.right <= 1) return;
+    if (window.getComputedStyle && parseFloat(window.getComputedStyle(el).opacity) < 0.1) return;
+    if (mobile) pad.bottom = Math.max(pad.bottom, H - r.top + 16);
+    else if (r.right < W / 2) pad.left = Math.max(pad.left, r.right + 24);
+    else if (r.left > W / 2) pad.right = Math.max(pad.right, W - r.left + 24);
+  });
+  return pad;
+}
+function cczShowZone() {
+  var seq = ++cczPickSeq;                            // a place picked meanwhile keeps its own view
+  loadCczData().then(function(zone) {
+    if (seq !== cczPickSeq || !cczOn) return;
+    var bounds = geojsonBounds(zone);
+    if (bounds) map.fitBounds(bounds, { padding: fitPadding(cczFitPadding()), maxZoom: 14 });
+  }).catch(function() {});                           // toggleCcz() says the zone didn't load
 }
 
 // A place was picked: if it's in the zone, show the zone. Places with no coordinates yet (a bare

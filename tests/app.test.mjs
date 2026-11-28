@@ -1209,6 +1209,31 @@ test('congestion charge: the button draws the zone and shows the chip, and takes
   assert.equal(app.intervals.size, 0, 'the minute timer stops');
 });
 
+test('congestion charge: tapping the button frames the whole zone, a place pick does not', async () => {
+  const app = loadApp({ routes: CCZ, now: FRI_3PM, mobile: true });
+  controlButtons(app);
+  const fits = () => app.map.calls.filter((c) => c.name === 'fitBounds');
+  app.cczBtn.dispatch('click');
+  await settle();
+  assert.equal(fits().length, 1);
+  app.cczBtn.dispatch('click');                                  // off: the view stays
+  await settle();
+  assert.equal(fits().length, 1);
+  app.cczCheckPlace(-0.12, 51.51);
+  await settle();
+  assert.equal(app.cczOn, true);
+  assert.equal(fits().length, 1);
+});
+
+test('congestion charge: turned off before the zone loads, the view stays', async () => {
+  const app = loadApp({ routes: CCZ, now: FRI_3PM });
+  controlButtons(app);
+  app.cczBtn.dispatch('click');
+  app.cczBtn.dispatch('click');
+  await settle();
+  assert.equal(app.map.calls.filter((c) => c.name === 'fitBounds').length, 0);
+});
+
 test('congestion charge chip: free in the evening, and it moves on every minute', async () => {
   const app = loadApp({ routes: CCZ, now: Date.UTC(2026, 10, 20, 20, 0) });   // Fri 8pm
   app.toggleCcz(true);
@@ -1314,10 +1339,11 @@ test('congestion charge chip: under the sheets and the search screen, clear of t
   assert.ok(z('\\.ccz-chip') < z('\\.fuel-panel'), 'under the fuel / parking / park sheets');
   assert.ok(z('\\.ccz-chip') < z('\\.travel-card, \\.postcode-chip'), 'under the place and travel cards');
   assert.ok(z('\\.ccz-chip') < z('\\.search-overlay'), 'under the search screen');
-  // On mobile: right of the theme button (12–52px) and the travel view's search button
-  // (60–108px), left of the zoom buttons (36px wide, 10px in from the right).
+  // On mobile: centred on the screen, between the theme button (12–52px) and the zoom buttons
+  // (36px wide, 10px in from the right); in the travel view, right of its search button (60–108px).
   const mobile = block(/\n    \.ccz-chip \{([^}]*)\}/);
-  assert.match(mobile, /top: 12px; left: 116px; right: 56px;/);
+  assert.match(mobile, /top: 12px; left: 60px; right: 60px;/);
+  assert.match(css, /body\[data-state="travel"\] \.ccz-chip \{ left: 116px; right: 56px; \}/);
 });
 
 // --- Park near here and the Congestion Charge ------------------------------------------------

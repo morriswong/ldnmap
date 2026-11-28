@@ -499,9 +499,8 @@
 
   /* ===== CONGESTION CHARGE ===== */
   /* The C map button (the round sign TfL uses), and the chip saying whether the charge applies
-     now. The chip sits top centre on desktop; on mobile it fits between the theme button and the
-     search button (top left, the latter in the travel view) and the zoom buttons (top right),
-     on two lines, under every sheet and the search screen. */
+     now. The chip sits top centre, level with the buttons beside it; on mobile it is on two lines,
+     and in the travel view moves right of the search button, under every sheet and the search screen. */
   .ccz-sign {
     display: inline-flex; align-items: center; justify-content: center;
     width: 20px; height: 20px; border-radius: 50%; background: #dc2626; color: #fff;
@@ -512,8 +511,8 @@
   .ccz-chip {
     position: absolute; top: 16px; left: 50%; z-index: 1000;
     display: flex; align-items: center; gap: 8px;
-    max-width: calc(100% - 32px); padding: 7px 14px;
-    border-radius: 18px; border: 1px solid var(--glass-border);
+    max-width: calc(100% - 32px); min-height: 48px; padding: 7px 16px;
+    border-radius: 24px; border: 1px solid var(--glass-border);
     background: var(--glass-pill-bg);
     backdrop-filter: blur(40px) saturate(180%); -webkit-backdrop-filter: blur(40px) saturate(180%);
     box-shadow: inset 0 1px 0 0 var(--glass-highlight), 0 4px 16px rgba(0,0,0,0.12);
@@ -531,11 +530,12 @@
   .ccz-chip-name::after { content: ':'; }
   @media (max-width: 768px) {
     .ccz-chip {
-      top: 12px; left: 116px; right: 56px; width: fit-content; margin: 0 auto; max-width: none;
-      padding: 5px 12px; border-radius: 14px; font-size: 12px; line-height: 1.25;
+      top: 12px; left: 60px; right: 60px; width: fit-content; margin: 0 auto; max-width: none;
+      min-height: 40px; padding: 3px 14px; border-radius: 20px; font-size: 12px; line-height: 1.25;
       transform: translateY(-8px);
     }
     .ccz-chip.open { transform: none; }
+    body[data-state="travel"] .ccz-chip { left: 116px; right: 56px; }   /* clear of the search button */
     .ccz-chip-name, .ccz-chip-status { display: block; overflow: hidden; text-overflow: ellipsis; }
     .ccz-chip-name::after { content: none; }
     .ccz-chip-status { font-size: 11px; color: var(--text-dim); }
